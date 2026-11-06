@@ -1,0 +1,160 @@
+{% extends "report/_layout.html" %}
+{% block report %}
+<div class="grid gap-8 lg:grid-cols-[14rem_1fr]" x-data="{ read: [], toggle(k) { this.read.includes(k) ? this.read = this.read.filter(x => x !== k) : this.read.push(k); try { localStorage.setItem('read-{{ r.id }}', JSON.stringify(this.read)) } catch (e) {} } }"
+     x-init="(() => { try { read = JSON.parse(localStorage.getItem('read-{{ r.id }}') || '[]') } catch (e) {} })()">
+
+  {# table of contents #}
+  <aside class="hidden lg:block">
+    <nav class="sticky top-36 space-y-1 text-sm" aria-label="Главы разбора">
+      <p class="eyebrow mb-3">Главы</p>
+      {% for n, anchor, title in chapters %}
+      <a href="#{{ anchor }}" class="flex items-center gap-2 rounded-xl px-3 py-2 font-semibold text-ink-2 transition hover:bg-sand hover:text-ink">
+        <span class="accent w-6 text-base text-ink">{{ n }}</span>{{ title }}
+      </a>
+      {% endfor %}
+      <div class="mt-4 rounded-2xl bg-sand/70 p-3">
+        <p class="text-xs font-bold text-ink-3">Прочитано сфер</p>
+        <p class="mt-1 font-display text-xl font-extrabold"><span x-text="read.length"></span> / {{ r.spheres|length }}</p>
+        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-sand-2"><i class="block h-full rounded-full bg-synergy transition-all duration-500" :style="'width:' + (read.length / {{ r.spheres|length|default:1 }} * 100) + '%'"></i></div>
+      </div>
+    </nav>
+  </aside>
+
+  <div class="min-w-0 space-y-16">
+    {% include "components/accuracy.html" %}
+
+    {# 01 — who you are together #}
+    <section id="type" class="scroll-mt-40">
+      <p class="chapter" data-reveal><b>01</b>тип пары</p>
+      <div class="mt-4 grid gap-6 md:grid-cols-[12rem_1fr] md:items-center">
+        <div class="sticker overflow-hidden" data-reveal="scale"><div class="aspect-[4/4.4]">{% pair_poster r.pair_type.role_a r.pair_type.role_b "h-full w-full" %}</div></div>
+        <div>
+          <h2 class="text-3xl font-extrabold leading-tight" data-split>{{ r.pair_type.name }}</h2>
+          <p class="accent mt-1 text-lg text-ink-2">{{ r.pair_type.tagline }}</p>
+          <p class="mt-4 leading-relaxed">{{ r.pair_type.description }}</p>
+          <p class="mt-3 text-sm text-ink-3"><b class="text-ink-2">{{ dynamic.title }}.</b> {{ dynamic.text }}</p>
+        </div>
+      </div>
+    </section>
+
+    {# 02 — each of you #}
+    <section id="you" class="scroll-mt-40">
+      <p class="chapter" data-reveal><b>02</b>каждый из вас</p>
+      <div class="mt-4 grid gap-4 md:grid-cols-2">
+        {% include "components/role_card.html" with person=a role=role_a why=r.pair_type.why_a side="a" i=0 %}
+        {% include "components/role_card.html" with person=b role=role_b why=r.pair_type.why_b side="b" i=1 %}
+      </div>
+    </section>
+
+    {# 03 — life spheres #}
+    <section id="spheres" class="scroll-mt-40">
+      <p class="chapter" data-reveal><b>03</b>сферы жизни</p>
+      <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Где вам хорошо — и где нужна договорённость</h2>
+      <div class="mt-6 space-y-3">
+        {% for s in r.spheres %}
+        <article id="sphere-{{ s.key }}" class="card tone-{{ s.tone }} scroll-mt-40 overflow-hidden" data-reveal style="--i: {{ forloop.counter }}"
+                 x-data="{ open: {% if forloop.first %}true{% else %}false{% endif %}, adult: {{ s.adult|yesno:'true,false' }}, ok: false }" x-init="(() => { try { ok = localStorage.getItem('adult-ok') === '1' } catch (e) {} })()">
+          <button class="flex w-full items-center gap-4 p-4 text-left sm:p-5" @click="if (adult && !ok) { if (confirm('Глава 18+: о сексуальности и телесной близости, без откровенных описаний. Вам есть 18 лет?')) { ok = true; try { localStorage.setItem('adult-ok', '1') } catch (e) {} } else return } open = !open" :aria-expanded="open">
+            <span class="shrink-0 self-start">{% glyph s.icon 'size-10' %}</span>
+            <span class="min-w-0 flex-1">
+              <span class="flex items-center gap-2"><span class="font-display text-lg font-extrabold leading-tight">{{ s.title }}</span>{% if s.adult %}<span class="chip h-6 shrink-0 border border-ink bg-paper text-[0.68rem]">18+</span>{% endif %}</span>
+              <span class="mt-1.5 flex flex-wrap gap-1.5">{% include "components/tone_badge.html" with tone=s.tone %}<span x-show="read.includes('{{ s.key }}')" x-cloak class="chip bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3.5' %}прочитано</span></span>
+              <span class="mt-1.5 block text-sm text-ink-2">{{ s.summary }}</span>
+            </span>
+            <span class="shrink-0 font-display text-2xl font-extrabold tabular-nums">{{ s.score }}</span>
+            <span class="text-ink-3 transition duration-300" :class="open && 'rotate-180'">{% icon 'chevron-down' %}</span>
+          </button>
+          <div x-show="open" x-collapse {% if not forloop.first %}x-cloak{% endif %}>
+            <div class="grid gap-6 border-t border-line p-5 sm:p-6 md:grid-cols-[1.4fr_1fr]">
+              <div class="space-y-3 leading-relaxed">
+                {% for paragraph in s.story %}<p>{{ paragraph }}</p>{% endfor %}
+              </div>
+              <div class="space-y-4">
+                <div class="rounded-2xl bg-synergy-soft p-4"><p class="flex items-center gap-2 text-sm font-bold text-synergy-ink">{% icon 'lightbulb' 'size-4' %}Что делать</p>
+                  <ul class="mt-2 space-y-1 text-sm">{% for act in s.actions %}<li>{{ act }}</li>{% endfor %}</ul></div>
+                <div class="rounded-2xl bg-b-soft p-4"><p class="flex items-center gap-2 text-sm font-bold text-b-ink">{% icon 'message-circle-heart' 'size-4' %}Вопрос для разговора</p>
+                  <p class="accent mt-2 text-lg leading-snug">«{{ s.question }}»</p></div>
+              </div>
+            </div>
+            {% if s.factors %}
+            <div class="border-t border-line p-5 sm:p-6">
+              <p class="eyebrow">Из чего это складывается у вас</p>
+              <ul class="mt-3 space-y-3">
+                {% for f in s.factors %}
+                <li class="tone-{{ f.tone }} rounded-2xl border border-line p-4">
+                  <div class="flex items-start gap-3">
+                    <span class="mt-0.5 shrink-0">{% glyph f.universe|universe_glyph 'size-6' %}</span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-bold leading-snug">{{ f.title }}</p>
+                      <div class="mt-2 flex flex-wrap gap-1.5">{% include "components/tone_badge.html" with tone=f.tone %}{% include "components/layer_badge.html" with layer=f.layer %}</div>
+                    </div>
+                  </div>
+                  <p class="mt-3 text-sm leading-relaxed text-ink-2">{{ f.text }}</p>
+                  <a href="{{ rbase }}{{ universe_tab|get_item:f.universe }}/{% if f.ref %}#{{ f.ref }}{% endif %}" class="mono mt-3 block text-xs leading-relaxed text-ink-3 hover:text-ink">{% if f.tech %}{{ f.tech }} · {% endif %}<span class="whitespace-nowrap font-bold">подробнее <span class="inline-block align-[-3px]">{% icon 'arrow-right' 'size-3.5' %}</span></span></a>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            {% if s.script or s.exercise %}
+            <div class="grid gap-4 border-t border-line p-5 sm:p-6 md:grid-cols-2">
+              {% if s.script %}<div class="rounded-2xl bg-attention-soft p-4"><p class="flex items-center gap-2 text-sm font-bold text-attention-ink">{% icon 'zap' 'size-4' %}Как у вас может раскручиваться ссора</p><p class="mt-2 text-sm leading-relaxed">{{ s.script }}</p></div>{% endif %}
+              {% if s.exercise %}<div class="rounded-2xl bg-sage-soft p-4"><p class="flex items-center gap-2 text-sm font-bold text-[#2f6243]">{% icon 'sprout' 'size-4' %}Упражнение на неделю</p><p class="mt-2 text-sm leading-relaxed">{{ s.exercise }}</p></div>{% endif %}
+            </div>
+            {% endif %}
+            {% if s.evidence %}<div class="border-t border-dashed border-line px-5 pb-5 sm:px-6">{% include "components/why.html" with items=s.evidence %}</div>{% endif %}
+            <div class="flex justify-end border-t border-line px-5 py-3 sm:px-6">
+              <button class="btn btn-sm" :class="read.includes('{{ s.key }}') ? 'bg-synergy text-white' : 'btn-ghost'" @click="toggle('{{ s.key }}'); if (read.includes('{{ s.key }}')) { open = false; burst($el, 10) }">
+                <span x-show="!read.includes('{{ s.key }}')">Обсудили</span><span x-show="read.includes('{{ s.key }}')" x-cloak class="inline-flex items-center gap-1.5">{% icon 'check' 'size-4' %}Обсудили</span>
+              </button>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    {# 04 — where you diverge #}
+    <section id="diverge" class="scroll-mt-40">
+      <p class="chapter" data-reveal><b>04</b>где вы расходитесь</p>
+      <p class="mt-3 max-w-2xl leading-relaxed text-ink-2" data-reveal>{{ r.agreement_note }}</p>
+      <div class="mt-5 grid gap-4 md:grid-cols-2">{% for ins in r.friction %}{% include "components/insight.html" with ins=ins i=forloop.counter %}{% endfor %}</div>
+    </section>
+
+    {# 05 — plan #}
+    <section id="plan" class="scroll-mt-40">
+      <p class="chapter" data-reveal><b>05</b>план</p>
+      <ol class="mt-4 space-y-2">
+        {% for h in r.habits %}
+        <li class="card flex items-start gap-4 p-4" data-reveal style="--i: {{ forloop.counter }}">
+          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sand font-display font-extrabold">{{ forloop.counter }}</span>
+          <div><p class="font-bold">{{ h.title }}</p><p class="mono mt-0.5 text-xs text-ink-3">{{ h.cadence }} · {{ h.duration }}</p><p class="mt-0.5 text-sm text-ink-2">{{ h.why }}</p></div>
+        </li>
+        {% endfor %}
+      </ol>
+      <a href="{{ rbase }}habits/" class="btn btn-ghost btn-sm mt-4">Выбрать привычки {% icon 'arrow-right' 'size-4' %}</a>
+    </section>
+
+    {# 06 — questions #}
+    <section id="questions" class="scroll-mt-40">
+      <p class="chapter" data-reveal><b>06</b>вопросы друг другу</p>
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        {% for s in r.spheres %}
+        <div class="rounded-3xl border border-line bg-paper p-5" data-reveal style="--i: {{ forloop.counter }}">
+          <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ink-3">{% glyph s.icon 'size-5' %}{{ s.title }}</p>
+          <p class="accent mt-2 text-lg leading-snug">«{{ s.question }}»</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+
+{# mobile chapter drawer #}
+<div class="no-print fixed bottom-24 right-4 z-30 lg:hidden" x-data="{ open: false }">
+  <button class="btn btn-primary btn-icon h-12 w-12 shadow-lift" @click="open = !open" aria-label="Главы">{% icon 'list' 'size-5' %}</button>
+  <div x-show="open" x-cloak x-transition.origin.bottom.right class="card absolute bottom-14 right-0 w-60 p-2" @click.outside="open = false">
+    {% for n, anchor, title in chapters %}<a href="#{{ anchor }}" @click="open = false" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-sand"><span class="accent w-6">{{ n }}</span>{{ title }}</a>{% endfor %}
+  </div>
+</div>
+{% endblock %}

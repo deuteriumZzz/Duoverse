@@ -1,0 +1,15 @@
+{# c: Category #}
+<article class="card group tone-{{ c.tone }} relative overflow-hidden p-5 sm:p-6" data-reveal data-cat-card="{{ c.key }}" style="--i: {{ i|default:0 }}">
+  <div class="absolute -right-10 -top-10 size-32 rounded-full t-bg opacity-70 blob" aria-hidden="true"></div>
+  <div class="relative flex items-start justify-between gap-3">
+    <span class="anim-{{ c.icon }}">{% glyph c.icon 'size-12' %}</span>
+    {% include "components/tone_badge.html" with tone=c.tone %}
+  </div>
+  <h3 class="relative mt-5 text-[1.05rem] font-extrabold">{{ c.title }}</h3>
+  <p class="relative mt-1 text-sm leading-relaxed text-ink-2">{{ c.verdict }}</p>
+  <div class="relative mt-4 flex items-center gap-3">
+    <div class="bar flex-1" style="--v: {{ c.score }}; --i: {{ i|default:0 }}"><i class="t-fill"></i></div>
+    <span class="mono w-9 text-right text-sm font-semibold" data-count="{{ c.score }}">{{ c.score }}</span>
+  </div>
+  {% include "components/why.html" with items=c.evidence %}
+</article>

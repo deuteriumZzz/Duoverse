@@ -1,0 +1,52 @@
+{# Cloned into the result slot while the dates are being calculated. {a} / {b} are filled from the form. #}
+<template id="tpl-aligning">
+  <div class="aligning-card sticker mb-16 grid items-center gap-8 overflow-hidden p-6 sm:p-10 md:grid-cols-[minmax(0,17rem)_1fr]" role="status" aria-live="polite"
+       x-data="{ i: 0, steps: [
+         ['Находим планеты в день рождения', 'эфемериды · {a} и {b}'],
+         ['Сверяем углы между картами', 'трины, квадраты, оппозиции · орбы до 6°'],
+         ['Считаем числа пути', 'редукция дат → число пары'],
+         ['Тянем арканы', '22 Старших аркана · аркан пары'],
+         ['Сводим вселенные', 'веса 35 / 35 / 15 / 15 · индекс согласия'] ] }"
+       x-init="const t = setInterval(() => i < steps.length - 1 ? i++ : clearInterval(t), 470)">
+    <div class="relative mx-auto aspect-square w-56 sm:w-64">
+      <svg viewBox="0 0 240 240" class="aligning h-full w-full overflow-visible" aria-hidden="true">
+        <defs><linearGradient id="al-sweep" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="var(--color-pair)" stop-opacity="0"/><stop offset="1" stop-color="var(--color-pair)" stop-opacity=".55"/></linearGradient></defs>
+        <circle cx="120" cy="120" r="112" fill="var(--color-milk)" stroke="var(--color-line)" stroke-width="1.5"/>
+        <g class="al-sweep"><path d="M120 120 L120 8 A112 112 0 0 1 199.2 40.8 Z" fill="url(#al-sweep)"/></g>
+        <g class="al-outer">
+          <circle cx="120" cy="120" r="96" fill="none" stroke="var(--color-b)" stroke-width="1.6" stroke-dasharray="3 6"/>
+          <circle cx="120" cy="24" r="6" fill="var(--color-b)" stroke="var(--color-paper)" stroke-width="2"/>
+          <circle cx="203" cy="168" r="5" fill="var(--color-b)" stroke="var(--color-paper)" stroke-width="2"/>
+          <circle cx="37" cy="168" r="4.5" fill="var(--color-b)" stroke="var(--color-paper)" stroke-width="2"/>
+          <circle cx="52" cy="52" r="3.5" fill="var(--color-b)"/>
+        </g>
+        <g class="al-inner">
+          <circle cx="120" cy="120" r="60" fill="none" stroke="var(--color-a)" stroke-width="1.6"/>
+          <circle cx="180" cy="120" r="6" fill="var(--color-a)" stroke="var(--color-paper)" stroke-width="2"/>
+          <circle cx="90" cy="68" r="5" fill="var(--color-a)" stroke="var(--color-paper)" stroke-width="2"/>
+          <circle cx="90" cy="172" r="4" fill="var(--color-a)"/>
+        </g>
+        <line class="al-line" style="--i:0" pathLength="1" x1="66" y1="74" x2="186" y2="150" stroke="var(--color-synergy)" stroke-width="2.5" stroke-linecap="round"/>
+        <line class="al-line" style="--i:1" pathLength="1" x1="170" y1="52" x2="78" y2="178" stroke="var(--color-attention)" stroke-width="2.5" stroke-linecap="round"/>
+        <line class="al-line" style="--i:2" pathLength="1" x1="38" y1="132" x2="196" y2="98" stroke="var(--color-synergy)" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="120" cy="120" r="30" fill="var(--color-paper)" stroke="var(--color-ink)" stroke-width="2"/>
+      </svg>
+      <div class="absolute left-1/2 top-1/2 w-16 -translate-x-1/2 -translate-y-1/2">{% mark "h-auto w-full" merge=True %}</div>
+    </div>
+    <div>
+      <p class="chapter"><b>✦</b>сверяем ваши вселенные</p>
+      <ol class="mt-5 space-y-2.5">
+        <template x-for="(s, k) in steps" :key="k">
+          <li class="flex items-start gap-3 transition duration-500" :class="k > i ? 'opacity-30' : 'opacity-100'">
+            <span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full transition duration-300" :class="k < i ? 'bg-synergy text-white' : k === i ? 'bg-ink' : 'bg-sand'">
+              <svg x-show="k < i" class="size-3.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5 6 10.5 11.5 4"/></svg>
+              <span x-show="k === i" class="size-3 rounded-full border-2 border-milk/40 border-t-milk spin"></span>
+            </span>
+            <span><span class="block font-bold" x-text="s[0]"></span><span class="mono block text-xs text-ink-3" x-show="k <= i" x-transition.opacity x-text="s[1]"></span></span>
+          </li>
+        </template>
+      </ol>
+      <div class="al-progress mt-6 h-1.5 overflow-hidden rounded-full bg-sand"><i class="block h-full rounded-full bg-gradient-to-r from-a via-pair to-b"></i></div>
+    </div>
+  </div>
+</template>

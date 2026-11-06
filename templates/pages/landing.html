@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block content %}
+
+{# ─────────── HERO ─────────── #}
+<section class="relative overflow-hidden">
+  <div class="pointer-events-none absolute -left-32 top-40 size-96 rounded-full bg-a-soft/80 blob" data-follow="-40" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -right-24 top-10 size-[26rem] rounded-full bg-b-soft/80 blob" style="animation-delay:-6s" data-follow="55" aria-hidden="true"></div>
+
+  <div class="relative mx-auto max-w-6xl px-4 pt-12 sm:px-6 md:pt-16">
+    <span class="chip fade-up border border-line bg-paper/80 text-ink-2 backdrop-blur">{% glyph 'orbit' 'size-4' %}астрология · числа · таро · психология</span>
+    <h1 class="mt-6 max-w-5xl text-[clamp(2.1rem,6.4vw,5.1rem)] font-extrabold leading-[1.02]" data-split>
+      Совместимость, у&nbsp;которой есть <span class="accent text-[1.08em]">объяснение</span>
+    </h1>
+
+    <div class="mt-10 grid items-center gap-10 pb-16 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
+      {# sentence form #}
+      <div class="fade-up" style="--i:3">
+        <form class="madlib" hx-post="{% url 'quick_result' %}" hx-target="#quick" hx-swap="innerHTML swap:2400ms show:#quick:top" hx-indicator="this" hx-disabled-elt="find button" data-loader="aligning">
+          <p>Я&nbsp;родился(ась)
+            <label class="side-a inline"><span class="sr-only">Ваша дата рождения</span><input type="date" name="date_a" value="1996-03-14" min="1900-01-01" max="{% now 'Y-m-d' %}" required></label>,
+            а&nbsp;мой человек —
+            <label class="side-b inline"><span class="sr-only">Дата рождения партнёра</span><input type="date" name="date_b" value="1994-09-02" min="1900-01-01" max="{% now 'Y-m-d' %}" required></label>.
+            Как мы&nbsp;устроены?</p>
+          <div class="mt-7 flex flex-wrap items-center gap-3">
+            <button class="btn btn-primary h-14 px-7 text-base" data-magnetic>
+              <span class="when-idle inline-flex items-center gap-2">{% icon 'sparkles' 'size-5' %}Узнать за 30 секунд</span>
+              <span class="when-loading items-center gap-2"><span class="size-4 rounded-full border-2 border-milk/40 border-t-milk spin"></span>Сводим вселенные…</span>
+            </button>
+            <a href="{% url 'report' %}" class="btn btn-ghost h-14 bg-paper/70 backdrop-blur draw-icon" data-magnetic>{% icon 'eye' 'size-4' %}Пример отчёта</a>
+          </div>
+        </form>
+        <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-ink-2">
+          <li class="flex items-center gap-2">{% icon 'lock-open' 'size-4 text-synergy' %}без регистрации</li>
+          <li class="flex items-center gap-2">{% icon 'search-check' 'size-4 text-synergy' %}каждый вывод с объяснением</li>
+          <li class="flex items-center gap-2">{% icon 'flask-conical' 'size-4 text-synergy' %}психология — отдельно</li>
+        </ul>
+      </div>
+
+      {# live constellation stage #}
+      <div class="relative fade-up" style="--i:4">
+        <div class="relative mx-auto aspect-square w-full max-w-[34rem] rounded-full border border-line bg-paper/70 p-[6%] shadow-lift backdrop-blur"
+             x-data="{ phase: 0, play() { this.phase = 0; setTimeout(() => this.phase = 1, 700); setTimeout(() => this.phase = 2, 2300); setTimeout(() => this.phase = 3, 4400) } }"
+             x-init="play(); setInterval(() => play(), 11000)" @aligning.window="play()"
+             :class="'syn-0' + (phase >= 1 ? ' syn-1' : '') + (phase >= 2 ? ' syn-2' : '') + (phase >= 3 ? ' syn-3' : '')">
+          {% synastry_svg r.astrology %}
+          <div class="pointer-events-none absolute inset-0 grid place-items-center">
+            <div class="text-center transition duration-700 ease-[var(--ease-spring)]" :class="phase >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'">
+              <p class="grid size-28 place-items-center rounded-full border-2 border-ink bg-paper font-display text-5xl font-extrabold leading-none shadow-sticker">{{ r.total_score }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="pointer-events-none absolute -left-2 top-[12%] hidden sm:block" data-follow="-18"><span class="chip float h-9 -rotate-6 border border-line bg-paper px-3 shadow-lift" style="animation-delay:-2s"><b class="text-a-ink">Венера</b> △ <b class="text-b-ink">Марс</b><span class="mono text-ink-3">орб 2.1°</span></span></div>
+        <div class="pointer-events-none absolute -right-2 top-[44%] hidden sm:block" data-follow="24"><span class="chip float h-9 rotate-3 layer-scientific px-3 shadow-lift" style="animation-delay:-4s">{% icon 'flask-conical' 'size-3.5' %}надёжная привязанность</span></div>
+        <div class="pointer-events-none absolute bottom-[6%] left-[8%] hidden sm:block" data-follow="-26"><span class="chip float h-9 -rotate-3 border-2 border-ink bg-pair-soft px-3 shadow-sticker">Аркан пары · <b>I Маг</b></span></div>
+        <p class="mt-4 text-center text-sm text-ink-3">Так сходятся карты {{ a.name }} и {{ b.name }}: линии — аспекты, звёзды — созвездие пары</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="quick" class="relative mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6" aria-live="polite"></div>
+</section>
+
+{# ─────────── EVIDENCE MARQUEE ─────────── #}
+<section class="space-y-3 py-6" aria-label="Из чего складываются выводы">
+  {% for row in marquee %}
+  <div class="marquee{% if forloop.counter == 2 %} reverse{% endif %}" style="--dur: {% if forloop.counter == 2 %}52s{% else %}44s{% endif %}">
+    {% for _ in "12" %}<div {% if forloop.counter == 2 %}aria-hidden="true"{% endif %}>
+      {% for text, kind in row %}<span class="chip h-10 shrink-0 px-4 text-sm {% if kind == 'a' %}bg-a-soft text-a-ink{% elif kind == 'b' %}bg-b-soft text-b-ink{% elif kind == 'sci' %}layer-scientific{% elif kind == 'sym' %}layer-symbolic{% else %}border-2 border-ink bg-pair-soft{% endif %}">{{ text }}</span>{% endfor %}
+    </div>{% endfor %}
+  </div>
+  {% endfor %}
+</section>
+
+{# ─────────── FOUR UNIVERSES ─────────── #}
+<section id="how" class="mx-auto max-w-6xl scroll-mt-24 px-4 py-16 sm:px-6">
+  <div class="grid items-center gap-12 lg:grid-cols-2">
+    <div class="relative mx-auto aspect-square w-full max-w-[26rem]" data-reveal="scale">
+      <div class="absolute inset-[12%] rounded-full border-2 border-dashed border-line"></div>
+      <div class="absolute inset-[30%] rounded-full border border-line"></div>
+      <div class="absolute inset-0 orbit" style="container-type: inline-size">
+        {% for u in r.universes %}
+        <div class="absolute left-1/2 top-1/2" style="transform: rotate({% widthratio forloop.counter0 1 90 %}deg) translateY(-38cqw) rotate(-{% widthratio forloop.counter0 1 90 %}deg)">
+          <div style="translate: -50% -50%"><div class="counter-orbit">
+            <span class="flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-paper px-3 py-2 text-sm font-bold shadow-soft {% if u.layer == 'scientific' %}text-[#2f6243]{% endif %}">{% glyph u.icon 'size-4' %}{{ u.title }}</span>
+          </div></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="absolute inset-[34%] grid place-items-center">
+        <div class="h-full w-[130%]" aria-hidden="true">{% mark "h-full w-full" merge=True %}</div>
+      </div>
+    </div>
+
+    <div>
+      <p class="eyebrow" data-reveal>Принцип мультивселенной</p>
+      <h2 class="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Четыре вселенные отвечают на <span class="marker">один вопрос</span></h2>
+      <p class="mt-4 text-lg leading-relaxed text-ink-2" data-reveal style="--i:2">Каждая система даёт свой балл и вердикт. Мы показываем их рядом и считаем, насколько они сходятся.</p>
+      <ul class="mt-8 space-y-3">
+        {% for u in r.universes %}
+        <li class="card flex items-center gap-4 p-4" data-reveal style="--i: {{ forloop.counter|add:2 }}">
+          <span class="grid size-11 shrink-0 place-items-center rounded-2xl {% if u.layer == 'scientific' %}bg-sage-soft text-[#2f6243]{% else %}bg-lilac-soft text-[#5b45a8]{% endif %}">{% glyph u.icon %}</span>
+          <div class="min-w-0 flex-1">
+            <p class="font-bold">{{ u.title }}</p>
+            <p class="text-sm text-ink-3">{% cycle 'Синастрия: аспекты и дома двух карт' 'Big Five, привязанность, индикаторы Готтмана' 'Путь, судьба, Матрица судьбы' 'Аркан каждого и аркан пары' %}</p>
+          </div>
+          {% include "components/layer_badge.html" with layer=u.layer %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  {# agreement index explainer #}
+  <div class="card mt-14 grid gap-8 p-6 sm:p-10 md:grid-cols-[1fr_1.2fr]" data-reveal>
+    <div>
+      <span class="chip bg-pair-soft">{% icon 'scale' 'size-3.5' %}Индекс согласия вселенных</span>
+      <h3 class="mt-4 text-2xl font-extrabold leading-tight">Сходятся ли вселенные — тоже ответ</h3>
+      <p class="mt-3 leading-relaxed text-ink-2">Когда все слои видят одно и то же, вывод надёжнее. Когда расходятся — мы подсвечиваем где именно и объясняем, что это значит на практике.</p>
+    </div>
+    <div class="space-y-4" data-observe>
+      {% for u in r.universes %}
+      <div class="grid grid-cols-[6.5rem_1fr_2.5rem] items-center gap-3 text-sm font-bold">
+        <span>{{ u.title }}</span>
+        <div class="bar {% if u.layer == 'scientific' %}tone-synergy{% else %}side-b{% endif %}" style="--v: {{ u.score }}; --i: {{ forloop.counter }}"><i class="t-fill"></i></div>
+        <span class="mono text-right">{{ u.score }}</span>
+      </div>
+      {% endfor %}
+      <div class="flex items-center justify-between rounded-2xl bg-synergy-soft px-4 py-3 text-synergy-ink">
+        <span class="flex items-center gap-2 font-bold">{% icon 'check' 'size-4' %}Вселенные сходятся</span>
+        <span class="font-display text-xl font-extrabold"><span data-count="{{ r.agreement_index }}">{{ r.agreement_index }}</span>/100</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ─────────── STORY: HOW THE REPORT IS BUILT ─────────── #}
+<section class="relative bg-ink py-20 text-milk">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-2" data-story data-active="0">
+    <div class="sticky top-20 z-10 h-[23rem] lg:top-28 lg:h-[30rem]">
+      <div class="relative mx-auto grid h-full max-w-sm place-items-center">
+        {% for u in r.universes %}
+        <div class="story-layer absolute w-60 rounded-[1.6rem] border-2 border-ink p-5 text-ink shadow-lift sm:w-72 {% cycle 'bg-b-soft' 'bg-sage-soft' 'bg-a-soft' 'bg-pair-soft' %}" style="--k: {{ forloop.counter0 }}; z-index: {{ forloop.counter }}">
+          <div class="flex items-center justify-between"><span class="flex items-center gap-2 font-display text-sm font-extrabold">{% glyph u.icon 'size-4' %}{{ u.title }}</span><span class="font-display text-2xl font-extrabold">{{ u.score }}</span></div>
+          <div class="mt-4 h-2 rounded-full bg-paper/70"><i class="block h-full rounded-full bg-ink" style="width: {{ u.score }}%"></i></div>
+          <p class="mt-3 text-xs leading-snug text-ink-2">{{ u.verdict }}</p>
+        </div>
+        {% endfor %}
+        <div class="story-final absolute z-10 w-64 rounded-[1.8rem] border-2 border-ink bg-paper p-6 text-center text-ink shadow-lift sm:w-72">
+          <div class="mx-auto h-10 w-14" aria-hidden="true">{% mark "h-full w-full" merge=True %}</div>
+          <p class="mt-4 font-display text-5xl font-extrabold">{{ r.total_score }}</p>
+          <p class="mt-1 font-display font-extrabold">{{ r.pair_type.name }}</p>
+          <p class="mono mt-3 text-[0.68rem] text-ink-3">согласие вселенных {{ r.agreement_index }}/100</p>
+        </div>
+      </div>
+    </div>
+    <ol class="relative">
+      {% for title, text, ic in story %}
+      <li class="story-step flex min-h-[55vh] flex-col justify-center {% if forloop.first %}is-active{% endif %}" data-step="{{ forloop.counter0 }}">
+        <span class="grid size-12 place-items-center rounded-2xl bg-milk/10 text-pair">{% icon ic 'size-6' %}</span>
+        <p class="mono mt-6 text-xs uppercase tracking-[.2em] text-milk/50">шаг {{ forloop.counter }} из 4</p>
+        <h3 class="mt-2 text-3xl font-extrabold leading-tight sm:text-4xl">{{ title }}</h3>
+        <p class="mt-4 max-w-md text-lg leading-relaxed text-milk/70">{{ text }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+{# ─────────── THREE MODES ─────────── #}
+<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+  <p class="eyebrow" data-reveal>Как это работает</p>
+  <h2 class="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Начните с дат. <span class="marker" style="--mk: var(--color-a-soft)">Углубляйтесь,</span> когда захотите</h2>
+  <ol class="relative mt-10 grid gap-5 md:grid-cols-3">
+    {% for step in "123" %}
+    <li class="card group relative p-6" data-reveal style="--i: {{ forloop.counter }}">
+      <div class="flex items-center justify-between">
+        <span class="grid size-11 place-items-center rounded-2xl font-display font-extrabold {% cycle 'bg-a-soft text-a-ink' 'bg-pair-soft' 'bg-b-soft text-b-ink' %}">{{ step }}</span>
+        <span class="mono text-xs text-ink-3">{% cycle '≈ 30 секунд' '≈ 2 минуты' '≈ 10 минут' %}</span>
+      </div>
+      <h3 class="mt-5 text-lg font-extrabold">{% cycle 'Быстрый' 'Расширенный' 'Глубокий' %}</h3>
+      <p class="mt-2 text-sm leading-relaxed text-ink-2">{% cycle 'Только даты рождения. Балл пары, три категории и арканы — сразу.' 'Время и место рождения. Открываются дома, Асцендент и точная Луна.' 'Короткие анкеты для обоих. Включается научный слой: Big Five, привязанность, Готтман.' %}</p>
+      <p class="mt-4 flex items-center gap-2 rounded-2xl bg-sand px-3 py-2 text-xs font-bold text-ink-2">{% icon 'chart-no-axes-column-increasing' 'size-4' %}точность {% cycle 'до 50%' 'до 75%' 'до 95%' %}</p>
+      <a href="{% url 'wizard' %}?mode={% cycle 'quick' 'extended' 'deep' %}" class="mt-5 inline-flex items-center gap-1.5 text-sm font-bold hover:gap-2.5 transition-all">Выбрать {% icon 'arrow-right' 'size-4' %}</a>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+{# ─────────── REPORT PREVIEW ─────────── #}
+<section class="bg-sand/60 py-20">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow" data-reveal>Пример отчёта · {{ a.name }} и {{ b.name }}</p>
+        <h2 class="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Не один процент, а <span class="marker" style="--mk: var(--color-b-soft)">понятная картина</span></h2>
+      </div>
+      <a href="{% url 'report' %}" class="btn btn-ghost bg-paper" data-reveal style="--i:2">Открыть полный отчёт {% icon 'arrow-right' 'size-4' %}</a>
+    </div>
+    <div class="mt-10 grid gap-5 lg:grid-cols-[1fr_1.1fr]">
+      <div class="card p-6 sm:p-8" data-reveal>
+        <div class="flex items-center gap-5">
+          {% include "components/score_ring.html" with value=r.total_score size=112 stroke=10 %}
+          <div>
+            <span class="chip bg-a-soft text-a-ink">{% icon r.pair_type.icon 'size-3.5' %}Тип пары</span>
+            <p class="mt-2 font-display text-xl font-extrabold">{{ r.pair_type.name }}</p>
+            <p class="text-sm text-ink-3">{{ r.pair_type.tagline }}</p>
+          </div>
+        </div>
+        <div class="mx-auto mt-6 max-w-[20rem]" data-observe>{% radar_svg r.categories %}</div>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2">
+        {% for c in r.categories|slice:":4" %}{% include "components/category_card.html" with c=c i=forloop.counter %}{% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ─────────── PAIR TYPES ─────────── #}
+<section class="py-20">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <p class="eyebrow" data-reveal>Типы пар</p>
+    <h2 class="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>У каждой пары есть <span class="marker">имя</span></h2>
+    <p class="mt-3 max-w-xl text-ink-2" data-reveal style="--i:2">Имя складывается из ваших ролей: у каждого — одна из 12, а их встреча даёт один из 78 типов пар. Вот несколько.</p>
+  </div>
+  <div class="scroll-x mt-6 gap-5 px-4 pb-8 pt-4 sm:px-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))]">
+    {% for p in pair_types %}
+    <article class="sticker group lift w-64 overflow-hidden sm:w-72" data-reveal style="--i: {{ forloop.counter }}">
+      <div class="aspect-[4/4.2] overflow-hidden border-b-2 border-ink">{% pair_poster p.a p.b "h-full w-full" %}</div>
+      <div class="p-5">
+        <span class="chip bg-sand text-ink-2">{{ p.dynamic.title }}</span>
+        <h3 class="mt-3 font-display text-lg font-extrabold leading-tight">{{ p.name }}</h3>
+        <p class="mt-1.5 text-sm leading-relaxed text-ink-2">{{ p.tagline }}</p>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+{# ─────────── HONEST METHOD ─────────── #}
+<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+  <div class="grid gap-5 md:grid-cols-2">
+    <div class="rounded-[var(--radius-card)] border-2 border-dashed border-lilac bg-lilac-soft/50 p-7 sm:p-9" data-reveal>
+      {% include "components/layer_badge.html" with layer="symbolic" %}
+      <h3 class="mt-5 text-2xl font-extrabold">Астрология, числа, таро</h3>
+      <p class="mt-3 leading-relaxed text-ink-2">Символические системы — не наука. Мы используем их как язык для размышления и разговора, считаем детерминированно и показываем, из чего сложился каждый вывод.</p>
+    </div>
+    <div class="rounded-[var(--radius-card)] border-2 border-sage bg-sage-soft/60 p-7 sm:p-9" data-reveal style="--i:1">
+      {% include "components/layer_badge.html" with layer="scientific" %}
+      <h3 class="mt-5 text-2xl font-extrabold">Психология отношений</h3>
+      <p class="mt-3 leading-relaxed text-ink-2">Big Five, теория привязанности и исследования Готтмана. Этот слой всегда показан отдельно, чтобы символика его не перекрывала.</p>
+    </div>
+  </div>
+  <p class="mt-6 flex items-start gap-2 text-sm text-ink-3" data-reveal>{% icon 'info' 'size-4 mt-0.5' %}Мы не ставим диагнозов, не предсказываем события и не говорим «вам нельзя быть вместе». Только зоны внимания и договорённости. <a href="{% url 'disclaimer' %}" class="font-bold text-ink-2 underline">Подробнее о методе</a></p>
+</section>
+
+{# ─────────── FAQ ─────────── #}
+<section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+  <h2 class="text-center text-3xl font-extrabold" data-split>Частые вопросы</h2>
+  <div class="mt-10 space-y-3" x-data="{ open: 0 }">
+    {% for q, ans in faq %}
+    <div class="card overflow-hidden" data-reveal style="--i: {{ forloop.counter }}">
+      <button class="flex w-full items-center justify-between gap-4 p-5 text-left font-bold" @click="open = open === {{ forloop.counter }} ? 0 : {{ forloop.counter }}" :aria-expanded="open === {{ forloop.counter }}">
+        {{ q }}<span class="grid size-8 shrink-0 place-items-center rounded-full bg-sand transition duration-300" :class="open === {{ forloop.counter }} && 'rotate-45 bg-pair'">{% icon 'plus' 'size-4' %}</span>
+      </button>
+      <div x-show="open === {{ forloop.counter }}" x-collapse x-cloak><p class="px-5 pb-5 leading-relaxed text-ink-2">{{ ans }}</p></div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ─────────── CTA ─────────── #}
+<section class="mx-auto max-w-6xl px-4 sm:px-6">
+  <div class="relative overflow-hidden rounded-[2.25rem] bg-ink px-6 py-14 text-center text-milk sm:px-12 sm:py-20" data-reveal="scale">
+    <div class="mx-auto h-16 w-24" data-burst-in="900" aria-hidden="true">{% mark "h-full w-full" merge=True light=True %}</div>
+    <h2 class="mx-auto mt-8 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Узнайте, как устроена ваша пара</h2>
+    <p class="mx-auto mt-4 max-w-md text-milk/70">Первый результат — за 30 секунд. Без регистрации.</p>
+    <a href="{% url 'start' %}" class="btn mt-8 bg-milk text-ink" data-magnetic>Попробовать бесплатно {% icon 'arrow-right' 'size-4' %}</a>
+  </div>
+</section>
+{% endblock %}

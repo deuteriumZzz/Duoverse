@@ -1,0 +1,40 @@
+{% if errors %}
+<div class="tone-risk t-bg t-ink mb-16 flex items-start gap-3 rounded-3xl p-5 fade-up" role="alert">
+  {% icon 'triangle-exclamation-point' 'size-5 mt-0.5' %}
+  <div><p class="font-bold">Проверьте даты</p>
+  <p class="mt-1 text-sm">{% if errors.a and errors.b %}Обе даты{% elif errors.a %}Ваша дата{% else %}Дата партнёра{% endif %} должны быть между 1900 годом и сегодняшним днём.</p></div>
+</div>
+{% else %}
+<article class="sticker mb-16 grid overflow-hidden md:grid-cols-[minmax(0,19rem)_1fr]" data-reveal="scale" data-burst-in="700">
+  <div class="relative aspect-[16/9] border-b-2 border-ink md:aspect-auto md:border-b-0 md:border-r-2">{% pair_poster q.role_a q.role_b "absolute inset-0 h-full w-full" %}</div>
+  <div class="p-6 sm:p-8">
+    <p class="chapter"><b>✦</b>ваш тип пары · {{ q.sign_a }} + {{ q.sign_b }}</p>
+    <h3 class="mt-2 text-[clamp(1.6rem,3vw,2.4rem)] font-extrabold leading-tight" data-split>{{ q.pair_type }}</h3>
+    <p class="accent mt-1 text-lg text-ink-2">{{ q.pair_tagline }}</p>
+    <div class="mt-6 grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
+      <p class="font-display font-extrabold leading-none"><span class="text-7xl tabular-nums" data-count="{{ q.score }}">{{ q.score }}</span><span class="text-xl text-ink-3">/100</span></p>
+      <ul class="space-y-3">
+        {% for c in q.categories %}
+        <li class="tone-{{ c.tone }}">
+          <div class="flex items-center gap-2 text-sm font-bold">{% glyph c.icon 'size-5' %}{{ c.title }}<span class="mono ml-auto">{{ c.score }}</span></div>
+          <div class="bar mt-1.5" style="--v: {{ c.score }}; --i: {{ forloop.counter }}"><i class="t-fill"></i></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      <div class="side-a flex items-center gap-3 rounded-2xl border border-line p-3">{% role_emblem q.role_a "a" "size-12" %}<div class="min-w-0"><p class="text-xs font-bold text-ink-3">Ваша роль</p><p class="mono truncate text-[0.7rem] text-ink-3">{{ q.why_a|join:" · " }}</p></div></div>
+      <div class="side-b flex items-center gap-3 rounded-2xl border border-line p-3">{% role_emblem q.role_b "b" "size-12" %}<div class="min-w-0"><p class="text-xs font-bold text-ink-3">Роль партнёра</p><p class="mono truncate text-[0.7rem] text-ink-3">{{ q.why_b|join:" · " }}</p></div></div>
+    </div>
+    <div class="mt-3 flex gap-3">
+      <div class="side-a flex flex-1 items-center gap-3 rounded-2xl t-bg p-2.5 pop-in" style="--i:5"><span class="size-11 shrink-0">{% arcana_art q.arcana_a.number "a" %}</span><span class="min-w-0"><span class="mono block text-[0.65rem] text-ink-3">{{ q.arcana_a.number|roman }} · вы</span><span class="block truncate text-sm font-bold">{{ q.arcana_a.name }}</span></span></div>
+      <div class="side-pair flex flex-1 items-center gap-3 rounded-2xl border-2 border-ink t-bg p-2.5 pop-in" style="--i:6"><span class="size-11 shrink-0">{% arcana_art q.arcana_pair.number "pair" %}</span><span class="min-w-0"><span class="mono block text-[0.65rem] text-ink-3">{{ q.arcana_pair.number|roman }} · пара</span><span class="block truncate text-sm font-bold">{{ q.arcana_pair.name }}</span></span></div>
+      <div class="side-b flex flex-1 items-center gap-3 rounded-2xl t-bg p-2.5 pop-in" style="--i:7"><span class="size-11 shrink-0">{% arcana_art q.arcana_b.number "b" %}</span><span class="min-w-0"><span class="mono block text-[0.65rem] text-ink-3">{{ q.arcana_b.number|roman }} · партнёр</span><span class="block truncate text-sm font-bold">{{ q.arcana_b.name }}</span></span></div>
+    </div>
+    <div class="mt-6 flex flex-col gap-4 border-t border-dashed border-line pt-5 sm:flex-row sm:items-center">
+      <p class="flex-1 text-sm leading-relaxed text-ink-2"><b class="text-ink">Это по датам — точность ≈ 45%.</b> Добавьте время рождения и анкеты: откроются дома, Асцендент и научный слой.</p>
+      <a href="{% url 'wizard' %}?mode=extended" class="btn btn-primary shrink-0" data-magnetic>Полный разбор {% icon 'arrow-right' 'size-4' %}</a>
+    </div>
+  </div>
+</article>
+{% endif %}

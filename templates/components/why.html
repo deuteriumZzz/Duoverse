@@ -1,0 +1,9 @@
+{# Collapsible «Почему так» — the trace from statement to calculation #}
+<div x-data="{ open: false }" class="mt-4">
+  <button type="button" class="group flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink" @click="open = !open" :aria-expanded="open">
+    <span class="grid size-6 place-items-center rounded-full bg-sand transition group-hover:bg-sand-2">{% icon 'circle-question-mark' 'size-3.5' %}</span>
+    Почему так
+    <span class="transition duration-300" :class="open && 'rotate-180'">{% icon 'chevron-down' 'size-4' %}</span>
+  </button>
+  <div x-show="open" x-collapse x-cloak><div class="pt-3">{% include "components/evidence.html" with items=items %}</div></div>
+</div>

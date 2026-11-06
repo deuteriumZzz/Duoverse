@@ -1,0 +1,14 @@
+<div class="sticker @container relative p-5 sm:p-7">
+  <p class="font-display text-sm font-extrabold">Попробуйте прямо сейчас</p>
+  <form class="mt-5 grid gap-4 @sm:grid-cols-2" hx-post="{% url 'quick_result' %}" hx-target="#quick" hx-swap="innerHTML swap:2400ms show:#quick:top" hx-indicator="this" hx-disabled-elt="find button" data-loader="aligning">
+    <label class="block side-a"><span class="label flex items-center gap-2"><i class="size-2.5 rounded-full t-fill"></i>Вы родились</span>
+      <input type="date" name="date_a" value="1996-03-14" min="1900-01-01" max="{% now 'Y-m-d' %}" class="field" required></label>
+    <label class="block side-b"><span class="label flex items-center gap-2"><i class="size-2.5 rounded-full t-fill"></i>Партнёр родился</span>
+      <input type="date" name="date_b" value="1994-09-02" min="1900-01-01" max="{% now 'Y-m-d' %}" class="field" required></label>
+    <button class="btn btn-primary @sm:col-span-2" data-magnetic>
+      <span class="when-idle inline-flex items-center gap-2">{% icon 'sparkles' 'size-4' %}Узнать за 30 секунд</span>
+      <span class="when-loading items-center gap-2"><span class="size-4 rounded-full border-2 border-milk/40 border-t-milk spin"></span>Сводим вселенные…</span>
+    </button>
+  </form>
+</div>
+<div id="quick" class="mt-8 scroll-mt-24" aria-live="polite"></div>

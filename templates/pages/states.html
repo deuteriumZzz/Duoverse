@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Состояния интерфейса — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+  <p class="eyebrow">Для владельца продукта</p>
+  <h1 class="mt-2 text-3xl font-extrabold">Служебные состояния</h1>
+  <p class="mt-2 max-w-xl text-ink-2">Все пустые, ошибочные и пограничные состояния в одном месте. Сценарии отчёта переключаются плашкой в левом нижнем углу — включите её через <a class="font-bold underline" href="?dev=1">?dev=1</a>.</p>
+
+  <div class="mt-10 grid gap-5 md:grid-cols-2">
+    <div class="card" data-reveal><p class="eyebrow px-6 pt-5">Пусто · история</p>{% url 'wizard' as wiz %}{% include "components/empty_state.html" with icon="archive" title="Здесь пока пусто" text="Сделайте первый разбор — он появится в истории." cta="Новый разбор" cta_url=wiz %}</div>
+    <div class="card" data-reveal style="--i:1"><p class="eyebrow px-6 pt-5">Не хватает данных</p>{% include "components/empty_state.html" with icon="clock" bg="bg-attention-soft" title="Нужно время рождения" text="Без времени не считаем дома и Асцендент. Остальное — точно." cta="Добавить время" cta_url=wiz %}</div>
+    <div class="card" data-reveal><p class="eyebrow px-6 pt-5">Научный слой выключен</p>{% url 'quiz' as quiz %}{% include "components/empty_state.html" with icon="brain" bg="bg-sage-soft" title="Пройдите анкеты" text="≈ 8 минут на каждого — и включится самый надёжный слой отчёта." cta="Пройти анкеты" cta_url=quiz %}</div>
+    <div class="card" data-reveal style="--i:1"><p class="eyebrow px-6 pt-5">Нет интернета</p>{% url 'offline' as off %}{% include "components/empty_state.html" with icon="wifi-off" bg="bg-b-soft" title="Нет соединения" text="Последний отчёт доступен офлайн. Новые расчёты продолжатся, когда сеть вернётся." cta="Открыть экран" cta_url=off %}</div>
+    <div class="card p-6" data-reveal>
+      <p class="eyebrow">Загрузка · скелетон</p>
+      <div class="mt-5 flex items-center gap-4"><div class="skeleton size-16 rounded-full"></div><div class="flex-1 space-y-2"><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-3 w-3/4"></div></div></div>
+      <div class="mt-5 space-y-2"><div class="skeleton h-3"></div><div class="skeleton h-3 w-5/6"></div><div class="skeleton h-3 w-2/3"></div></div>
+    </div>
+    <div class="card p-6" data-reveal style="--i:1">
+      <p class="eyebrow">Ошибка формы</p>
+      <label class="mt-5 block"><span class="label">Дата рождения</span><input class="field" value="31.02.2030" aria-invalid="true"></label>
+      <p class="mt-1.5 flex items-center gap-1 text-xs font-bold text-risk-ink">{% icon 'circle-exclamation-point' 'size-3.5' %}Такой даты нет — проверьте день и месяц</p>
+    </div>
+  </div>
+
+  <h2 class="mt-14 text-xl font-extrabold">Страницы-состояния</h2>
+  <div class="mt-5 flex flex-wrap gap-2">
+    <a class="btn btn-ghost btn-sm" href="{% url 'set_scenario' 'error' %}?next={% url 'report' %}">{% icon 'triangle-exclamation-point' 'size-4' %}Ошибка расчёта</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'set_scenario' 'dates_only' %}?next={% url 'report' %}">{% icon 'gauge' 'size-4' %}Только даты (точность 46%)</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'set_scenario' 'no_psych' %}?next={% url 'report_tab' 'psychology' %}">{% icon 'brain' 'size-4' %}Нет психоданных</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'set_scenario' 'complex' %}?next={% url 'report' %}">{% icon 'zap' 'size-4' %}Сложная пара</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'offline' %}">{% icon 'wifi-off' 'size-4' %}Офлайн</a>
+    <a class="btn btn-ghost btn-sm" href="/this-page-does-not-exist/">{% icon 'map-pin-off' 'size-4' %}404</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'disclaimer' %}">{% icon 'info' 'size-4' %}Дисклеймер</a>
+    <button class="btn btn-ghost btn-sm" onclick="try { localStorage.removeItem('cookie') } catch (e) {}; location.reload()">{% icon 'cookie' 'size-4' %}Показать cookie-баннер</button>
+    <button class="btn btn-ghost btn-sm" onclick="toast('Так выглядит уведомление', 'bell')">{% icon 'bell' 'size-4' %}Тост</button>
+    <button class="btn btn-ghost btn-sm" onclick="demo('Демо-окно', 'Так объясняется действие, которое в прототипе не подключено к бэкенду.')">{% icon 'flask-conical' 'size-4' %}Демо-окно</button>
+  </div>
+</div>
+{% endblock %}

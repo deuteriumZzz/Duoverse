@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}О методе — Duoverse{% endblock %}
+{% block content %}
+<article class="mx-auto max-w-2xl px-4 py-14 sm:px-6">
+  <p class="eyebrow">О методе и честности</p>
+  <h1 class="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl">Как мы считаем и чего не обещаем</h1>
+  <div class="mt-10 space-y-8 leading-relaxed text-ink-2">
+    <section><h2 class="text-xl font-extrabold text-ink">Два слоя — и мы их не смешиваем</h2>
+      <p class="mt-3"><span class="chip layer-symbolic">{% icon 'sparkles' 'size-3.5' %}символический слой</span> — астрология, нумерология и таро. Это не наука. Мы используем их как язык для размышления, считаем детерминированно и показываем, из чего сложился каждый вывод.</p>
+      <p class="mt-3"><span class="chip layer-scientific">{% icon 'flask-conical' 'size-3.5' %}научный слой</span> — психология отношений: Big Five, теория привязанности, исследования Дж. Готтмана. Он всегда показан отдельно.</p></section>
+    <section><h2 class="text-xl font-extrabold text-ink">Чего мы не делаем</h2>
+      <ul class="mt-3 space-y-2">
+        <li class="flex gap-2"><span class="text-risk">{% icon 'x' 'size-4 mt-1' %}</span>Не предсказываем события — болезни, измены, деньги, беременность.</li>
+        <li class="flex gap-2"><span class="text-risk">{% icon 'x' 'size-4 mt-1' %}</span>Не выносим вердиктов вроде «вам нельзя быть вместе».</li>
+        <li class="flex gap-2"><span class="text-risk">{% icon 'x' 'size-4 mt-1' %}</span>Не ставим диагнозов и не заменяем психолога или терапию.</li>
+        <li class="flex gap-2"><span class="text-synergy">{% icon 'check' 'size-4 mt-1' %}</span>Каждое утверждение опирается на расчёт или проверенный блок знаний.</li>
+      </ul></section>
+    <section><h2 class="text-xl font-extrabold text-ink">Как работает ИИ</h2>
+      <p class="mt-3">ИИ ничего не считает. Математика — детерминированный код, тексты — из нашей проверенной базы знаний. ИИ только связывает их в рассказ, а отдельный проверяющий модуль отбрасывает любые факты, которых нет в расчёте.</p></section>
+    <section><h2 class="text-xl font-extrabold text-ink">Ваши данные</h2>
+      <p class="mt-3">Данные рождения и ответы анкет — персональные. Мы храним их зашифрованными, используем только для отчёта и удаляем по первому запросу. Соответствие 152-ФЗ и GDPR.</p></section>
+  </div>
+  <p class="mt-12 rounded-3xl bg-sand p-5 text-sm">Если вы переживаете трудный период в отношениях, лучшая помощь — живой специалист. Отчёт может стать поводом для разговора, но не заменит его.</p>
+</article>
+{% endblock %}

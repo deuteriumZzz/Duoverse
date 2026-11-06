@@ -1,0 +1,16 @@
+{# Re-rendered on every poll; stable ids let htmx settle attributes so transitions play #}
+<div class="flex items-center gap-3">
+  <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand"><i id="gen-bar" class="block h-full rounded-full bg-ink transition-all duration-700 ease-[var(--ease-out)]" style="width: {{ progress }}%"></i></div>
+  <span class="mono w-10 text-right text-sm font-semibold">{{ progress }}%</span>
+</div>
+<ol class="mt-5 space-y-1.5">
+  {% for s in steps %}
+  <li id="gen-step-{{ forloop.counter0 }}" class="flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-500 {% if forloop.counter0 == step %}bg-paper shadow-soft{% elif forloop.counter0 > step %}opacity-40{% endif %}">
+    <span class="grid size-8 shrink-0 place-items-center rounded-full {% if forloop.counter0 < step %}bg-synergy text-white{% elif forloop.counter0 == step %}bg-ink text-milk{% else %}bg-sand text-ink-3{% endif %}">
+      {% if forloop.counter0 < step %}{% icon 'check' 'size-4' %}{% elif forloop.counter0 == step %}<span class="size-4 rounded-full border-2 border-milk/40 border-t-milk spin"></span>{% else %}{% icon s.icon 'size-4' %}{% endif %}
+    </span>
+    <div class="min-w-0"><p class="text-sm font-bold">{{ s.title }}</p>{% if forloop.counter0 <= step %}<p class="mono truncate text-xs text-ink-3">{{ s.detail }}</p>{% endif %}</div>
+  </li>
+  {% endfor %}
+</ol>
+{% if step >= 0 %}<div hx-get="{% url 'generating_status' %}?step={{ step|add:1 }}&r={{ rid }}" hx-trigger="load delay:{% if step == 0 %}700{% else %}850{% endif %}ms" hx-target="#gen" hx-swap="innerHTML"></div>{% endif %}

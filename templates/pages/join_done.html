@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Спасибо — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-md px-4 py-20 text-center sm:px-6">
+  <div class="mx-auto h-20 w-28" data-burst-in="300">{% mark "h-full w-full" merge=True %}</div>
+  <h1 class="mt-8 text-3xl font-extrabold" data-split>Спасибо, {{ person.name }}!</h1>
+  <p class="mt-3 text-ink-2">Ответы сохранены. Когда общий разбор будет готов, его покажет тот, кто вас пригласил. Ваши ответы он не увидит — только выводы о паре.</p>
+  <a href="{% url 'landing' %}" class="btn btn-primary mt-8">Узнать больше о Duoverse</a>
+</div>
+{% endblock %}

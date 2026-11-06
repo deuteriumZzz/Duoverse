@@ -1,0 +1,11 @@
+{# value, size (px), stroke, label #}
+<div class="gauge relative grid shrink-0 place-items-center tone-{{ value|score_tone }}" style="--v: {{ value|default:0 }}; width: {{ size|default:120 }}px; height: {{ size|default:120 }}px">
+  <svg viewBox="0 0 120 120" class="absolute inset-0 -rotate-90" aria-hidden="true">
+    <circle cx="60" cy="60" r="52" fill="none" class="gauge-track" stroke-width="{{ stroke|default:10 }}"/>
+    <circle cx="60" cy="60" r="52" fill="none" class="gauge-value t-stroke" stroke-width="{{ stroke|default:10 }}" pathLength="100"/>
+  </svg>
+  <div class="text-center leading-none">
+    {% if value is not None %}<span class="font-display font-extrabold tabular-nums" style="font-size: calc({{ size|default:120 }}px * .3)" data-count="{{ value }}">{{ value }}</span>{% else %}<span class="font-display text-ink-3" style="font-size: calc({{ size|default:120 }}px * .22)">—</span>{% endif %}
+    {% if label %}<span class="mt-1 block text-[0.68rem] font-bold uppercase tracking-wider text-ink-3">{{ label }}</span>{% endif %}
+  </div>
+</div>

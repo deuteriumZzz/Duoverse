@@ -1,0 +1,58 @@
+[project]
+name = "duoverse"
+version = "0.2.0"
+requires-python = ">=3.12"
+dependencies = [
+  "django~=5.2",
+  "pydantic~=2.9",
+  "django-environ~=0.12",
+  "psycopg[binary]~=3.2",
+  "celery~=5.5",
+  "redis~=6.0",
+  "pyswisseph~=2.10",
+  "gunicorn~=23.0",
+  "cryptography~=46.0",
+  "anthropic~=2.6",
+  "whitenoise~=6.9",
+]
+
+[dependency-groups]
+dev = ["pytest", "pytest-django", "factory-boy", "ruff", "mypy", "django-stubs"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+testpaths = ["tests", "apps"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+extend-exclude = ["node_modules", "static"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ", "SIM"]
+ignore = ["E731"]
+
+[tool.ruff.lint.per-file-ignores]
+# inline SVG artwork and copy tables read better unwrapped
+"apps/web/templatetags/*.py" = ["E501"]
+"apps/web/views.py" = ["E501"]
+# user-facing Russian copy is kept on one line for translators and reviewers
+"apps/*/domain/*.py" = ["E501"]
+"apps/*/infrastructure/*.py" = ["E501"]
+"apps/*/application/*.py" = ["E501"]
+"apps/compatibility/services.py" = ["E501"]
+"apps/core/fields.py" = ["E501"]
+"apps/insights/**/*.py" = ["E501"]
+"scripts/*.py" = ["E501"]
+"tests/*.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+ignore_missing_imports = true
+check_untyped_defs = true
+exclude = ["node_modules", "tests/"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"

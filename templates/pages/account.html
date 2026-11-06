@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Мои данные — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6" x-data="{ lang: 'ru', email: '', linked: false, push: false, consent: { birth: true, psych: true, analytics: false }, del: false, typed: '' }">
+  <h1 class="text-3xl font-extrabold" data-split>Мои данные</h1>
+  <p class="mt-2 text-ink-2">Аккаунт не нужен: всё хранится на этом устройстве, а на сервере — только зашифрованный расчёт для ваших ссылок.</p>
+
+  <section class="sticker mt-8 grid gap-4 bg-sage-soft p-6 sm:grid-cols-3" data-reveal>
+    <div><p class="font-display text-3xl font-extrabold" data-count="{{ stats.reports }}">{{ stats.reports }}</p><p class="text-sm text-ink-2">разборов</p></div>
+    <div><p class="font-display text-3xl font-extrabold" data-count="{{ stats.people }}">{{ stats.people }}</p><p class="text-sm text-ink-2">профилей</p></div>
+    <div><p class="font-display text-3xl font-extrabold">0</p><p class="text-sm text-ink-2">паролей, которые нужно помнить</p></div>
+  </section>
+
+  <section class="card mt-4 p-6" data-reveal>
+    <div class="flex items-start gap-4">
+      <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-b-soft text-b-ink">{% icon 'mail' %}</span>
+      <div class="flex-1">
+        <h2 class="font-extrabold">Открыть на другом устройстве</h2>
+        <p class="mt-1 text-sm text-ink-2">Необязательно. Пришлём ссылку — по ней разборы откроются на новом телефоне. Почта нужна только для этого и для чеков.</p>
+        <form class="mt-4 flex gap-2" x-show="!linked" @submit.prevent="if (/.+@.+\..+/.test(email)) fetch('{% url 'send_magic_link' %}', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }, body: new URLSearchParams({ email }) }).then((r) => r.ok ? (linked = true, toast('Ссылка отправлена', 'mail')) : toast('Сначала сделайте хотя бы один разбор', 'info'))">
+          <input class="field" type="email" x-model="email" placeholder="you@example.com" autocomplete="email" aria-label="Email">
+          <button class="btn btn-primary shrink-0">Прислать</button>
+        </form>
+        <p x-show="linked" x-cloak class="mt-4 flex items-center gap-2 rounded-2xl bg-synergy-soft px-4 py-3 text-sm font-semibold text-synergy-ink">{% icon 'check' 'size-4' %}Ссылка ушла на <span x-text="email"></span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card mt-4 divide-y divide-line p-2" data-reveal>
+    <div class="flex flex-wrap items-center justify-between gap-3 p-4">
+      <h2 class="font-extrabold">Язык</h2>
+      <div class="inline-flex rounded-full bg-sand p-1 text-sm font-bold">
+        <button class="rounded-full px-4 py-2 transition" :class="lang === 'ru' && 'bg-paper shadow-soft'" @click="lang = 'ru'">Русский</button>
+        <button class="rounded-full px-4 py-2 transition" :class="lang === 'en' && 'bg-paper shadow-soft'" @click="lang = 'en'; toast('English — в следующей итерации', 'globe')">English</button>
+      </div>
+    </div>
+    <label class="flex cursor-pointer items-center justify-between gap-4 p-4">
+      <span><span class="block font-bold">Напоминание о вопросе дня</span><span class="text-sm text-ink-3">Уведомление в браузере, вечером</span></span>
+      <span class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition" :class="push ? 'bg-ink' : 'bg-sand-2'"><input type="checkbox" class="sr-only" x-model="push" @change="push && toast('Браузер спросит разрешение (демо)', 'bell')"><i class="ml-1 size-5 rounded-full bg-paper shadow transition duration-300 ease-[var(--ease-spring)]" :class="push && 'translate-x-5'"></i></span>
+    </label>
+  </section>
+
+  <section id="privacy" class="card mt-4 scroll-mt-24 divide-y divide-line p-2" data-reveal>
+    <div class="p-4"><h2 class="font-extrabold">Согласия и приватность</h2><p class="mt-1 text-sm text-ink-3">152-ФЗ и GDPR. Чувствительные поля шифруются.</p></div>
+    <template x-for="[k, t, d] in [['birth', 'Данные рождения', 'Нужны для астрологии, чисел и таро'], ['psych', 'Ответы анкет', 'Нужны для научного слоя; партнёр их не видит'], ['analytics', 'Анонимная аналитика', 'Помогает улучшать продукт, можно выключить']]" :key="k">
+      <label class="flex cursor-pointer items-center justify-between gap-4 p-4">
+        <span><span class="block font-bold" x-text="t"></span><span class="text-sm text-ink-3" x-text="d"></span></span>
+        <span class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition" :class="consent[k] ? 'bg-synergy' : 'bg-sand-2'"><input type="checkbox" class="sr-only" x-model="consent[k]" @change="!consent[k] && k !== 'analytics' && toast('Без этого согласия часть отчёта не посчитается', 'info')"><i class="ml-1 size-5 rounded-full bg-paper shadow transition duration-300 ease-[var(--ease-spring)]" :class="consent[k] && 'translate-x-5'"></i></span>
+      </label>
+    </template>
+    <div class="p-4"><a class="btn btn-ghost btn-sm" href="{% url 'export_data' %}" download>{% icon 'download' 'size-4' %}Скачать мои данные (JSON)</a></div>
+  </section>
+
+  <section class="mt-6 rounded-[var(--radius-card)] border-2 border-risk/30 p-6" data-reveal>
+    <h2 class="flex items-center gap-2 font-extrabold text-risk-ink">{% icon 'shield-exclamation-point' 'size-5' %}Стереть всё</h2>
+    <p class="mt-2 text-sm text-ink-2">Удалим разборы, профили и ответы анкет — на устройстве и на сервере. Ссылки, которыми вы делились, перестанут работать. Это нельзя отменить.</p>
+    <button class="btn btn-sm mt-4 bg-risk-soft text-risk-ink" @click="del = !del">Стереть всё</button>
+    <div x-show="del" x-collapse x-cloak class="mt-4">
+      <label class="block"><span class="label">Введите <b>УДАЛИТЬ</b> для подтверждения</span><input class="field" x-model="typed"></label>
+      <form method="post" action="{% url 'delete_everything' %}">{% csrf_token %}<button class="btn mt-3 bg-risk text-white" :disabled="typed !== 'УДАЛИТЬ'" :class="typed !== 'УДАЛИТЬ' && 'opacity-40'">Стереть навсегда</button></form>
+    </div>
+  </section>
+</div>
+{% endblock %}

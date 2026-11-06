@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Ответили оба — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+  <div class="text-center">
+    <div class="relative mx-auto h-24 w-44">
+      {% for c in "abcdefgh" %}<i class="absolute left-1/2 top-1/2 size-2.5 rounded-full {% cycle 'bg-a' 'bg-b' 'bg-pair' 'bg-sage' %}" style="animation: burst 1.2s var(--ease-out) {{ forloop.counter0 }}0ms both; --a: {% widthratio forloop.counter0 1 45 %}deg"></i>{% endfor %}
+      <div class="absolute inset-0" data-burst-in="300" aria-hidden="true">{% mark "h-full w-full" merge=True %}</div>
+    </div>
+    <span class="chip mt-8 bg-synergy-soft text-synergy-ink pop-in">{% icon 'party-popper' 'size-3.5' %}Ответили оба</span>
+    <h1 class="mt-4 text-3xl font-extrabold sm:text-4xl fade-up">Общий разбор готов</h1>
+    <p class="mx-auto mt-3 max-w-md text-ink-2 fade-up" style="--i:1">Теперь в отчёте — оба взгляда. Точность выросла, а научный слой включён полностью.</p>
+  </div>
+  <div class="mt-10 grid gap-4 sm:grid-cols-2">
+    <div class="card side-a p-5" data-reveal><p class="flex items-center gap-2 font-bold"><span class="grid size-8 place-items-center rounded-full t-fill text-sm text-white">{{ a.name|first }}</span>{{ a.name }}</p><p class="mt-3 text-sm text-ink-3">Вопрос дня:</p><p class="mt-1 font-semibold">«Поездка на Ладогу, когда пошёл дождь, а мы всё равно остались»</p></div>
+    <div class="card side-b p-5" data-reveal style="--i:1"><p class="flex items-center gap-2 font-bold"><span class="grid size-8 place-items-center rounded-full t-fill text-sm text-white">{{ b.name|first }}</span>{{ b.name }}</p><p class="mt-3 text-sm text-ink-3">Вопрос дня:</p><p class="mt-1 font-semibold">«Тот вечер у воды. И как ты смеялась над моей палаткой»</p></div>
+  </div>
+  <div class="card mt-4 flex items-center gap-4 p-5" data-reveal style="--i:2">
+    {% include "components/score_ring.html" with value=r.accuracy.value size=72 stroke=12 %}
+    <div><p class="font-bold">Точность оценки — {{ r.accuracy.value }}%</p><p class="text-sm text-ink-3">было 46% по датам</p></div>
+    <a href="{% url 'report' %}" class="btn btn-primary ml-auto">Открыть {% icon 'arrow-right' 'size-4' %}</a>
+  </div>
+</div>
+<style>@keyframes burst { from { translate: -50% -50%; opacity: 1; } to { translate: calc(-50% + cos(var(--a)) * 120px) calc(-50% + sin(var(--a)) * 80px); opacity: 0; } }</style>
+{% endblock %}

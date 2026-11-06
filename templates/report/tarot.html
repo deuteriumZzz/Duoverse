@@ -1,0 +1,84 @@
+{% extends "report/_layout.html" %}
+{% block report %}
+{% with t=r.tarot %}
+{% if not t.available %}
+<div class="card border-dashed shadow-none" data-reveal>
+  {% url 'wizard' as wiz %}
+  {% include "components/empty_state.html" with icon="layers" bg="bg-pair-soft" title="Нужна дата рождения" text="Аркан считается по дате рождения каждого партнёра. Добавьте даты — и мы покажем арканы и аркан пары." cta="Добавить даты" cta_url=wiz %}
+</div>
+{% else %}
+<section class="card relative overflow-hidden px-4 pb-8 pt-12 sm:px-8"
+  x-data="{ dealt: false, open: [false, false, false], read: null,
+    play() { this.dealt = false; this.open = [false, false, false]; this.read = null;
+      setTimeout(() => this.dealt = true, 1000);
+      [0, 2, 1].forEach((i, k) => setTimeout(() => { this.open[i] = true; if (i === 1) setTimeout(() => burst(this.$refs.pair, 28), 450) }, 1900 + k * 500)) } }"
+  x-init="new IntersectionObserver((e, o) => { if (e[0].isIntersecting) { play(); o.disconnect() } }, { threshold: .35 }).observe($el)">
+  <div class="pointer-events-none absolute left-1/2 top-1/2 size-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-pair-soft blob" aria-hidden="true"></div>
+  <div class="relative flex items-end justify-center gap-3 sm:gap-8">
+    {% for arc, side, caption, w, fx, fr in deal_cards %}
+    <figure class="deal-card flex flex-col items-center gap-3" :class="!dealt && 'stacked'" style="--i: {{ forloop.counter0 }}; --from-x: {{ fx }}; --from-r: {{ fr }}; z-index: {% if side == 'pair' %}3{% else %}1{% endif %}">
+      <button type="button" class="flip side-{{ side }} {{ w }} aspect-[3/5] text-left" :class="open[{{ forloop.counter0 }}] && 'flipped'"
+              @click="open[{{ forloop.counter0 }}] ? (read = read === {{ forloop.counter0 }} ? null : {{ forloop.counter0 }}) : (open[{{ forloop.counter0 }}] = true)"
+              :aria-label="open[{{ forloop.counter0 }}] ? 'Прочитать: {{ arc.name }}' : 'Открыть карту'" {% if side == 'pair' %}x-ref="pair"{% endif %}>
+        <div class="flip-inner">
+          <div class="flip-face sticker grid place-items-center overflow-hidden bg-ink">
+            <div class="absolute inset-2 rounded-[1.2rem] border border-milk/20"></div>
+            <div class="h-12 w-16 opacity-90 sm:h-14 sm:w-20" aria-hidden="true">{% mark "h-full w-full" light=True %}</div>
+          </div>
+          <div class="flip-face flip-back sticker flex flex-col overflow-hidden t-bg">
+            <div class="flex items-center justify-between px-3 pt-3"><span class="mono text-sm font-semibold">{{ arc.number|roman }}</span><span class="mono text-[0.65rem] text-ink-2">{{ arc.number }}/22</span></div>
+            <div class="mx-auto my-auto w-[78%]">{% arcana_art arc.number side %}</div>
+            <div class="border-t-2 border-ink bg-paper px-2 py-2.5 text-center">
+              <p class="font-display text-[0.74rem] font-extrabold leading-tight hyphens-auto [overflow-wrap:anywhere] sm:text-[0.85rem]" lang="ru">{{ arc.name }}</p>
+              <p class="mono mt-0.5 text-[0.62rem] uppercase tracking-wider text-ink-3">{{ arc.keyword }}</p>
+            </div>
+            <div class="absolute inset-0 flex flex-col justify-end bg-paper/95 p-3 backdrop-blur transition duration-500 ease-[var(--ease-spring)]" :class="read === {{ forloop.counter0 }} ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'">
+              <p class="mono text-[0.62rem] uppercase tracking-wider text-ink-3">{{ arc.keyword }}</p>
+              <p class="mt-1 text-[0.78rem] font-semibold leading-snug sm:text-sm">{{ arc.portrait }}</p>
+            </div>
+          </div>
+        </div>
+      </button>
+      <figcaption class="text-sm font-bold text-ink-2 transition duration-500" :class="open[{{ forloop.counter0 }}] ? 'opacity-100' : 'opacity-0'">{{ caption }}</figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  <div class="relative mt-6 flex flex-wrap items-center justify-center gap-2">
+    {% include "components/layer_badge.html" with layer="symbolic" %}
+    <span class="chip tone-{{ t.link_tone }} t-bg t-ink">{% icon 'link' 'size-3.5' %}Связь: {{ t.link_type|lower }}</span>
+    <button class="chip border border-line bg-paper hover:bg-sand draw-icon" @click="play()">{% icon 'shuffle' 'size-3.5' %}Разложить заново</button>
+  </div>
+  <p class="relative mt-3 text-center text-xs text-ink-3">Нажмите на открытую карту, чтобы прочитать её описание</p>
+</section>
+
+<section class="mt-5 grid gap-5 lg:grid-cols-[1.3fr_1fr]">
+  <article class="card p-6 sm:p-8" data-reveal>
+    <h2 class="text-xl font-extrabold">Что говорит аркан-слой</h2>
+    <p class="mt-3 leading-relaxed text-ink-2">{{ t.reading }}</p>
+    <div class="mt-6 grid gap-3 sm:grid-cols-3">
+      <div class="side-a t-bg rounded-2xl p-4"><p class="mono text-xs text-ink-3">{{ t.a.number|roman }} · {{ a.name }}</p><p class="mt-1 text-sm leading-relaxed">{{ t.a.portrait }}</p></div>
+      <div class="side-pair t-bg rounded-2xl p-4"><p class="mono text-xs text-ink-3">{{ t.pair.number|roman }} · пара</p><p class="mt-1 text-sm leading-relaxed">{{ t.pair.portrait }}</p></div>
+      <div class="side-b t-bg rounded-2xl p-4"><p class="mono text-xs text-ink-3">{{ t.b.number|roman }} · {{ b.name }}</p><p class="mt-1 text-sm leading-relaxed">{{ t.b.portrait }}</p></div>
+    </div>
+    <div x-data="{ open: false }" class="mt-5">
+      <button class="flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink" @click="open = !open" :aria-expanded="open"><span class="grid size-6 place-items-center rounded-full bg-sand">{% icon 'circle-question-mark' 'size-3.5' %}</span>Почему так: как считались арканы <span class="transition" :class="open && 'rotate-180'">{% icon 'chevron-down' 'size-4' %}</span></button>
+      <ol x-show="open" x-collapse x-cloak class="mono mt-3 space-y-2 text-xs">{% for step in t.how %}<li class="rounded-xl bg-sand/70 px-3 py-2">{{ step }}</li>{% endfor %}</ol>
+    </div>
+  </article>
+  <article class="card p-6 sm:p-8" data-reveal style="--i:1" x-data="{ done: [] }">
+    <h2 class="text-xl font-extrabold">Вопросы для разговора</h2>
+    <p class="mt-1 text-sm text-ink-3">Таро здесь — повод поговорить, а не предсказание.</p>
+    <ul class="mt-5 space-y-3">
+      {% for q in t.questions %}
+      <li><label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-line p-4 transition hover:border-ink-3" :class="done.includes({{ forloop.counter }}) && 'bg-synergy-soft border-synergy/40'">
+        <input type="checkbox" class="peer sr-only" @change="done.includes({{ forloop.counter }}) ? done = done.filter(x => x !== {{ forloop.counter }}) : (done.push({{ forloop.counter }}), toast('Отмечено как обсуждённое', 'check'))">
+        <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border-2 border-ink-3 transition peer-checked:border-synergy peer-checked:bg-synergy peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-b">{% icon 'check' 'size-3.5' %}</span>
+        <span class="text-sm font-semibold leading-relaxed">{{ q }}</span>
+      </label></li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+{% endif %}
+{% endwith %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Профили — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div><h1 class="text-3xl font-extrabold">Профили</h1><p class="mt-1 text-ink-2">Люди из ваших разборов. Данные рождения и ответы анкет зашифрованы.</p></div>
+    <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm">{% icon 'user-plus' 'size-4' %}Новый разбор</a>
+  </div>
+  {% if profiles %}
+  <div class="mt-8 grid gap-4 sm:grid-cols-2">
+    {% for p in profiles %}
+    <a href="{% url 'profile_edit' p.id %}" class="card lift {% cycle 'side-a' 'side-b' %} group p-5" data-reveal style="--i: {{ forloop.counter }}">
+      <div class="flex items-center gap-3">
+        <span class="grid size-12 place-items-center rounded-2xl t-fill font-display text-lg font-extrabold text-white">{{ p.name|first }}</span>
+        <div class="min-w-0 flex-1"><p class="font-bold">{{ p.name }}</p><p class="text-sm text-ink-3">{{ p.birth_place|default:"место не указано" }}</p></div>
+        <span class="text-ink-3 transition group-hover:translate-x-1 group-hover:text-ink">{% icon 'chevron-right' %}</span>
+      </div>
+      <dl class="mono mt-4 grid grid-cols-3 gap-2 text-xs">
+        <div class="rounded-xl bg-sand/70 p-2"><dt class="text-ink-3">дата</dt><dd class="font-semibold">{{ p.birth_date|date:"d.m.Y" }}</dd></div>
+        <div class="rounded-xl bg-sand/70 p-2"><dt class="text-ink-3">время</dt><dd class="font-semibold {% if not p.birth_time %}text-attention-ink{% endif %}">{{ p.birth_time|time:"H:i"|default:"—" }}</dd></div>
+        <div class="rounded-xl bg-sand/70 p-2"><dt class="text-ink-3">анкеты</dt><dd class="font-semibold">{% if p.answers %}пройдены{% else %}нет{% endif %}</dd></div>
+      </dl>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card mt-8 border-dashed shadow-none">{% url 'wizard' as wiz %}{% include "components/empty_state.html" with icon="users" title="Профилей пока нет" text="Они появятся после первого разбора." cta="Новый разбор" cta_url=wiz %}</div>
+  {% endif %}
+</div>
+{% endblock %}

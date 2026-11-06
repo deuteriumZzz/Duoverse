@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Быстрый старт — Duoverse{% endblock %}
+{% block content %}
+<section class="relative overflow-hidden">
+  <div class="pointer-events-none absolute -left-32 top-10 size-80 rounded-full bg-a-soft blob" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -right-32 bottom-0 size-96 rounded-full bg-b-soft blob" style="animation-delay:-4s" aria-hidden="true"></div>
+  <div class="relative mx-auto max-w-xl px-4 py-14 sm:px-6">
+    <div class="text-center">
+      <span class="chip fade-up bg-paper border border-line">{% icon 'zap' 'size-3.5' %}Быстрый режим · ≈ 30 секунд</span>
+      <h1 class="fade-up mt-5 text-3xl font-extrabold leading-tight sm:text-4xl" style="--i:1">Две даты — и первый результат</h1>
+      <p class="fade-up mx-auto mt-3 max-w-md text-ink-2" style="--i:2">Без регистрации. Потом можно добавить время рождения и анкеты — отчёт станет точнее.</p>
+    </div>
+    <div class="fade-up mt-10" style="--i:3">{% include "components/quick_form.html" %}</div>
+    <p class="mt-6 text-center text-sm text-ink-3">Нужен полный разбор? <a href="{% url 'wizard' %}?mode=extended" class="font-bold text-ink underline">Расширенный режим</a></p>
+  </div>
+</section>
+{% endblock %}

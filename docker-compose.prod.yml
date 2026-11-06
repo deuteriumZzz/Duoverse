@@ -1,0 +1,40 @@
+# One-server production: Caddy (automatic HTTPS) → gunicorn, Celery worker, Postgres, Redis.
+#   cp .env.example .env   # fill in the "production" block
+#   docker compose -f docker-compose.prod.yml up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: duoverse, POSTGRES_USER: duoverse, POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}" }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U duoverse"], interval: 5s, retries: 10 }
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment: &env
+      DATABASE_URL: postgres://duoverse:${POSTGRES_PASSWORD}@db:5432/duoverse
+      CACHE_URL: redis://redis:6379/1
+      CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on: { db: { condition: service_healthy }, redis: { condition: service_started } }
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment: { <<: *env, RUN_MIGRATIONS: "0" }
+    command: celery -A config worker -l info --concurrency 2
+    healthcheck: { disable: true }
+    depends_on: [web]
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment: { DOMAIN: "${DOMAIN:?set DOMAIN in .env}" }
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddy_data:/data"]
+    depends_on: [web]
+volumes:
+  pgdata:
+  caddy_data:

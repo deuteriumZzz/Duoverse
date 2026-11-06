@@ -1,0 +1,1001 @@
+[
+ {
+  "key": "CAT:passion:synergy",
+  "domain": "pair",
+  "text": "Притяжение лёгкое и устойчивое — интерес друг к другу не требует подогрева.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:passion:neutral",
+  "domain": "pair",
+  "text": "Притяжение есть, но оно разгорается от новизны и совместных впечатлений.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:passion:attention",
+  "domain": "pair",
+  "text": "Желания и темп близости у вас разные — об этом стоит говорить, а не угадывать.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:passion:risk",
+  "domain": "pair",
+  "text": "Близость легко становится полем борьбы: один хочет, другой отступает.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:emotions:synergy",
+  "domain": "pair",
+  "text": "Вы хорошо считываете настроение друг друга и умеете утешать.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:emotions:neutral",
+  "domain": "pair",
+  "text": "Чувства понятны, но иногда нужно прямо спросить «как ты?».",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:emotions:attention",
+  "domain": "pair",
+  "text": "Эмоции яркие, а ранить друг друга — легко. Нужна бережность.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:emotions:risk",
+  "domain": "pair",
+  "text": "Один тянется к близости, другой закрывается — цикл, который сам не разомкнётся.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:communication:synergy",
+  "domain": "pair",
+  "text": "Вам интересно разговаривать — мысли подхватываются с полуслова.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:communication:neutral",
+  "domain": "pair",
+  "text": "Договариваетесь, хотя иногда говорите на разных языках.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:communication:attention",
+  "domain": "pair",
+  "text": "Разный темп разговора: один хочет обсудить сразу, другому нужно время.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:communication:risk",
+  "domain": "pair",
+  "text": "Спор быстро превращается в обвинения — слышать друг друга сложно.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:values:synergy",
+  "domain": "pair",
+  "text": "Одинаково понимаете, что важно в жизни.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:values:neutral",
+  "domain": "pair",
+  "text": "В главном совпадаете, в деталях — договариваетесь.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:values:attention",
+  "domain": "pair",
+  "text": "Приоритеты расходятся заметнее, чем кажется на старте.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:values:risk",
+  "domain": "pair",
+  "text": "Разные представления о будущем — без разговора это будет копиться.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:conflict:synergy",
+  "domain": "pair",
+  "text": "Ссоритесь редко, а мириться умеете быстро.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:conflict:neutral",
+  "domain": "pair",
+  "text": "Ссоры бывают, но вы находите путь назад.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:conflict:attention",
+  "domain": "pair",
+  "text": "Конфликт затягивается: кто-то давит, кто-то уходит в себя.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:conflict:risk",
+  "domain": "pair",
+  "text": "Примирение даётся тяжело, обиды копятся.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:home:synergy",
+  "domain": "pair",
+  "text": "Быт складывается сам: роли распределяются естественно.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:home:neutral",
+  "domain": "pair",
+  "text": "С бытом справляетесь, если заранее договориться о ролях.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:home:attention",
+  "domain": "pair",
+  "text": "Разные представления о порядке и ритме дня.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "CAT:home:risk",
+  "domain": "pair",
+  "text": "Быт легко становится главным поводом для споров.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:passion:good",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Притяжение без игр",
+   "text": "{a} и {b} интересны друг другу без усилий: здесь у вас запас прочности."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:passion:hard",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разный ритм близости",
+   "text": "Желания {a_gen} и {b_gen} не всегда совпадают по времени. Это не про «любит меньше», а про разный темп."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:emotions:good",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Безопасная база",
+   "text": "Вы умеете быть опорой друг другу — {a} и {b} возвращаются к близости даже после трудных дней."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:emotions:hard",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Чувства на разной громкости",
+   "text": "Один переживает ярко и вслух, другой — тихо и внутри. Без договорённости это выглядит как холод или как драма."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:communication:good",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разговор, который хочется продолжать",
+   "text": "У {a_gen} и {b_gen} много общих тем, и мысли друг друга подхватываются легко."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:communication:hard",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разная скорость слов",
+   "text": "{a} и {b} по-разному обрабатывают сложные разговоры: кому-то нужно сразу, кому-то — паузу."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:values:good",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Общий компас",
+   "text": "В главном — что важно и зачем — {a} и {b} смотрят в одну сторону."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:values:hard",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разные карты будущего",
+   "text": "Планы и приоритеты {a_gen} и {b_gen} расходятся. Проговаривайте ожидания раньше, чем придётся решать."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:conflict:good",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Умеете мириться",
+   "text": "Даже когда спорите, вы находите путь назад — это главный прогностический признак устойчивой пары."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:conflict:hard",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Ссора, которая затягивается",
+   "text": "В споре включаются защитные реакции: давление с одной стороны, молчание — с другой."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:home:good",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Быт без войны",
+   "text": "Порядок и ритм дня у {a_gen} и {b_gen} складываются почти сами."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "INSIGHT:home:hard",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разное «нормально» дома",
+   "text": "У {a_gen} и {b_gen} разные представления о порядке. Это решается правилами, а не перевоспитанием."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "RISK:passion",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Близость как поле спора",
+   "note": "Желания расходятся, и это начинают принимать на свой счёт.",
+   "mitigation": "Раз в неделю — честный разговор «что мне сейчас хочется» без оценок."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "RISK:emotions",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Цикл «догоняю — убегаю»",
+   "note": "Тревога одного усиливает дистанцию другого.",
+   "mitigation": "Договоритесь о сигнале паузы и времени возвращения к разговору."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "RISK:communication",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Спор на разных скоростях",
+   "note": "Один дожимает, другой замолкает.",
+   "mitigation": "Правило паузы 20 минут и возврат к теме в договорённое время."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "RISK:values",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Недосказанные ожидания",
+   "note": "Планы строятся молча, а партнёр узнаёт последним.",
+   "mitigation": "Ежемесячный разговор «наши планы»."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "RISK:conflict",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Эскалация и затяжное примирение",
+   "note": "Критика → защита → молчание, обиды копятся.",
+   "mitigation": "Начинать с «я чувствую…», а не с «ты всегда…»; ритуал примирения."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "RISK:home",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Быт как главный повод",
+   "note": "Мелочи копятся и выливаются в большие ссоры.",
+   "mitigation": "Распределить зоны ответственности по сильным сторонам."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:passion",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Новое вместе",
+   "cadence": "раз в неделю",
+   "duration": "1–2 часа",
+   "why": "Новизна поддерживает притяжение лучше, чем привычные сценарии."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Вечерний check-in",
+   "cadence": "каждый день",
+   "duration": "10 минут",
+   "why": "Короткое «как ты сегодня» снимает накопленное до того, как оно станет ссорой."
+  },
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "HABIT:communication",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Правило паузы",
+   "cadence": "в споре",
+   "duration": "20 минут",
+   "why": "Пауза снижает «затопление» эмоциями и помогает вернуться к разговору спокойно."
+  },
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "HABIT:values",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разговор «наши планы»",
+   "cadence": "раз в месяц",
+   "duration": "30 минут",
+   "why": "Сверка ожиданий снимает недосказанность раньше, чем она станет обидой."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflict",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Мягкий старт",
+   "cadence": "в каждом споре",
+   "duration": "1 фраза",
+   "why": "Как разговор начинается, так он обычно и заканчивается: начинайте с себя и конкретной ситуации."
+  },
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "HABIT:home",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Три благодарности",
+   "cadence": "раз в неделю",
+   "duration": "5 минут",
+   "why": "Конкретная благодарность за мелочи быта держит баланс позитивного и негативного."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "DAILY:passion",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что из того, что мы делали вместе впервые, ты хотел(а) бы повторить?",
+   "habit": "Предложите партнёру одно маленькое «впервые» на эту неделю."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "DAILY:emotions",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда ты в последний раз почувствовал(а), что я рядом, даже без слов?",
+   "habit": "Спросите «как ты на самом деле?» и просто выслушайте, не советуя."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "DAILY:communication",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая одна фраза помогла бы тебе почувствовать себя услышанным(ой) в споре?",
+   "habit": "Начните сегодня один разговор с «я чувствую…» вместо «ты опять…»."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "DAILY:values",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой момент этой недели ты хотел(а) бы прожить ещё раз вместе со мной?",
+   "habit": "Назовите друг другу одну вещь, ради которой стоит этот год."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "DAILY:conflict",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что помогает тебе остыть после ссоры быстрее всего?",
+   "habit": "Договоритесь о своём «стоп-слове» для паузы в споре."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "DAILY:home",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое домашнее дело ты с радостью отдал(а) бы мне — а какое забрал(а) бы себе?",
+   "habit": "Скажите одну конкретную благодарность — не «за всё», а за что-то сегодняшнее."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:attraction",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Притяжение и близость",
+   "icon": "flame",
+   "cats": [
+    "passion"
+   ],
+   "intro": "Как {a} и {b} тянутся друг к другу и что поддерживает интерес.",
+   "strong": "Притяжение — ваша сильная сторона: интерес держится без специальных усилий. Берегите его новизной — привычка гасит даже яркое.",
+   "weak": "Темп и форма близости у вас разные. Это не проблема «любви», а вопрос договорённости: говорите о желаниях прямо, без намёков.",
+   "do": "Раз в неделю — совместное «впервые»: место, занятие, маршрут.",
+   "question": "Когда ты чувствуешь себя самым желанным(ой) рядом со мной?",
+   "exercise": "Неделя «впервые»: каждый предлагает одно новое совместное занятие — и вы делаете оба."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:emotions",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Эмоции и поддержка",
+   "icon": "heart",
+   "cats": [
+    "emotions"
+   ],
+   "intro": "Как вы утешаете друг друга и что может ранить.",
+   "strong": "Вы умеете быть опорой: считываете настроение и знаете, как поддержать. Это то, на чём пара держится в трудные времена.",
+   "weak": "Чувства у вас звучат на разной громкости. Одному важно проговорить, другому — побыть в тишине. Спрашивайте, какая поддержка нужна сейчас.",
+   "do": "Вечерний check-in на 10 минут: «как ты сегодня — на самом деле?».",
+   "question": "Как мне понять, что тебе нужна поддержка, если ты не говоришь об этом?",
+   "exercise": "10 минут вечером: каждый называет одно чувство дня одним словом и одну вещь, которая помогла бы завтра."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:talk",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Общение",
+   "icon": "message-circle",
+   "cats": [
+    "communication"
+   ],
+   "intro": "Как вы говорите, спорите и что остаётся несказанным.",
+   "strong": "Разговаривать вам легко и интересно — это редкий ресурс. Используйте его и для сложных тем, не только для приятных.",
+   "weak": "Разный темп разговора — главная зона договорённостей. Один думает вслух, другой — молча. Пауза — не равнодушие, напор — не давление.",
+   "do": "Фраза-пауза «дай мне 20 минут, я вернусь» — и обязательно возвращайтесь.",
+   "question": "Как ты понимаешь, что я тебя действительно услышал(а)?",
+   "exercise": "Правило 3 минут: один говорит, другой только слушает и пересказывает своими словами, потом меняетесь."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:conflicts",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Конфликты и примирение",
+   "icon": "shield-check",
+   "cats": [
+    "conflict"
+   ],
+   "intro": "Что запускает ссоры и как вы находите путь назад.",
+   "strong": "Ссоры у вас не разрушают: вы умеете остановиться и помириться. Это сильнейший признак устойчивой пары.",
+   "weak": "В споре включаются защитные реакции. Начинайте с себя и конкретной ситуации — так разговор не превращается в суд.",
+   "do": "Ритуал примирения: шутка, объятие или фраза, о которой вы договорились заранее.",
+   "question": "Что я делаю в ссоре такого, что тебе особенно трудно?",
+   "exercise": "Разбор ссоры через сутки: что я почувствовал(а), что мне было нужно, что я сделаю иначе."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:home",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Быт и ритм жизни",
+   "icon": "house",
+   "cats": [
+    "home"
+   ],
+   "intro": "Порядок, дела, ритм дня.",
+   "strong": "Быт у вас складывается почти сам: роли распределяются естественно, и это даёт много спокойствия.",
+   "weak": "Разное «нормально» дома — частый повод для мелких ссор. Решается не перевоспитанием, а правилами, о которых вы договорились.",
+   "do": "Распределите дела по сильным сторонам, а не поровну.",
+   "question": "Какое дело по дому даётся тебе тяжелее всего?",
+   "exercise": "Карта дел: выпишите все домашние задачи и разделите по принципу «кому легче», а не «поровну»."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:money",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Деньги",
+   "icon": "gem",
+   "cats": [
+    "values",
+    "home"
+   ],
+   "intro": "Отношение к тратам, накоплениям и общим целям.",
+   "strong": "Похожие приоритеты делают денежные решения спокойными. Общие цели вас скорее объединяют.",
+   "weak": "Отношение к деньгам у вас может отличаться: кому-то важна безопасность, кому-то — свобода. Договоритесь о правилах заранее.",
+   "do": "Общий бюджет на цели + личные деньги без отчёта.",
+   "question": "Что для тебя значит «деньги — это безопасность» или «деньги — это свобода»?",
+   "exercise": "Три корзины: общее на цели, общее на жизнь, личное без отчёта — договоритесь о процентах."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:plans",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Ценности и планы",
+   "icon": "compass",
+   "cats": [
+    "values"
+   ],
+   "intro": "Дети, переезды, карьера — что важно в жизни.",
+   "strong": "В главном вы смотрите в одну сторону — на этом можно строить долгие планы.",
+   "weak": "Картины будущего различаются сильнее, чем кажется. Обсуждайте их раньше, чем придётся принимать решения.",
+   "do": "Раз в месяц — разговор «наши планы на ближайший год».",
+   "question": "Каким ты видишь наш обычный день через пять лет?",
+   "exercise": "Письмо в будущее: каждый пишет «наш обычный день через 5 лет», потом читаете вслух."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:people",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Друзья и семьи",
+   "icon": "users",
+   "cats": [
+    "communication",
+    "emotions"
+   ],
+   "intro": "Социальность, родители, личное пространство.",
+   "strong": "Вам комфортно в общих компаниях, и вы умеете сохранять пространство каждого.",
+   "weak": "Потребность в людях у вас разная: одному нужны встречи, другому — тишина. Договоритесь о балансе выходов и вечеров вдвоём.",
+   "do": "Планируйте неделю так, чтобы в ней были и встречи, и вечер только для вас.",
+   "question": "Сколько времени с другими людьми тебе нужно, чтобы чувствовать себя хорошо?",
+   "exercise": "Календарь недели: отметьте вечера для двоих и вечера для друзей — и соблюдайте оба."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:growth",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Рост вместе",
+   "icon": "sprout",
+   "cats": [
+    "values",
+    "passion"
+   ],
+   "intro": "Чему вы учите друг друга и что можете сделать вместе.",
+   "strong": "Вы вдохновляете друг друга — совместные проекты у вас получаются.",
+   "weak": "Вы растёте в разные стороны и с разной скоростью — это нормально, если поддерживать интерес к миру друг друга.",
+   "do": "Одно общее дело в квартал — от поездки до проекта.",
+   "question": "Чему ты у меня научился(лась) за время, что мы вместе?",
+   "exercise": "Квартальный проект: одно общее дело на три месяца — поездка, курс, ремонт, ребёнок-проект."
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:spark",
+  "domain": "pair",
+  "text": "Искра приносит в отношения импульс: новые идеи, решимость, первый шаг. Ей важно движение — застой ощущается как угасание.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:fire",
+  "domain": "pair",
+  "text": "Костёр — тепло, вокруг которого собираются люди. Он щедр на внимание и верен, но ему нужно, чтобы тепло возвращалось.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:star",
+  "domain": "pair",
+  "text": "Звезда вдохновляет и задаёт высокую планку. Рядом с ней хочется расти, но ей самой важно, чтобы её мечты принимали всерьёз.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:compass",
+  "domain": "pair",
+  "text": "Компас задаёт направление: план, порядок, понятные шаги. Ему важна ясность — неопределённость его тревожит.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:mountain",
+  "domain": "pair",
+  "text": "Гора — опора. Её трудно сдвинуть, и это даёт паре устойчивость; но перемены ей даются медленнее.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:garden",
+  "domain": "pair",
+  "text": "Сад растит и заботится — о людях, доме, отношениях. Ему важно видеть, что забота приносит плоды.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:bridge",
+  "domain": "pair",
+  "text": "Мост соединяет и договаривается. Он чувствует баланс и избегает острых углов — иногда в ущерб своим желаниям.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:lighthouse",
+  "domain": "pair",
+  "text": "Маяк видит дальше и светит другому, особенно в шторм. Ему важна свобода и пространство для своих идей.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:wind",
+  "domain": "pair",
+  "text": "Ветер приносит перемены, лёгкость и новые знакомства. Ему тесно в рутине, зато с ним не бывает скучно.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:river",
+  "domain": "pair",
+  "text": "Река чувствует течение: настроения, недосказанное, атмосферу. Её сила — в эмпатии, уязвимость — в обидах.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:harbor",
+  "domain": "pair",
+  "text": "Гавань даёт безопасность: рядом с ней можно выдохнуть. Ей важна верность и предсказуемость.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "ROLE:sail",
+  "domain": "pair",
+  "text": "Парус ловит ветер перемен — легко подстраивается и чувствует, куда двигаться. Ему нужна свобода и доверие.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SUMMARY:resonance",
+  "domain": "pair",
+  "text": "{a} и {b} — пара одной стихии: вы быстро понимаете друг друга и усиливаете общие сильные стороны. Ярче всего у вас «{strong}». Будьте внимательны к сфере «{weak}» — общие слепые зоны у похожих людей тоже общие.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SUMMARY:complement",
+  "domain": "pair",
+  "text": "{a} и {b} дополняют друг друга: то, чего не хватает одному, есть у другого. Ваша опора — «{strong}». Зона договорённостей — «{weak}»: различия здесь не мешают, если о них говорить.",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SUMMARY:contrast",
+  "domain": "pair",
+  "text": "{a} и {b} — пара противоположностей: сильное притяжение и много поводов договариваться. Особенно хорошо у вас «{strong}». Больше всего внимания потребует «{weak}».",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SUMMARY:friction",
+  "domain": "pair",
+  "text": "{a} и {b} находят общий ритм не сразу — зато он получается вашим собственным. Сильная сторона — «{strong}». Место для роста — «{weak}».",
+  "data": {},
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "PSY:attachment:secure",
+  "domain": "psychology",
+  "text": "Надёжная привязанность у обоих — лучший прогностический фактор устойчивой пары: вы доверяете и возвращаетесь к близости после ссор.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "PSY:attachment:mixed",
+  "domain": "psychology",
+  "text": "Один из вас надёжно привязан и стабилизирует пару. Второму важно чаще слышать подтверждение близости — это не слабость, а потребность.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "PSY:attachment:pursue",
+  "domain": "psychology",
+  "text": "Сочетание тревожного и избегающего стилей часто создаёт цикл «догоняю — убегаю». Это хорошо изученный паттерн, с ним успешно работают в парной терапии.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "PSY:attachment:insecure",
+  "domain": "psychology",
+  "text": "У обоих небезопасные стили привязанности: важно проговаривать потребности словами, не надеясь, что партнёр догадается.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "PSY:horseman:criticism",
+  "domain": "psychology",
+  "text": "Жалобы звучат как оценка личности («ты всегда…»), а не как просьба.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "PSY:horseman:contempt",
+  "domain": "psychology",
+  "text": "Сарказм и пренебрежение — самый тревожный сигнал в исследованиях Готтмана. Его важно замечать рано.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "PSY:horseman:defensiveness",
+  "domain": "psychology",
+  "text": "На замечание звучит встречная претензия вместо того, чтобы услышать.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "PSY:horseman:stonewalling",
+  "domain": "psychology",
+  "text": "Под нагрузкой кто-то закрывается и замолкает — нужен понятный сигнал паузы.",
+  "data": {},
+  "evidence_level": "scientific",
+  "status": "draft"
+ },
+ {
+  "key": "SPHERE:sex",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Секс и телесность",
+   "icon": "flame",
+   "cats": [
+    "passion"
+   ],
+   "intro": "Как у {a_gen} и {b_gen} устроены желание, инициатива и телесная близость.",
+   "strong": "Телесная близость у вас складывается естественно: желания и ритм во многом совпадают, и это поддерживает всю пару. Важно не превращать это в рутину и продолжать говорить о том, что нравится.",
+   "weak": "Желание и ритм близости у вас разные: кто-то хочет чаще или иначе, кто-то — медленнее и с большей опорой на чувства. Это не мера любви, а разный «язык тела» — о нём нужно говорить словами, без обид и угадываний.",
+   "do": "Раз в неделю — разговор «что мне сейчас хочется» без оценок и с правом сказать «нет».",
+   "question": "Что помогает тебе почувствовать желание — а что его гасит?",
+   "exercise": "Карточки «да / может быть / нет»: каждый отдельно отмечает, что хочет попробовать, потом обсуждаете только совпадения.",
+   "adult": true
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:trust",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Ревность и доверие",
+   "icon": "shield-check",
+   "cats": [
+    "emotions"
+   ],
+   "intro": "Что даёт {a_dat} и {b_dat} чувство безопасности и где включается ревность.",
+   "strong": "Доверие у вас держится легко: вы не ищете подвоха и даёте друг другу свободу. Это основа, на которой можно спокойно обсуждать и трудное.",
+   "weak": "Здесь легко включается ревность или подозрение: кто-то острее реагирует на неопределённость, кто-то — на контроль. Помогают прозрачные договорённости, а не проверки.",
+   "do": "Договоритесь, что для каждого значит «быть на связи» и что точно не нужно делать за спиной.",
+   "question": "В какой момент ты чувствуешь, что можешь мне полностью доверять?",
+   "exercise": "Список «мне спокойно, когда…»: по 5 пунктов от каждого — выберите по два, которые выполнимы уже на этой неделе.",
+   "adult": false
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:power",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Власть и контроль",
+   "icon": "scale",
+   "cats": [
+    "conflict"
+   ],
+   "intro": "Кто у {a_gen} и {b_gen} принимает решения и как вы делите влияние.",
+   "strong": "Влияние у вас распределено естественно: каждый ведёт в своей сфере, и это не становится соревнованием.",
+   "weak": "Кто главный — у вас тема с напряжением: решения легко превращаются в борьбу, а забота — в контроль. Помогает явно разделить зоны решений.",
+   "do": "Разделите зоны: в каких вопросах решает один, в каких другой, а какие — только вместе.",
+   "question": "В каких вопросах тебе важно решать самому(ой), а в каких ты с радостью доверишь мне?",
+   "exercise": "Неделя наоборот: каждый отдаёт другому одно решение, которое обычно принимает сам, и наблюдает, что почувствовал.",
+   "adult": false
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ },
+ {
+  "key": "SPHERE:shadows",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Тени пары",
+   "icon": "moon",
+   "cats": [
+    "conflict"
+   ],
+   "intro": "Какие старые страхи и защиты {a_gen} и {b_gen} задевают друг в друге.",
+   "strong": "Ваши «тени» скорее уравновешивают друг друга: рядом с партнёром старые страхи звучат тише, и это настоящая ценность пары.",
+   "weak": "Вы умеете задевать самые уязвимые места друг друга — не потому, что хотите ранить, а потому, что ваши защиты сцепляются: страх одного запускает защиту другого. Если назвать этот механизм вслух, он теряет силу.",
+   "do": "Назовите свой «пусковой крючок»: фразу или ситуацию, после которой вы перестаёте быть собой — и договоритесь, как будете её распознавать.",
+   "question": "Чего ты боишься в наших отношениях больше всего — и что помогает тебе этот страх успокоить?",
+   "exercise": "Письмо своей тени: каждый пишет, как его страх ведёт себя в ссоре, и читает партнёру — без обсуждения, просто выслушать.",
+   "adult": false
+  },
+  "evidence_level": "symbolic",
+  "status": "published"
+ }
+]

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Тарифы — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+  <div class="text-center">
+    <span class="chip bg-synergy-soft text-synergy-ink fade-up">{% icon 'badge-check' 'size-3.5' %}Без автосписаний и скрытых условий</span>
+    <h1 class="mt-5 text-3xl font-extrabold leading-tight sm:text-5xl fade-up" style="--i:1">Платите только за глубину</h1>
+    <p class="mx-auto mt-4 max-w-lg text-ink-2 fade-up" style="--i:2">Быстрый отчёт — бесплатно и навсегда. Глубокий разбор — разово, без подписки.</p>
+  </div>
+  <div class="mt-12 grid items-stretch gap-5 lg:grid-cols-3">
+    {% for plan in plans %}
+    <article class="{% if plan.featured %}sticker bg-pair-soft{% else %}card{% endif %} relative flex flex-col p-7" data-reveal style="--i: {{ forloop.counter }}">
+      {% if plan.featured %}<span class="chip absolute -top-3.5 left-7 border-2 border-ink bg-paper">{% icon 'star' 'size-3.5' %}Чаще всего выбирают</span>{% endif %}
+      <h2 class="font-display text-xl font-extrabold">{{ plan.name }}</h2>
+      <p class="mt-1 text-sm text-ink-2">{{ plan.note }}</p>
+      <p class="mt-6"><span class="font-display text-4xl font-extrabold">{{ plan.price }}</span> <span class="text-sm text-ink-3">{{ plan.per }}</span></p>
+      <ul class="mt-6 flex-1 space-y-2.5 text-sm">
+        {% for f in plan.features %}<li class="flex items-start gap-2.5"><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3' %}</span>{{ f }}</li>{% endfor %}
+      </ul>
+      {% if plan.free %}<a href="{% url 'start' %}" class="btn btn-ghost mt-8">{{ plan.cta }}</a>
+      {% else %}<button class="btn {% if plan.featured %}btn-primary{% else %}btn-ghost{% endif %} mt-8" onclick="demo('Оплата — демо', 'В прототипе оплата не подключена. В рабочей версии вы увидите итоговую цену и чек до оплаты, без автопродления.')">{{ plan.cta }}</button>{% endif %}
+      <p class="mt-3 text-center text-xs text-ink-3">{{ plan.small }}</p>
+    </article>
+    {% endfor %}
+  </div>
+
+  <div class="card mt-12 overflow-x-auto p-2" data-reveal>
+    <table class="w-full min-w-[34rem] text-left text-sm">
+      <thead><tr class="text-ink-3"><th class="p-4 font-bold">Что входит</th><th class="p-4 font-bold">Бесплатно</th><th class="p-4 font-bold">Глубокий разбор</th><th class="p-4 font-bold">Пара+</th></tr></thead>
+      <tbody class="divide-y divide-line">
+        {% for row in compare %}<tr><td class="p-4 font-semibold">{{ row.0 }}</td>{% for v in row.1 %}<td class="p-4">{% if v == True %}<span class="text-synergy">{% icon 'check' 'size-4' %}</span>{% elif v == False %}<span class="text-ink-3">—</span>{% else %}{{ v }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-6 text-center text-sm text-ink-3">Возврат в течение 14 дней, если разбор не открывали. Отменить Пара+ — одна кнопка в настройках.</p>
+</div>
+{% endblock %}

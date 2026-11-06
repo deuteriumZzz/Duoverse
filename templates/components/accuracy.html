@@ -1,0 +1,22 @@
+{# How complete our picture of the pair is — and what to add to sharpen it. Not a probability of success. #}
+<section class="card p-5 sm:p-6" data-reveal>
+  <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+    <div>
+      <p class="eyebrow">Точность разбора</p>
+      <p class="mt-1 font-display text-4xl font-extrabold leading-none"><span data-count="{{ r.accuracy.value }}">{{ r.accuracy.value }}</span><span class="text-lg text-ink-3">%</span></p>
+    </div>
+    <p class="max-w-md text-sm leading-snug text-ink-2">Насколько полно мы вас знаем. Это не шанс на успех пары: чем больше данных, тем конкретнее и точнее разбор.</p>
+  </div>
+  <div class="mt-4 h-2.5 overflow-hidden rounded-full bg-sand" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ r.accuracy.value }}" aria-label="Точность разбора">
+    <div class="h-full w-0 rounded-full bg-gradient-to-r from-attention via-pair to-synergy transition-[width] duration-[1600ms] ease-[var(--ease-spring)]" x-data x-init="setTimeout(() => $el.style.width = '{{ r.accuracy.value }}%', 250)"></div>
+  </div>
+  <div class="mt-4 grid gap-2 sm:grid-cols-2 {% if not compact %}lg:grid-cols-4{% endif %}">
+    {% for done, title, hint, url in depth_items %}
+    <div class="flex items-start gap-2 rounded-2xl p-3 {% if done %}bg-synergy-soft{% else %}border border-dashed border-attention/50{% endif %}">
+      <span class="mt-0.5 {% if done %}text-synergy-ink{% else %}text-attention-ink{% endif %}">{% if done %}{% icon 'check' 'size-4' %}{% else %}{% icon 'plus' 'size-4' %}{% endif %}</span>
+      <div class="text-xs leading-snug"><p class="font-bold text-ink">{{ title }}</p><p class="text-ink-3">{{ hint }}</p>
+        {% if not done and url %}<a href="{{ url }}" class="mt-1 inline-block font-bold text-attention-ink underline">Сделать точнее</a>{% endif %}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>

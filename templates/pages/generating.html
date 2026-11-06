@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Считаем — Duoverse{% endblock %}
+{% block header %}{% endblock %}{% block footer %}{% endblock %}
+{% block content %}
+<div class="relative grid min-h-dvh place-items-center overflow-hidden px-4 py-12">
+  <div class="pointer-events-none absolute left-1/2 top-1/3 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-pair-soft/70 blob" aria-hidden="true"></div>
+  <div class="relative w-full max-w-lg">
+    <div class="pointer-events-none absolute left-1/2 top-20 size-0" aria-hidden="true"
+         x-data x-init="const c = ['#f2865c', '#5470ee', '#f4c84f', '#7fae8e', '#b9a7f2'];
+           for (let k = 0; k < 36; k++) { const i = document.createElement('i'); const a = Math.random() * 6.283, d = 160 + Math.random() * 260;
+             i.className = 'particle'; i.style.cssText = `--c:${c[k % 5]};--x:${Math.cos(a) * d}px;--y:${Math.sin(a) * d}px;--d:${1.8 + Math.random() * 1.6}s;--delay:${Math.random() * 2.4}s`; $el.append(i) }"></div>
+    <div class="relative mx-auto grid size-40 place-items-center">
+      <span class="absolute inset-0 rounded-full border-2 border-a/40 pulse-ring"></span>
+      <span class="absolute inset-0 rounded-full border-2 border-b/40 pulse-ring" style="animation-delay: .9s"></span>
+      <div class="absolute inset-2 orbit" style="animation-duration: 8s">
+        <span class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 grid size-8 place-items-center rounded-full border border-line bg-paper shadow-soft">{% icon 'orbit' 'size-4' %}</span>
+        <span class="absolute left-full top-1/2 -translate-x-1/2 -translate-y-1/2 grid size-8 place-items-center rounded-full border border-line bg-paper shadow-soft">{% icon 'brain' 'size-4' %}</span>
+        <span class="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 grid size-8 place-items-center rounded-full border border-line bg-paper shadow-soft">{% icon 'hash' 'size-4' %}</span>
+        <span class="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 grid size-8 place-items-center rounded-full border border-line bg-paper shadow-soft">{% icon 'layers' 'size-4' %}</span>
+      </div>
+      <div class="h-16 w-24" aria-hidden="true">{% mark "h-full w-full" merge=True %}</div>
+    </div>
+    <h1 class="mt-10 text-center text-2xl font-extrabold sm:text-3xl" data-split>Собираем вашу <span class="marker">мультивселенную</span></h1>
+
+    <div id="gen" class="mt-8" hx-get="{% url 'generating_status' %}?step=0&r={{ rid }}" hx-trigger="load delay:400ms" hx-swap="innerHTML" aria-live="polite">
+      {% include "partials/generation_steps.html" with step=-1 progress=0 %}
+    </div>
+
+    <div class="card mt-6 p-4 text-sm leading-relaxed text-ink-2" x-data="{ i: 0, facts: [
+        'По исследованиям Готтмана, в устойчивых парах на одно негативное взаимодействие приходится около пяти позитивных.',
+        'Без времени рождения мы честно не считаем дома и Асцендент — и покажем, что не учтено.',
+        'Каждый вывод в отчёте ссылается на конкретный аспект, число или шкалу.',
+        'Психология — научный слой, поэтому она всегда показана отдельно от символических.' ] }"
+         x-init="setInterval(() => i = (i + 1) % facts.length, 3600)">
+      <p class="eyebrow mb-1.5 flex items-center gap-1.5">{% icon 'lightbulb' 'size-3.5' %}Пока ждём</p>
+      <template x-for="(f, k) in facts" :key="k"><p x-show="i === k" x-transition:enter="transition duration-500" x-transition:enter-start="opacity-0 translate-y-2" x-text="f"></p></template>
+    </div>
+    <p class="mt-6 text-center"><a href="{% url 'report' %}" class="text-sm font-bold text-ink-3 underline hover:text-ink">Пропустить анимацию</a></p>
+  </div>
+</div>
+{% endblock %}

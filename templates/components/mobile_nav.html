@@ -1,0 +1,13 @@
+<nav class="tabbar no-print fixed inset-x-3 bottom-3 z-40 rounded-[1.6rem] border border-line bg-paper/90 p-1.5 shadow-lift backdrop-blur-xl md:hidden" style="padding-bottom: max(.375rem, env(safe-area-inset-bottom))" aria-label="Нижнее меню">
+  <ul class="grid grid-cols-5 text-[0.68rem] font-bold">
+    {% for url_name, ic, label, active in tabbar %}
+    <li>
+      <a href="{% url url_name %}" class="relative flex flex-col items-center gap-1 rounded-2xl py-2 {% if active %}text-ink{% else %}text-ink-3{% endif %}" {% if active %}aria-current="page"{% endif %}>
+        {% if active %}<span class="tab-pill absolute inset-0 -z-10 rounded-2xl bg-sand"></span>{% endif %}
+        <span class="tab-ico relative">{% icon ic 'size-[1.35rem]' %}<i class="tab-dot absolute -right-1 -top-0.5 size-1.5 rounded-full bg-a"></i></span>
+        {{ label }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>

@@ -1,0 +1,37 @@
+{% load static %}{# toasts #}
+<div class="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 md:bottom-8" x-data aria-live="polite">
+  <template x-for="t in $store.toasts.items" :key="t.id">
+    <div class="pointer-events-auto flex items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-milk shadow-lift" style="animation: toast-in .45s var(--ease-spring) both">
+      <svg class="size-5 shrink-0 text-pair" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use :href="'{% sprite_url %}#' + t.icon"/></svg>
+      <span x-text="t.text"></span>
+    </div>
+  </template>
+</div>
+
+{# demo modal: explains what a non-wired action would do #}
+<div x-data x-show="$store.demo.open" x-cloak class="fixed inset-0 z-[70] grid place-items-center p-4" @keydown.escape.window="$store.demo.open = false">
+  <div class="absolute inset-0 bg-ink/30 backdrop-blur-sm" x-show="$store.demo.open" x-transition.opacity @click="$store.demo.open = false"></div>
+  <div class="card relative w-full max-w-md p-7" role="dialog" aria-modal="true" aria-labelledby="demo-title" x-show="$store.demo.open" x-trap.noscroll="$store.demo.open"
+       x-transition:enter="transition duration-500 ease-[var(--ease-spring)]" x-transition:enter-start="opacity-0 scale-90 translate-y-4" x-transition:leave="transition duration-200" x-transition:leave-end="opacity-0 scale-95">
+    <span class="chip bg-pair-soft text-ink">{% icon 'sparkles' 'size-3.5' %}Скоро</span>
+    <h2 id="demo-title" class="mt-4 text-xl font-extrabold" x-text="$store.demo.title"></h2>
+    <p class="mt-2 leading-relaxed text-ink-2" x-text="$store.demo.text"></p>
+    <button class="btn btn-primary mt-6 w-full" @click="$store.demo.open = false">Понятно</button>
+  </div>
+</div>
+
+{# cookie consent — privacy-first default #}
+<div x-data="{ show: false }" x-init="(() => { try { show = !localStorage.getItem('cookie') } catch (e) {} })()" x-show="show" x-cloak
+     x-transition:enter="transition duration-700 ease-[var(--ease-spring)]" x-transition:enter-start="opacity-0 translate-y-8"
+     class="no-print fixed bottom-24 left-3 right-3 z-50 md:bottom-6 md:left-auto md:right-6 md:max-w-sm">
+  <div class="card p-5">
+    <div class="flex items-start gap-3">
+      <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-pair-soft wiggle">{% icon 'cookie' %}</span>
+      <p class="text-sm leading-relaxed text-ink-2">Мы используем только необходимые cookie, чтобы сайт работал. Аналитику включим лишь с вашего согласия.</p>
+    </div>
+    <div class="mt-4 flex gap-2">
+      <button class="btn btn-primary btn-sm flex-1" @click="(() => { try { localStorage.setItem('cookie', 'necessary') } catch (e) {} })(); show = false">Только необходимые</button>
+      <button class="btn btn-ghost btn-sm" @click="(() => { try { localStorage.setItem('cookie', 'all') } catch (e) {} })(); show = false; toast('Спасибо! Аналитика включена (демо)', 'check')">Разрешить все</button>
+    </div>
+  </div>
+</div>

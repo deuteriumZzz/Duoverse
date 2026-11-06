@@ -1,0 +1,21 @@
+{# arc: Arcana, side: a|b|pair, caption, flip: bool (starts face-down, turns when revealed) #}
+<figure class="flex flex-col items-center gap-3" data-reveal="scale" style="--i: {{ i|default:0 }}">
+  <div class="flip side-{{ side }} {{ size|default:'w-40 sm:w-44' }} aspect-[3/5]" x-data="{ flipped: {{ flip|yesno:'false,true' }} }" x-init="{% if flip %}setTimeout(() => flipped = true, 500 + {{ i|default:0 }} * 350){% endif %}" :class="flipped && 'flipped'">
+    <div class="flip-inner">
+      {# back (face-down): pattern #}
+      <div class="flip-face sticker grid place-items-center overflow-hidden bg-ink text-milk">
+        <div class="h-14 w-20 opacity-90" aria-hidden="true">{% mark "h-full w-full" light=True %}</div>
+      </div>
+      {# front #}
+      <div class="flip-face flip-back sticker flex flex-col overflow-hidden t-bg">
+        <div class="flex items-center justify-between px-3 pt-3"><span class="mono text-sm font-semibold">{{ arc.number|roman }}</span><span class="mono text-[0.65rem] text-ink-2">{{ arc.number }}/22</span></div>
+        <div class="mx-auto my-auto w-[78%]">{% arcana_art arc.number side %}</div>
+        <div class="border-t-2 border-ink bg-paper px-3 py-2.5 text-center">
+          <p class="font-display text-[0.82rem] font-extrabold leading-tight hyphens-auto [overflow-wrap:anywhere]" lang="ru">{{ arc.name }}</p>
+          <p class="mono mt-0.5 text-[0.65rem] uppercase tracking-wider text-ink-3">{{ arc.keyword }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if caption %}<figcaption class="text-sm font-bold text-ink-2">{{ caption }}</figcaption>{% endif %}
+</figure>

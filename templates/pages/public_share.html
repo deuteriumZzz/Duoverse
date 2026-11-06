@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ r.pair_type.name }} — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-md px-4 py-12 sm:px-6">
+  <div class="sticker flex flex-col overflow-hidden" data-reveal="scale">
+    <div class="relative aspect-[4/3.4] border-b-2 border-ink">{% pair_poster r.pair_type.role_a r.pair_type.role_b "absolute inset-0 h-full w-full" %}
+      <span class="absolute right-4 top-4 grid size-16 place-items-center rounded-full border-2 border-ink bg-paper font-display text-2xl font-extrabold shadow-sticker">{{ r.total_score }}</span>
+    </div>
+    <div class="p-6">
+      <p class="mono text-xs uppercase tracking-widest text-ink-2">{{ a.name|first }}. и {{ b.name|first }}.</p>
+      <h1 class="mt-1 text-3xl font-extrabold leading-tight">{{ r.pair_type.name }}</h1>
+      <p class="accent mt-1 text-lg text-ink-2">{{ r.pair_type.tagline }}</p>
+      <div class="mt-4 flex flex-wrap gap-1.5">{% for c in r.categories|dictsortreversed:"score"|slice:":3" %}<span class="chip border-2 border-ink bg-paper">{% glyph c.icon 'size-4' %}{{ c.title }} <b class="mono">{{ c.score }}</b></span>{% endfor %}</div>
+    </div>
+  </div>
+  <div class="mt-8 text-center">
+    <p class="text-ink-2">А как устроена ваша пара?</p>
+    <a href="{% url 'start' %}" class="btn btn-primary mt-4" data-magnetic>Узнать за 30 секунд {% icon 'arrow-right' 'size-4' %}</a>
+  </div>
+</div>
+{% endblock %}

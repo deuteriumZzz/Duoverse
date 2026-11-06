@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ a.name }} и {{ b.name }} — отчёт Duoverse{% endblock %}
+{% block content %}
+<div class="scroll-progress no-print" aria-hidden="true"></div>
+<div class="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+  {# report header #}
+  <div class="vt-report-head flex flex-wrap items-center gap-4">
+    {% include "components/pair_avatars.html" %}
+    <div class="min-w-0">
+      <h1 class="text-xl font-extrabold sm:text-2xl">{{ a.name }} <span class="text-ink-3">и</span> {{ b.name }}</h1>
+      <p class="mono mt-0.5 text-xs text-ink-3">{{ a.sun_sign }} × {{ b.sun_sign }} · {{ r.created_at|date:"j E Y" }} · алгоритм {{ r.algorithm_version }}</p>
+    </div>
+    <div class="no-print ml-auto flex flex-wrap gap-2">
+      <a href="{{ rbase }}weights/" class="btn btn-ghost btn-sm">{% icon 'sliders-horizontal' 'size-4' %}<span class="hidden sm:inline">Веса</span></a>
+      <a href="{{ rbase }}pdf/" class="btn btn-ghost btn-sm">{% icon 'file-down' 'size-4' %}<span class="hidden sm:inline">PDF</span></a>
+      <a href="{{ rbase }}share/" class="btn btn-primary btn-sm">{% icon 'share-2' 'size-4' %}Поделиться</a>
+    </div>
+  </div>
+
+  {# tabs #}
+  <nav class="no-print sticky top-16 z-30 -mx-4 mt-6 bg-milk/85 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6" aria-label="Разделы отчёта">
+    {# phone: five equal cells inside one plate, no scrolling; md+: one row with full titles, plate hugs its content #}
+    <div class="draw-icons grid grid-cols-5 gap-1 rounded-[1.4rem] border border-line bg-paper p-1 shadow-soft md:inline-flex md:gap-1.5 md:rounded-full md:p-1.5">
+      {% with tab_cls="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[1.1rem] px-1 py-1.5 text-[0.7rem] font-bold leading-tight transition md:flex-row md:gap-2 md:rounded-full md:px-4 md:py-2 md:text-sm" %}
+      <a href="{{ rbase }}" class="{{ tab_cls }} {% if tab == 'overview' %}vt-tab bg-ink text-milk{% else %}text-ink-2 hover:bg-sand{% endif %}" {% if tab == 'overview' %}aria-current="page"{% endif %}>{% icon 'layout-grid' 'size-[1.15rem] md:size-4' %}<span>Итог</span></a>
+      {% for key, t in tabs.items %}
+      {% with on=tab|tab_active:key %}
+      <a href="{{ rbase }}{{ key }}/" class="{{ tab_cls }} {% if on %}vt-tab bg-ink text-milk{% else %}text-ink-2 hover:bg-sand{% endif %}" {% if tab == key %}aria-current="page"{% endif %}>{% icon t.1 'size-[1.15rem] md:size-4' %}<span class="md:hidden">{{ t.2 }}</span><span class="hidden whitespace-nowrap md:inline">{{ t.0 }}</span></a>
+      {% endwith %}
+      {% endfor %}
+      <a href="{{ rbase }}share/" class="{{ tab_cls }} {% if tab == 'share' %}vt-tab bg-ink text-milk{% else %}text-ink-2 hover:bg-sand{% endif %}" {% if tab == 'share' %}aria-current="page"{% endif %}>{% icon 'id-card' 'size-[1.15rem] md:size-4' %}<span class="md:hidden">Карточка</span><span class="hidden whitespace-nowrap md:inline">Карточка пары</span></a>
+      {% endwith %}
+    </div>
+  </nav>
+
+  {% if tab in layer_tabs %}
+  {# second level: the four layers, with a way back to the hub #}
+  <nav class="no-print mt-1 flex flex-col gap-2 md:flex-row md:items-center" aria-label="Слои расчёта">
+    <a href="{{ rbase }}layers/" class="flex w-fit items-center gap-1 text-sm font-bold text-ink-3 hover:text-ink">{% icon 'chevron-left' 'size-4' %}Все слои</a>
+    <div class="grid grid-cols-4 gap-1 rounded-2xl bg-sand/70 p-1 md:inline-flex">
+      {% for key, t in layer_tabs.items %}
+      <a href="{{ rbase }}{{ key }}/" class="flex min-w-0 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[0.7rem] font-bold leading-tight transition md:flex-row md:gap-1.5 md:px-3 md:text-sm {% if tab == key %}bg-paper text-ink shadow-soft{% else %}text-ink-2 hover:text-ink{% endif %}" {% if tab == key %}aria-current="page" style="view-transition-name: layer-{{ key }}"{% endif %}>{% icon t.1 'size-4' %}<span class="max-w-full truncate">{{ t.0 }}</span></a>
+      {% endfor %}
+    </div>
+  </nav>
+  {% endif %}
+
+  <div class="pt-4">{% block report %}{% endblock %}</div>
+
+  <p class="mt-16 flex items-start gap-2 border-t border-line pt-6 text-xs leading-relaxed text-ink-3">{% icon 'info' 'size-4 shrink-0' %}<span>Астрология, числа и таро — символический слой для размышления, не наука. Психология опирается на исследования. Отчёт не является медицинской или терапевтической услугой и не принимает решений за вас. <a href="{% url 'disclaimer' %}" class="whitespace-nowrap underline">О методе</a></span></p>
+</div>
+{% endblock %}

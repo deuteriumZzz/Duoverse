@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Анкеты — Duoverse{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl px-4 py-8 sm:px-6" x-data="quiz()" @keydown.window="key($event)">
+  <div class="flex items-center gap-3">
+    <a href="{% if joining %}{% url 'landing' %}{% else %}{% url 'history' %}{% endif %}" class="btn btn-ghost btn-icon btn-sm" aria-label="Закрыть">{% icon 'x' 'size-4' %}</a>
+    <div class="flex-1">
+      <div class="flex justify-between text-xs font-bold text-ink-3"><span x-text="section.title"></span><span class="mono" x-text="done + ' / ' + total"></span></div>
+      <div class="bar mt-1.5 tone-synergy"><i class="t-fill" :style="'scale:' + (done / total) + ' 1; transition: scale .6s var(--ease-out)'"></i></div>
+    </div>
+    <button class="btn btn-soft btn-sm" @click="toast('Прогресс сохранён на этом устройстве', 'bookmark'); setTimeout(() => location.href = '{% url 'report' %}', 900)">{% icon 'bookmark' 'size-4' %}<span class="hidden sm:inline">Продолжить позже</span></button>
+  </div>
+
+  {# section intro chips #}
+  <div class="scroll-x mt-6 gap-2">
+    <template x-for="(s, i) in sections" :key="s.title">
+      <span class="chip transition" :class="i === si ? 'bg-ink text-milk' : i < si ? 'bg-synergy-soft text-synergy-ink' : 'bg-sand text-ink-3'" x-text="s.title"></span>
+    </template>
+  </div>
+
+  <template x-if="!finished">
+    <div class="mt-10">
+      <p class="eyebrow flex items-center gap-2"><span x-text="section.hint"></span></p>
+      {# the question — keyed so it re-animates #}
+      <template x-for="q in [question]" :key="si + '-' + qi">
+        <div class="fade-up">
+          <h1 class="mt-4 min-h-[5.5rem] text-2xl font-extrabold leading-snug sm:text-[1.7rem]" x-text="q.text"></h1>
+
+          <template x-if="section.type === 'likert'">
+            <div class="mt-10">
+              <div class="flex items-center justify-between gap-1.5 sm:gap-3">
+                <template x-for="v in scale" :key="v">
+                  <button class="grid place-items-center rounded-full border-2 transition duration-300 ease-[var(--ease-spring)] hover:scale-110"
+                          :style="'width:' + (2.3 + Math.abs(v - 3) * .55) + 'rem; height:' + (2.3 + Math.abs(v - 3) * .55) + 'rem'"
+                          :class="answer() === v ? (v < 3 ? 'bg-a border-a scale-110' : v > 3 ? 'bg-b border-b scale-110' : 'bg-ink-3 border-ink-3 scale-110') : (v < 3 ? 'border-a/60' : v > 3 ? 'border-b/60' : 'border-line')"
+                          @click="pick(v)" :aria-label="'Оценка ' + v + ' из ' + scale" :aria-pressed="answer() === v">
+                    <svg x-show="answer() === v" class="size-4 text-white" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5 7 11.5 12.5 5"/></svg>
+                  </button>
+                </template>
+              </div>
+              <div class="mt-3 flex justify-between text-xs font-bold"><span class="text-a-ink">Совсем не про меня</span><span class="text-b-ink">Точно про меня</span></div>
+              <p class="mono mt-6 hidden text-center text-[0.68rem] text-ink-3 sm:block">клавиши 1–5 · ← назад</p>
+            </div>
+          </template>
+
+
+        </div>
+      </template>
+
+      <div class="mt-12 flex items-center justify-between">
+        <button class="btn btn-ghost btn-sm" @click="back()" :disabled="si === 0 && qi === 0" :class="si === 0 && qi === 0 && 'opacity-40'">{% icon 'arrow-left' 'size-4' %}Назад</button>
+      </div>
+    </div>
+  </template>
+
+  <template x-if="finished">
+    <div class="mt-16 text-center pop-in">
+      <div class="mx-auto h-20 w-28" aria-hidden="true">{% mark "h-full w-full" merge=True %}</div>
+      <h1 class="mt-8 text-3xl font-extrabold">Готово{% if person %}, {{ person.name }}{% endif %}!</h1>
+      <p class="mx-auto mt-3 max-w-sm text-ink-2">{% if joining %}Ваши ответы увидит только расчёт — партнёр получит общий разбор, а не ваши ответы.{% else %}Сохраним ответы в зашифрованном виде и пересчитаем отчёт.{% endif %}</p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <button class="btn btn-primary" @click="submit()">{% icon 'sparkles' 'size-4' %}{% if joining %}Отправить ответы{% else %}Сохранить и пересчитать{% endif %}</button>
+      </div>
+    </div>
+  </template>
+</div>
+
+{{ sections|json_script:"quiz-sections" }}
+<form id="quiz-submit" method="post" action="{{ submit_url }}" class="hidden">{% csrf_token %}<input type="hidden" name="answers"></form>
+<script>
+  function quiz() {
+    const sections = JSON.parse(document.getElementById("quiz-sections").textContent).map((s) => ({ ...s, type: "likert" }));
+    const SCALE = {{ likert }};
+    return {
+      sections, si: 0, qi: 0, answers: {}, finished: false, scale: SCALE,
+      get section() { return this.sections[this.si]; },
+      get question() { return this.section.items[this.qi]; },
+      get total() { return this.sections.reduce((n, s) => n + s.items.length, 0); },
+      get done() { return Object.keys(this.answers).length; },
+      answer() { return this.answers[this.question.id]; },
+      pick(v) { this.answers[this.question.id] = v; setTimeout(() => this.next(), 260); },
+      next() {
+        if (this.qi < this.section.items.length - 1) return this.qi++;
+        if (this.si < this.sections.length - 1) { this.si++; this.qi = 0; return; }
+        this.finished = true;
+      },
+      back() {
+        if (this.qi > 0) return this.qi--;
+        if (this.si > 0) { this.si--; this.qi = this.section.items.length - 1; }
+      },
+      submit() {
+        const form = document.getElementById("quiz-submit");
+        if (!form.getAttribute("action")) return (location.href = "{% url 'generating' %}");
+        form.answers.value = JSON.stringify(this.answers);
+        form.submit();
+      },
+      key(e) {
+        if (this.finished || e.target.closest("input, textarea")) return;
+        if (new RegExp(`^[1-${SCALE}]$`).test(e.key)) this.pick(+e.key);
+        if (e.key === "ArrowLeft") this.back();
+      },
+    };
+  }
+</script>
+{% endblock %}

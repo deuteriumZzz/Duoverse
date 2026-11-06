@@ -1,0 +1,91 @@
+{% load static %}<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Duoverse — совместимость, у которой есть объяснение{% endblock %}</title>
+  <meta name="description" content="Совместимость пары в четырёх вселенных: астрология, числа, таро и психология отношений. Каждый вывод — с объяснением.">
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='10' fill='%23f2865c'/%3E%3Ccircle cx='20' cy='16' r='10' fill='%235470ee' style='mix-blend-mode:multiply'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap">
+  <link rel="stylesheet" href="{% asset 'dist/app.css' %}">
+  <script defer src="{% static 'vendor/htmx.min.js' %}"></script>
+  <script defer src="{% asset 'js/app.js' %}"></script>
+  <script defer src="{% static 'vendor/alpine-collapse.min.js' %}"></script>
+  <script defer src="{% static 'vendor/alpine-focus.min.js' %}"></script>
+  <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}" data-dev="{{ dev|yesno:'1,0' }}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] btn btn-primary btn-sm">К содержимому</a>
+
+  {% block header %}
+  <header class="site-header no-print sticky top-0 z-40 border-b border-line/70 bg-milk/80 backdrop-blur-xl">
+    <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
+      <a href="{% url 'landing' %}" class="vt-brand flex items-center gap-2 font-display text-[1.1rem] font-extrabold tracking-[-0.03em]" aria-label="Duoverse — на главную">
+        <span class="mark-hover block h-7 w-10" aria-hidden="true">{% mark "h-full w-full" %}</span>
+        Duoverse
+      </a>
+      <nav class="ml-6 hidden items-center gap-1 text-sm font-semibold text-ink-2 md:flex" aria-label="Основное меню">
+        {% url 'report' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'report' or nav == 'report_tab' or nav == 'share' %}bg-sand text-ink{% endif %}">Отчёт</a>
+        {% url 'daily' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'daily' %}bg-sand text-ink{% endif %}">Сегодня</a>
+        {% url 'pair_invite' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav|slice:':4' == 'pair' %}bg-sand text-ink{% endif %}">Вдвоём</a>
+        {% url 'history' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'history' or nav == 'account' or nav == 'profiles' or nav == 'profile_edit' %}bg-sand text-ink{% endif %}">Мои разборы</a>
+        {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
+      </nav>
+      <div class="ml-auto flex items-center gap-2">
+        <div class="hidden rounded-full bg-sand p-1 text-xs font-bold sm:flex" role="group" aria-label="Язык">
+          <button class="rounded-full bg-paper px-2.5 py-1 shadow-sm" aria-pressed="true">RU</button>
+          <button class="rounded-full px-2.5 py-1 text-ink-3 hover:text-ink" @click="toast('English version — в следующей итерации прототипа', 'globe')">EN</button>
+        </div>
+        <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm" data-magnetic>{% icon 'plus' 'size-4' %}<span>Новый разбор</span></a>
+      </div>
+    </div>
+  </header>
+  {% endblock %}
+
+  <main id="main" class="{% block main_class %}pb-28 md:pb-0{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block footer %}
+  <footer class="no-print mt-24 border-t border-line bg-sand/50 pb-28 md:pb-0">
+    <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div>
+        <a href="{% url 'landing' %}" class="flex items-center gap-2 font-display font-extrabold tracking-[-0.03em]">
+          <span class="mark-hover block h-7 w-10" aria-hidden="true">{% mark "h-full w-full" %}</span>Duoverse
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-ink-2">Астрология, числа и таро — символический слой для размышления. Психология — научный слой. Мы не ставим диагнозов и не решаем за вас.</p>
+      </div>
+      <div class="text-sm"><p class="eyebrow mb-3">Продукт</p>
+        <ul class="space-y-2 font-semibold text-ink-2">
+          <li><a class="hover:text-ink" href="{% url 'start' %}">Быстрый старт</a></li>
+          <li><a class="hover:text-ink" href="{% url 'report' %}">Пример отчёта</a></li>
+          <li><a class="hover:text-ink" href="{% url 'daily' %}">Вопрос дня</a></li>
+          <li><a class="hover:text-ink" href="{% url 'pricing' %}">Тарифы</a></li>
+        </ul></div>
+      <div class="text-sm"><p class="eyebrow mb-3">Ваше</p>
+        <ul class="space-y-2 font-semibold text-ink-2">
+          <li><a class="hover:text-ink" href="{% url 'history' %}">Мои разборы</a></li>
+          <li><a class="hover:text-ink" href="{% url 'profiles' %}">Профили</a></li>
+          <li><a class="hover:text-ink" href="{% url 'account' %}">Мои данные и настройки</a></li>
+        </ul></div>
+      <div class="text-sm"><p class="eyebrow mb-3">Честно</p>
+        <ul class="space-y-2 font-semibold text-ink-2">
+          <li><a class="hover:text-ink" href="{% url 'disclaimer' %}">О методе и дисклеймер</a></li>
+          <li><a class="hover:text-ink" href="{% url 'account' %}#privacy">Приватность · 152-ФЗ</a></li>
+          <li><a class="hover:text-ink" href="{% url 'states' %}">Состояния интерфейса</a></li>
+        </ul></div>
+    </div>
+    <div class="mx-auto max-w-6xl px-4 pb-10 text-xs text-ink-3 sm:px-6">© 2026 Duoverse · сделано с заботой о парах</div>
+  </footer>
+  {% endblock %}
+
+  {% include "components/mobile_nav.html" %}
+  {% include "components/overlays.html" %}
+  {% include "components/aligning_loader.html" %}
+  {% if dev %}{% include "components/scenario_switcher.html" %}{% endif %}
+</body>
+</html>

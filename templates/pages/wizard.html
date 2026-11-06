@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Новый разбор — Duoverse{% endblock %}
+{% block content %}
+<datalist id="cities">{% for c in cities %}<option value="{{ c }}">{% endfor %}</datalist>
+<div class="mx-auto max-w-2xl px-4 py-10 sm:px-6"
+     x-data="wizard('{{ mode|default:'quick' }}')" x-init="$watch('step', () => window.scrollTo({ top: 0, behavior: 'smooth' }))">
+
+  {# stepper #}
+  <ol class="flex items-center gap-2" aria-label="Шаги">
+    <template x-for="(s, i) in steps" :key="s">
+      <li class="flex flex-1 items-center gap-2">
+        <span class="grid size-8 shrink-0 place-items-center rounded-full border-2 text-xs font-bold transition duration-500" :class="i < step ? 'border-ink bg-ink text-milk' : i === step ? 'border-ink bg-pair' : 'border-line text-ink-3'">
+          <template x-if="i < step"><svg class="size-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5 7 11.5 12.5 5"/></svg></template>
+          <span x-show="i >= step" x-text="i + 1"></span>
+        </span>
+        <span class="hidden text-xs font-bold sm:block" :class="i === step ? 'text-ink' : 'text-ink-3'" x-text="s"></span>
+        <span class="h-0.5 flex-1 rounded-full bg-line" x-show="i < steps.length - 1"><i class="block h-full rounded-full bg-ink transition-all duration-700" :style="'width:' + (i < step ? 100 : 0) + '%'"></i></span>
+      </li>
+    </template>
+  </ol>
+
+  <form method="post" action="{% url 'wizard' %}" class="mt-10" @submit="touched = true; if (!canNext()) $event.preventDefault()">
+    {% csrf_token %}
+    <input type="hidden" name="mode" :value="mode">
+    {% if error %}<p class="mb-6 rounded-2xl bg-risk-soft p-4 text-sm font-bold text-risk-ink" role="alert">Проверьте даты рождения обоих партнёров.</p>{% endif %}
+
+    {# step 0 — mode #}
+    <section x-show="step === 0" x-transition:enter="transition duration-500 ease-[var(--ease-out)]" x-transition:enter-start="opacity-0 translate-x-6">
+      <h1 class="text-3xl font-extrabold leading-tight">Насколько глубоко копаем?</h1>
+      <p class="mt-2 text-ink-2">Режим можно сменить в любой момент — данные сохранятся.</p>
+      <div class="mt-8 space-y-3">
+        {% for key, title, time, text, gives, ic in modes %}
+        <label class="card lift flex cursor-pointer items-start gap-4 p-5 transition" :class="mode === '{{ key }}' ? 'ring-2 ring-ink' : ''">
+          <input type="radio" class="sr-only" value="{{ key }}" x-model="mode">
+          <span class="grid size-12 shrink-0 place-items-center rounded-2xl transition" :class="mode === '{{ key }}' ? 'bg-ink text-milk' : 'bg-sand'">{% icon ic %}</span>
+          <span class="flex-1"><span class="flex flex-wrap items-center gap-2"><span class="font-display font-extrabold">{{ title }}</span><span class="mono text-xs text-ink-3">{{ time }}</span></span>
+            <span class="mt-1 block text-sm text-ink-2">{{ text }}</span>
+            <span class="mt-2 flex flex-wrap gap-1.5">{% for g in gives %}<span class="chip bg-sand text-ink-2">{{ g }}</span>{% endfor %}</span></span>
+          <span class="mt-1 grid size-6 place-items-center rounded-full border-2 transition" :class="mode === '{{ key }}' ? 'border-ink bg-ink' : 'border-line'"><i class="size-2 rounded-full bg-milk" x-show="mode === '{{ key }}'"></i></span>
+        </label>
+        {% endfor %}
+      </div>
+    </section>
+
+    {# step 1/2 — partners #}
+    <section x-show="step === 1" x-cloak x-transition:enter="transition duration-500 ease-[var(--ease-out)]" x-transition:enter-start="opacity-0 translate-x-6">
+      {% include "components/partner_fields.html" with who="a" %}
+    </section>
+    <section x-show="step === 2" x-cloak x-transition:enter="transition duration-500 ease-[var(--ease-out)]" x-transition:enter-start="opacity-0 translate-x-6">
+      {% include "components/partner_fields.html" with who="b" %}
+      <a href="{% url 'pair_invite' %}" class="mt-6 flex items-center gap-3 rounded-3xl border-2 border-dashed border-b/40 bg-b-soft/50 p-4 text-sm font-semibold text-b-ink transition hover:bg-b-soft">{% icon 'send' %}Не знаете данных партнёра? Отправьте ссылку — заполнит сам(а)</a>
+    </section>
+
+    {# step 3 — deep: questionnaires #}
+    <section x-show="step === 3 && mode === 'deep'" x-cloak x-transition:enter="transition duration-500 ease-[var(--ease-out)]" x-transition:enter-start="opacity-0 translate-x-6">
+      <h1 class="text-3xl font-extrabold leading-tight">Научный слой</h1>
+      <p class="mt-2 text-ink-2">Короткие анкеты — по 8 минут на каждого. Можно сделать сейчас или позже.</p>
+      <div class="mt-8 grid gap-3 sm:grid-cols-2">
+        {% for t, d, ic in quizzes %}<div class="card p-5"><span class="grid size-10 place-items-center rounded-xl bg-sage-soft text-[#2f6243]">{% icon ic %}</span><p class="mt-3 font-bold">{{ t }}</p><p class="mt-1 text-sm text-ink-3">{{ d }}</p></div>{% endfor %}
+      </div>
+    </section>
+
+    {# review #}
+    <section x-show="step === steps.length - 1" x-cloak x-transition:enter="transition duration-500 ease-[var(--ease-out)]" x-transition:enter-start="opacity-0 translate-x-6">
+      <h1 class="text-3xl font-extrabold leading-tight">Всё готово к расчёту</h1>
+      <div class="mt-8 grid gap-3 sm:grid-cols-2">
+        <template x-for="who in ['a', 'b']" :key="who">
+          <div class="card p-5" :class="who === 'a' ? 'side-a' : 'side-b'">
+            <div class="flex items-center gap-3"><span class="grid size-10 place-items-center rounded-full t-fill font-display font-extrabold text-white" x-text="(form[who].name || '?').slice(0,1).toUpperCase()"></span><p class="font-bold" x-text="form[who].name || (who === 'a' ? 'Вы' : 'Партнёр')"></p>
+              <button type="button" class="ml-auto text-xs font-bold text-ink-3 underline" @click="step = who === 'a' ? 1 : 2">изменить</button></div>
+            <dl class="mono mt-4 space-y-1 text-xs text-ink-2">
+              <div class="flex justify-between"><dt>дата</dt><dd x-text="form[who].date ? form[who].date.split('-').reverse().join('.') : '—'"></dd></div>
+              <div class="flex justify-between" x-show="mode !== 'quick'"><dt>время</dt><dd x-text="form[who].noTime ? 'неизвестно' : (form[who].time || '—')"></dd></div>
+              <div class="flex justify-between" x-show="mode !== 'quick'"><dt>место</dt><dd x-text="form[who].place || '—'"></dd></div>
+            </dl>
+          </div>
+        </template>
+      </div>
+      <div class="mt-5 rounded-3xl bg-sand p-5">
+        <div class="flex items-center justify-between text-sm font-bold"><span>Ожидаемая точность</span><span class="mono" x-text="accuracy() + '%'"></span></div>
+        <div class="bar mt-2" :class="accuracy() >= 80 ? 'tone-synergy' : 'tone-attention'" :style="'--v:' + accuracy()"><i class="t-fill" style="scale: calc(var(--v) / 100) 1; transition: scale .8s var(--ease-out)"></i></div>
+        <p class="mt-3 text-xs leading-relaxed text-ink-2" x-text="hint()"></p>
+      </div>
+      <label class="mt-5 flex cursor-pointer items-start gap-3 text-sm text-ink-2">
+        <input type="checkbox" required class="mt-0.5 size-4 accent-[var(--color-ink)]">
+        <span>Согласен(на) на обработку данных рождения для расчёта (152-ФЗ, GDPR). Данные можно удалить в любой момент. <a href="{% url 'disclaimer' %}" class="font-bold underline">Подробнее</a></span>
+      </label>
+    </section>
+
+    {# nav #}
+    <div class="mt-10 flex items-center gap-3">
+      <button type="button" class="btn btn-ghost" x-show="step > 0" @click="step--">{% icon 'arrow-left' 'size-4' %}Назад</button>
+      <button type="button" class="btn btn-primary ml-auto" x-show="step < steps.length - 1" @click="touched = true; if (canNext()) { touched = false; step++ }">Далее {% icon 'arrow-right' 'size-4' %}</button>
+      <button type="submit" class="btn btn-primary ml-auto" x-show="step === steps.length - 1" x-cloak>{% icon 'sparkles' 'size-4' %}Рассчитать</button>
+    </div>
+    <p class="mt-4 text-right text-xs text-ink-3" x-show="mode === 'deep' && step === 3" x-cloak>Анкеты откроются после расчёта — <a href="{% url 'quiz' %}" class="font-bold underline">или пройти сейчас</a></p>
+  </form>
+</div>
+
+<script>
+  function wizard(initial) {
+    const zones = { "Москва": "UTC+3 · Europe/Moscow", "Санкт-Петербург": "UTC+3 · Europe/Moscow", "Казань": "UTC+3 · Europe/Moscow", "Екатеринбург": "UTC+5 · Asia/Yekaterinburg", "Новосибирск": "UTC+7 · Asia/Novosibirsk", "Владивосток": "UTC+10 · Asia/Vladivostok", "Калининград": "UTC+2 · Europe/Kaliningrad", "Самара": "UTC+4 · Europe/Samara", "Минск": "UTC+3 · Europe/Minsk", "Алматы": "UTC+5 · Asia/Almaty", "Тбилиси": "UTC+4 · Asia/Tbilisi", "Ереван": "UTC+4 · Asia/Yerevan", "Берлин": "UTC+1 · Europe/Berlin", "Лондон": "UTC+0 · Europe/London", "Нью-Йорк": "UTC−5 · America/New_York", "Нижний Новгород": "UTC+3 · Europe/Moscow", "Ростов-на-Дону": "UTC+3 · Europe/Moscow", "Краснодар": "UTC+3 · Europe/Moscow" };
+    const blank = () => ({ name: "", date: "", time: "", noTime: false, place: "" });
+    return {
+      mode: ["quick", "extended", "deep"].includes(initial) ? initial : "quick",
+      step: 0, touched: false, today: new Date().toISOString().slice(0, 10),
+      form: { a: blank(), b: blank() },
+      get steps() { return this.mode === "deep" ? ["Режим", "Вы", "Партнёр", "Анкеты", "Проверка"] : ["Режим", "Вы", "Партнёр", "Проверка"]; },
+      validDate(d) { return !!d && d >= "1900-01-01" && d <= this.today; },
+      canNext() {
+        if (this.step === 1) return this.validDate(this.form.a.date);
+        if (this.step === 2) return this.validDate(this.form.b.date);
+        return true;
+      },
+      tz(place) { return zones[place] || ""; },
+      accuracy() {
+        let v = 46;
+        if (this.mode !== "quick") v += ["a", "b"].filter((w) => !this.form[w].noTime && this.form[w].time).length * 14;
+        if (this.mode === "deep") v += 20;
+        return Math.min(v, 96);
+      },
+      hint() {
+        if (this.mode === "quick") return "Вы получите балл пары, категории и арканы. Добавьте время и место — откроются дома и Асцендент (+28%).";
+        if (this.mode === "extended") return "Полная синастрия, числа и таро. Пройдите анкеты — включится научный слой (+20%).";
+        return "Максимальная точность: все четыре вселенные, включая научный слой.";
+      },
+    };
+  }
+</script>
+{% endblock %}

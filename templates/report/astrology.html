@@ -1,0 +1,211 @@
+{% extends "report/_layout.html" %}
+{% block report %}
+<section class="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+  <article class="card p-6 sm:p-8" data-reveal>
+    <div class="flex flex-wrap items-center gap-2">{% include "components/layer_badge.html" with layer="symbolic" %}{% for u in r.universes %}{% if u.key == 'astrology' %}<span class="chip bg-sand mono">{{ u.score }}/100 · уверенность {{ u.confidence }}%</span>{% endif %}{% endfor %}</div>
+    <h2 class="mt-4 text-2xl font-extrabold">Синастрия: как встречаются ваши карты</h2>
+    <p class="mt-3 leading-relaxed text-ink-2">{{ r.astrology.summary }}</p>
+  </article>
+  <article class="card grid grid-cols-2 gap-3 p-6" data-reveal style="--i:1">
+    {% for p in r.partners %}
+    <div class="side-{{ p.side }} t-bg rounded-3xl p-4">
+      <span class="grid size-9 place-items-center rounded-full t-fill font-display text-sm font-extrabold text-white">{{ p.name|first }}</span>
+      <p class="mt-3 font-bold">{{ p.name }}</p>
+      <p class="mono mt-1 text-xs leading-relaxed text-ink-2">{{ p.birth_date|date:"d.m.Y" }}<br>{% if p.birth_time %}{{ p.birth_time|time:"H:i" }}{% else %}<span class="text-attention-ink">время ?</span>{% endif %}<br>{{ p.birth_place|default:"место ?" }}</p>
+      <p class="mt-2 text-sm font-bold">☉ {{ p.sun_sign }}</p>
+    </div>
+    {% endfor %}
+  </article>
+</section>
+
+<section class="mt-12">
+  <h2 class="text-2xl font-extrabold" data-split>Ваши карты как <span class="marker">созвездия</span></h2>
+  <p class="mt-1 text-sm text-ink-3" data-reveal>Две карты сходятся в одну — линии показывают аспекты, а точки их пересечения складываются в созвездие пары.</p>
+  <div class="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+    <div class="card sticky top-36 overflow-hidden p-4 sm:p-6"
+         x-data="{ phase: 0, play() { this.phase = 0; setTimeout(() => this.phase = 1, 900); setTimeout(() => this.phase = 2, 2500); setTimeout(() => this.phase = 3, 2500 + {{ r.astrology.aspects|length }} * 260 + 900) } }"
+         x-init="new IntersectionObserver((e, o) => { if (e[0].isIntersecting) { play(); o.disconnect() } }, { threshold: .4 }).observe($el)"
+         :class="'syn-' + phase + (phase >= 1 ? ' syn-1' : '') + (phase >= 2 ? ' syn-2' : '') + (phase >= 3 ? ' syn-3' : '') + ' syn-0'">
+      <div class="mx-auto max-w-md">{% synastry_svg r.astrology %}</div>
+      <div class="mt-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
+        <span class="side-a chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ a.name }} · внутренний круг</span>
+        <span class="side-b chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ b.name }} · внешний круг</span>
+        <span class="chip bg-pair-soft transition duration-500" :class="phase >= 3 ? 'opacity-100' : 'opacity-0'">✦ созвездие пары</span>
+        <button class="chip border border-line bg-paper hover:bg-sand draw-icon" @click="play()">{% icon 'rotate-ccw' 'size-3.5' %}Собрать заново</button>
+      </div>
+    </div>
+    <ul class="space-y-3">
+      {% for asp in r.astrology.aspects %}
+      <li class="card group tone-{{ asp.tone }} cursor-default p-4 transition hover:border-ink-3 sm:p-5" data-reveal data-hover-link="asp-{{ asp.key }}" style="--i: {{ forloop.counter }}">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="side-a t-bg t-ink chip h-8 text-sm">{{ asp.planet_a }}</span>
+          <span class="grid size-8 place-items-center rounded-full border-2 border-current bg-paper font-bold t-ink transition group-hover:rotate-[360deg] group-hover:duration-700" title="{{ asp.aspect }}">{{ asp.symbol }}</span>
+          <span class="side-b t-bg t-ink chip h-8 text-sm">{{ asp.planet_b }}</span>
+          <span class="ml-auto">{% include "components/tone_badge.html" with tone=asp.tone %}</span>
+        </div>
+        <p class="mt-3 text-sm font-bold">{{ asp.aspect|capfirst }} <span class="mono font-normal text-ink-3">· орб {{ asp.orb }}°</span></p>
+        <p class="mt-0.5 text-sm leading-relaxed text-ink-2">{{ asp.meaning }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{# ─── both charts ─── #}
+<section class="mt-14">
+  <p class="chapter" data-reveal><b>01</b>две карты</p>
+  <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Карты {{ a.name|gen }} и {{ b.name|gen }} целиком</h2>
+  <div class="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div class="card p-4 sm:p-6" data-reveal="scale">
+      <div class="mx-auto max-w-md">{% bi_wheel_svg r.astrology %}</div>
+      <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs font-bold">
+        <span class="side-a chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ a.name }} · внутренний круг{% if r.astrology.houses_a %} · дома{% endif %}</span>
+        <span class="side-b chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ b.name }} · внешний круг</span>
+        <span class="chip bg-sand">линии — мажорные аспекты</span>
+      </div>
+    </div>
+    <div class="space-y-4" x-data="{ who: 'a' }">
+      <div class="inline-flex rounded-full bg-sand p-1 text-sm font-bold" role="tablist">
+        <button class="rounded-full px-4 py-2 transition" :class="who === 'a' ? 'bg-a text-white shadow-soft' : 'text-ink-2'" @click="who = 'a'" role="tab">{{ a.name }}</button>
+        <button class="rounded-full px-4 py-2 transition" :class="who === 'b' ? 'bg-b text-white shadow-soft' : 'text-ink-2'" @click="who = 'b'" role="tab">{{ b.name }}</button>
+      </div>
+      {% for side, rows in planet_tables %}
+      <ul class="card divide-y divide-line" x-show="who === '{{ side }}'" {% if side == 'b' %}x-cloak{% endif %}>
+        {% for p in rows %}
+        <li x-data="{ open: false }">
+          <button class="grid w-full grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-2.5 text-left text-sm hover:bg-sand/50" @click="open = !open" :aria-expanded="open">
+            <span class="text-center text-lg leading-none {% if side == 'a' %}text-a-ink{% else %}text-b-ink{% endif %}">{{ p.glyph }}</span>
+            <span class="min-w-0">
+              <span class="block font-bold leading-tight">{{ p.name }}</span>
+              <span class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-ink-2"><span class="whitespace-nowrap">{{ p.sign }} <span class="mono text-ink-3">{{ p.degree }}</span></span>{% if p.retro %}<span class="chip h-5 bg-attention-soft px-1.5 text-[0.65rem] text-attention-ink">R</span>{% endif %}{% if p.dignity %}<span class="chip h-5 px-1.5 text-[0.65rem] {% if p.dignity == 'обитель' or p.dignity == 'экзальтация' %}bg-synergy-soft text-synergy-ink{% else %}bg-sand text-ink-3{% endif %}">{{ p.dignity }}</span>{% endif %}</span>
+            </span>
+            <span class="mono whitespace-nowrap text-right text-xs text-ink-3">{% if p.house %}{{ p.house }} дом{% endif %}</span>
+          </button>
+          <p x-show="open" x-collapse x-cloak class="px-4 pb-3 pl-[3.75rem] text-sm leading-relaxed text-ink-2">{{ p.text }}</p>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ─── aspect grid ─── #}
+<section class="mt-14" x-data="{ minor: false }">
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div><p class="chapter" data-reveal><b>02</b>сетка аспектов</p><h2 class="mt-2 text-2xl font-extrabold" data-split>Где ваши планеты пересекаются</h2></div>
+    <label class="flex cursor-pointer items-center gap-2 text-sm font-bold text-ink-2"><input type="checkbox" class="size-4 accent-[var(--color-ink)]" x-model="minor">показать минорные</label>
+  </div>
+  {% aspect_matrix r.astrology as grid %}
+  <div class="card mt-5 overflow-x-auto p-3" data-reveal>
+    <table class="mx-auto border-separate border-spacing-1 text-center">
+      <thead><tr><th class="p-1 text-[0.65rem] text-ink-3"><span class="text-a-ink">{{ a.name|first }}</span> ↓ · <span class="text-b-ink">{{ b.name|first }}</span> →</th>
+        {% for q in grid.cols %}<th class="p-1 text-base text-b-ink" title="{{ q.name }}">{{ q.glyph }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for p, cells in grid.rows %}
+        <tr><th class="p-1 text-base text-a-ink" title="{{ p.name }}">{{ p.glyph }}</th>
+          {% for cell in cells %}
+          <td class="size-9 rounded-lg text-sm font-bold {% if cell %}{% if cell.tone == 'synergy' %}bg-synergy-soft text-synergy-ink{% elif cell.tone == 'attention' %}bg-attention-soft text-attention-ink{% else %}bg-sand text-ink-2{% endif %}{% if cell.double %} ring-2 ring-ink{% endif %}{% else %}bg-sand/30{% endif %}"
+              {% if cell %}title="{{ cell.planet_a }} {{ cell.aspect }} {{ cell.planet_b }} · орб {{ cell.orb }}°" data-hover-link="asp-{{ cell.key }}"{% if not cell.major %} x-show="minor" x-cloak{% endif %}{% endif %}>{% if cell %}{{ cell.symbol }}{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-2 text-xs text-ink-3">Обводка — двойная связь (аспект в обе стороны). Зелёный — гармония, янтарь — напряжение.</p>
+</section>
+
+{# ─── every aspect with its reading ─── #}
+<section class="mt-14" x-data="{ sphere: 'all', minor: location.hash.startsWith('#asp-') }">
+  <p class="chapter" data-reveal><b>03</b>все аспекты</p>
+  <h2 class="mt-2 text-2xl font-extrabold" data-split>Что каждая связь значит для вас</h2>
+  <div class="scroll-x mt-4 gap-2 pb-1">
+    <button class="chip h-9 px-4" :class="sphere === 'all' ? 'bg-ink text-milk' : 'bg-sand'" @click="sphere = 'all'">все · {{ r.astrology.all_aspects|length }}</button>
+    {% for key, title in sphere_titles %}<button class="chip h-9 px-4" :class="sphere === '{{ key }}' ? 'bg-ink text-milk' : 'bg-sand'" @click="sphere = '{{ key }}'">{{ title }}</button>{% endfor %}
+    <label class="chip h-9 cursor-pointer bg-paper px-4"><input type="checkbox" class="mr-1 size-3.5" x-model="minor">минорные</label>
+  </div>
+  <ul class="mt-4 space-y-2">
+    {% for asp in r.astrology.all_aspects %}
+    <li id="asp-{{ asp.key }}" class="card tone-{{ asp.tone }} scroll-mt-48 target:ring-2 target:ring-pair" x-data="{ open: decodeURIComponent(location.hash) === '#asp-{{ asp.key|escapejs }}' }" data-hover-link="asp-{{ asp.key }}"
+        x-show="(sphere === 'all' || {{ asp.spheres|safe_json }}.includes(sphere)) && ({% if asp.major %}true{% else %}minor{% endif %})">
+      <button class="flex w-full items-center gap-2 p-3 text-left sm:p-4" @click="open = !open" :aria-expanded="open">
+        <span class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <span class="side-a t-bg t-ink chip h-7">{{ asp.planet_a }}</span>
+          <span class="grid size-7 shrink-0 place-items-center rounded-full border-2 border-current bg-paper font-bold t-ink" title="{{ asp.aspect }}">{{ asp.symbol }}</span>
+          <span class="side-b t-bg t-ink chip h-7">{{ asp.planet_b }}</span>
+          <span class="mono hidden text-xs text-ink-3 sm:inline">{{ asp.aspect }} · орб {{ asp.orb }}°</span>
+          {% if asp.double %}<span class="chip h-6 bg-pair-soft text-[0.68rem]">двойная связь</span>{% endif %}
+        </span>
+        <span class="shrink-0">{% include "components/tone_badge.html" with tone=asp.tone %}</span>
+      </button>
+      <p x-show="open" x-collapse x-cloak class="px-4 pb-4 text-sm leading-relaxed text-ink-2">{{ asp.text }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{# ─── house overlays ─── #}
+<section class="mt-14">
+  <p class="chapter" data-reveal><b>04</b>наложение домов</p>
+  <h2 class="mt-2 text-2xl font-extrabold" data-split>В какие сферы жизни вы попадаете друг к другу</h2>
+  {% if r.astrology.overlays %}
+  <div class="mt-5 grid gap-4 md:grid-cols-2">
+    {% for side, title in overlay_sides %}
+    <div class="card side-{{ side }} p-5" data-reveal>
+      <p class="font-bold t-ink">{{ title }}</p>
+      <ul class="mt-3 space-y-3">
+        {% for o in r.astrology.overlays %}{% if o.owner == side %}
+        <li id="ov-{{ o.owner }}-{{ o.planet }}:{{ o.house }}" class="flex scroll-mt-48 gap-3 rounded-xl target:bg-pair-soft"><span class="mono grid size-8 shrink-0 place-items-center rounded-lg t-bg text-xs font-bold t-ink">{{ o.house }}</span><p class="text-sm leading-relaxed text-ink-2"><b class="text-ink">{{ o.planet }}</b> · {{ o.text }}</p></li>
+        {% endif %}{% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card mt-5 border-dashed shadow-none" data-reveal>
+    {% url 'wizard' as wiz %}
+    {% include "components/empty_state.html" with icon="clock" bg="bg-attention-soft" title="Нужны время и место рождения обоих" text="Наложение домов показывает, в какую сферу жизни партнёр «попадает»: романтика, дом, близость, деньги. Для этого нужны точные дома — а значит, время и место рождения." cta="Добавить данные" cta_url=wiz %}
+  </div>
+  {% endif %}
+</section>
+
+{# ─── composite ─── #}
+<section class="mt-14">
+  <p class="chapter" data-reveal><b>05</b>композит</p>
+  <h2 class="mt-2 text-2xl font-extrabold" data-split>Ваша пара как отдельная карта</h2>
+  <p class="mt-2 max-w-2xl text-sm text-ink-3" data-reveal>Композит — середины между вашими планетами. Он описывает не каждого из вас, а сам союз: его характер, цели и уязвимости.</p>
+  <div class="mt-5 grid gap-3 md:grid-cols-2">
+    {% for cp in r.astrology.composite %}
+    <div class="card side-pair p-4" data-reveal style="--i: {{ forloop.counter }}">
+      <p class="flex items-center gap-2 font-bold"><span class="mono rounded-lg t-bg px-2 py-0.5 text-xs">{{ cp.sign }}{% if cp.house %} · {{ cp.house }} дом{% endif %}</span>{{ cp.point }}</p>
+      <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ cp.text }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% if r.astrology.composite_aspects %}<p class="mono mt-4 text-xs leading-relaxed text-ink-3">Аспекты композита: {{ r.astrology.composite_aspects|join:" · " }}</p>{% endif %}
+</section>
+
+{# ─── balance ─── #}
+<section class="mt-14">
+  <p class="chapter" data-reveal><b>06</b>баланс стихий</p>
+  <div class="mt-5 grid gap-5 md:grid-cols-2">
+    {% for title, rows in balance_rows %}
+    <div class="card p-5" data-reveal data-observe>
+      <p class="font-bold">{{ title }}</p>
+      <div class="mt-4 space-y-3">
+        {% for label, va, vb in rows %}
+        <div class="grid grid-cols-[6.5rem_1fr] items-center gap-3 text-sm">
+          <span class="font-semibold">{{ label }}</span>
+          <div class="space-y-1">
+            <div class="side-a flex items-center gap-2"><div class="bar flex-1" style="--v: {{ va }}"><i></i></div><span class="mono w-8 text-right text-xs">{{ va }}%</span></div>
+            <div class="side-b flex items-center gap-2"><div class="bar flex-1" style="--v: {{ vb }}"><i></i></div><span class="mono w-8 text-right text-xs">{{ vb }}%</span></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

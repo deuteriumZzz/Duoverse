@@ -1,0 +1,14 @@
+.venv
+node_modules
+.git
+staticfiles
+db.sqlite3
+.env
+.env.*
+!.env.example
+.serena
+.claude
+.github
+.pytest_cache
+**/__pycache__
+*.log

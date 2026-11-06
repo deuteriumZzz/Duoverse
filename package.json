@@ -1,0 +1,33 @@
+{
+  "name": "duoverse",
+  "version": "1.0.0",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "icons": ".venv/bin/python scripts/build_icons.py",
+    "css": "tailwindcss -i static/src/app.css -o static/dist/app.css --minify",
+    "build": "npm run icons && npm run css",
+    "watch": "tailwindcss -i static/src/app.css -o static/dist/app.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deuteriumZzz/Duoverse.git"
+  },
+  "bugs": {
+    "url": "https://github.com/deuteriumZzz/Duoverse/issues"
+  },
+  "homepage": "https://github.com/deuteriumZzz/Duoverse#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.4",
+    "lucide-static": "^1.69.0",
+    "tailwindcss": "^4.3.4"
+  },
+  "dependencies": {
+    "@alpinejs/collapse": "^3.17.5",
+    "@alpinejs/focus": "^3.17.5",
+    "alpinejs": "^3.17.5",
+    "htmx.org": "^2.0.11"
+  },
+  "private": true
+}

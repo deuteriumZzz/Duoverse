@@ -1,0 +1,13 @@
+{# items: list of Evidence #}
+<ul class="space-y-2">
+  {% for e in items %}
+  <li class="flex items-center gap-3 rounded-2xl bg-sand/70 px-3.5 py-2.5">
+    <span class="grid size-8 shrink-0 place-items-center rounded-xl {% if e.weight > 0 %}bg-synergy-soft text-synergy-ink{% else %}bg-attention-soft text-attention-ink{% endif %}">{% if e.weight > 0 %}{% icon 'trending-up' 'size-4' %}{% else %}{% icon 'trending-down' 'size-4' %}{% endif %}</span>
+    <div class="min-w-0 flex-1">
+      <p class="text-sm font-bold leading-tight">{{ e.source }}</p>
+      <p class="mono mt-0.5 text-xs text-ink-3">{{ e.detail }} · вклад {{ e.weight|signed }}</p>
+    </div>
+    <span class="hidden sm:inline-flex">{% include "components/layer_badge.html" with layer=e.layer %}</span>
+  </li>
+  {% endfor %}
+</ul>

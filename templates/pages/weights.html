@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Настройка весов — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 py-10 sm:px-6" x-data="weights()">
+  <a href="{{ rbase }}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}К отчёту</a>
+  <h1 class="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl fade-up">Сколько весит каждая вселенная</h1>
+  <p class="mt-3 max-w-xl text-ink-2 fade-up" style="--i:1">Двигайте ползунки — общий балл пересчитается сразу. Больше доверяете психологии? Сделайте её главной.</p>
+
+  <div class="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+    <div class="card space-y-7 p-6 sm:p-8 fade-up" style="--i:2">
+      <template x-for="u in universes" :key="u.key">
+        <div :class="u.score === null && 'opacity-50'">
+          <div class="flex items-center justify-between gap-3">
+            <label :for="'w-' + u.key" class="flex items-center gap-2 font-bold"><span class="size-3 rounded-full" :style="'background:' + u.color"></span><span x-text="u.title"></span>
+              <span class="chip h-6 text-[0.68rem]" :class="u.layer === 'scientific' ? 'layer-scientific' : 'layer-symbolic'" x-text="u.layer === 'scientific' ? 'научный' : 'символический'"></span></label>
+            <span class="mono text-sm"><b x-text="share(u) + '%'"></b><span class="text-ink-3" x-show="u.score !== null"> · балл <span x-text="u.score"></span></span></span>
+          </div>
+          <input type="range" min="0" max="60" step="1" class="range mt-3" :id="'w-' + u.key" x-model.number="u.weight" :disabled="u.score === null" :style="'--t:' + u.color + '; --v:' + (u.weight / 60 * 100)">
+          <p x-show="u.score === null" class="mt-2 text-xs font-bold text-attention-ink">Нет данных — вес перераспределён на остальные слои</p>
+        </div>
+      </template>
+      <div class="flex flex-wrap gap-2 border-t border-line pt-6">
+        <button class="btn btn-ghost btn-sm" @click="reset()">{% icon 'rotate-ccw' 'size-4' %}Сбросить</button>
+        <button class="btn btn-ghost btn-sm" @click="preset('science')">{% icon 'flask-conical' 'size-4' %}Только наука</button>
+        <button class="btn btn-ghost btn-sm" @click="preset('even')">{% icon 'equal' 'size-4' %}Поровну</button>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="sticker sticky top-24 p-6 text-center fade-up" style="--i:3">
+        <p class="eyebrow">Общий балл</p>
+        <div class="relative mx-auto mt-4 size-44">
+          <svg viewBox="0 0 120 120" class="absolute inset-0 -rotate-90"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-sand)" stroke-width="10"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-ink)" stroke-width="10" stroke-linecap="round" pathLength="100" stroke-dasharray="100 100" :stroke-dashoffset="100 - total" style="transition: stroke-dashoffset .6s var(--ease-spring)"/></svg>
+          <div class="absolute inset-0 grid place-items-center"><span class="font-display text-5xl font-extrabold tabular-nums" x-text="total"></span></div>
+        </div>
+        <p class="mt-3 text-sm font-bold" :class="total !== base ? 'text-b-ink' : 'text-ink-3'" x-text="total === base ? 'по умолчанию' : (total > base ? '+' : '') + (total - base) + ' к баллу по умолчанию'"></p>
+        <div class="mt-5 flex h-3 overflow-hidden rounded-full">
+          <template x-for="u in universes" :key="u.key"><i class="block h-full transition-all duration-500" :style="'width:' + share(u) + '%; background:' + u.color"></i></template>
+        </div>
+        <a href="{{ rbase }}" class="btn btn-primary mt-6 w-full" @click="toast('Веса применены к отчёту', 'check')">Применить</a>
+      </div>
+      <p class="px-2 text-xs leading-relaxed text-ink-3">Психология всегда остаётся отдельной вселенной в отчёте, даже если вы уменьшите её вес.</p>
+    </div>
+  </div>
+</div>
+<script>
+  function weights() {
+    const colors = { astrology: "var(--color-b)", psychology: "var(--color-sage)", numerology: "var(--color-a)", tarot: "var(--color-pair)" };
+    const defaults = { astrology: 35, psychology: 35, numerology: 15, tarot: 15 };
+    const universes = [{% for u in r.universes %}{ key: "{{ u.key }}", title: "{{ u.title }}", layer: "{{ u.layer }}", score: {% if u.score is None %}null{% else %}{{ u.score }}{% endif %}, weight: defaults["{{ u.key }}"], color: colors["{{ u.key }}"] },{% endfor %}];
+    return {
+      universes, base: {{ r.total_score }},
+      active() { return this.universes.filter((u) => u.score !== null); },
+      sum() { return this.active().reduce((n, u) => n + u.weight, 0) || 1; },
+      share(u) { return u.score === null ? 0 : Math.round((u.weight / this.sum()) * 100); },
+      get total() { return Math.round(this.active().reduce((n, u) => n + u.score * u.weight, 0) / this.sum()); },
+      reset() { this.universes.forEach((u) => (u.weight = defaults[u.key])); },
+      preset(kind) { this.universes.forEach((u) => (u.weight = kind === "even" ? 25 : u.key === "psychology" ? 60 : 0)); },
+    };
+  }
+</script>
+{% endblock %}

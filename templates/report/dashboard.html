@@ -1,0 +1,198 @@
+{% extends "report/_layout.html" %}
+{% block report %}
+{% if reveal %}
+<div class="no-print fixed inset-0 z-[80] grid place-items-center overflow-hidden bg-milk" role="dialog" aria-label="Ваш результат"
+     x-data="{ phase: 0, out: false, n: 0,
+       count(to) { const t0 = performance.now(); const step = (t) => { const k = Math.min(1, (t - t0) / 1300); this.n = Math.round(to * (1 - Math.pow(1 - k, 4))); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); setTimeout(() => this.n = to, 1500) } }"
+     x-init="history.replaceState(null, '', location.pathname);
+       setTimeout(() => phase = 1, 200); setTimeout(() => { phase = 2; count({{ r.total_score }}) }, 1200);
+       setTimeout(() => { phase = 3; setTimeout(() => burst($refs.card, 34), 500) }, 2900); setTimeout(() => out = true, 6200)"
+     :class="out && 'reveal-out'" @click="out = true" @keydown.escape.window="out = true" @animationend.self="out && $el.remove()">
+  <div class="pointer-events-none absolute left-1/2 top-1/2 size-[44rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-pair-soft/70 blob" aria-hidden="true"></div>
+  {# stage 1–2: the two orbits meet, the score fills the lens #}
+  <div class="absolute grid place-items-center transition duration-700 ease-[var(--ease-out)]" :class="phase >= 3 ? 'opacity-0 -translate-y-16 scale-75' : 'opacity-100'">
+    <div class="w-80 sm:w-[28rem]" :class="phase >= 1 ? '' : 'apart'">{% mark "h-auto w-full reveal-mark" %}</div>
+    <p class="mt-6 font-display text-8xl font-extrabold tabular-nums transition duration-700 ease-[var(--ease-spring)]" :class="phase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'"><span x-text="n"></span><span class="text-3xl text-ink-3">/100</span></p>
+  </div>
+  {# stage 3: the pair-type poster card lands #}
+  <div class="relative text-center transition duration-[900ms] ease-[var(--ease-spring)]" :class="phase >= 3 ? 'opacity-100 translate-y-0 rotate-0 scale-100' : 'opacity-0 translate-y-24 rotate-6 scale-75'">
+    <div x-ref="card" class="sticker mx-auto w-60 overflow-hidden sm:w-72">
+      <div class="aspect-[4/4.2] border-b-2 border-ink">{% pair_poster r.pair_type.role_a r.pair_type.role_b "h-full w-full" %}</div>
+      <div class="p-4"><p class="mono text-[0.68rem] uppercase tracking-wider text-ink-3">{{ a.name }} и {{ b.name }} · {{ r.total_score }}/100</p><p class="mt-1 font-display text-xl font-extrabold">{{ r.pair_type.name }}</p></div>
+    </div>
+    <p class="accent mx-auto mt-5 max-w-xs text-lg text-ink-2">{{ r.pair_type.tagline }}</p>
+    <p class="mono mt-6 text-xs text-ink-3">нажмите, чтобы открыть отчёт</p>
+  </div>
+</div>
+{% endif %}
+
+{# ─── hero: pair-type poster, giant score, stitched summary ─── #}
+<section class="sticker grid overflow-hidden md:grid-cols-[minmax(0,16rem)_1fr] lg:grid-cols-[minmax(0,21rem)_1fr]" data-reveal>
+  <div class="relative aspect-[16/9] border-b-2 border-ink md:aspect-auto md:border-b-0 md:border-r-2">{% pair_poster r.pair_type.role_a r.pair_type.role_b "absolute inset-0 h-full w-full" %}</div>
+  <div class="p-6 sm:p-10">
+    <p class="chapter"><b>✦</b>тип вашей пары</p>
+    <h2 class="mt-2 text-[clamp(2rem,4.4vw,3.6rem)] font-extrabold leading-[1.02]" data-split>{{ r.pair_type.name }}</h2>
+    <p class="accent mt-2 text-xl text-ink-2">{{ r.pair_type.tagline }}</p>
+    <div class="mt-8 flex flex-wrap items-end gap-x-8 gap-y-4">
+      <p class="vt-score font-display font-extrabold leading-[.8]"><span class="text-[clamp(5rem,10vw,8.5rem)] tabular-nums" data-count="{{ r.total_score }}" data-dur="1800">{{ r.total_score }}</span><span class="text-2xl text-ink-3">/100</span></p>
+      <div class="min-w-[14rem] flex-1 pb-2">
+        <div class="flex justify-between text-xs font-bold text-ink-3"><span>общий балл · 4 вселенные</span><span>согласие {{ r.agreement_index }}</span></div>
+        <div class="mt-2 flex h-3 gap-1">{% for u in r.universes %}{% if u.score is not None %}<i class="bar block h-full {% cycle 'side-b' 'tone-synergy' 'side-a' 'side-pair' %}" style="--v: {{ u.score }}; --i: {{ forloop.counter }}; flex: {{ u.weight }}"><i class="t-fill"></i></i>{% endif %}{% endfor %}</div>
+        <div class="mt-3 flex flex-wrap gap-1.5">{% for t in r.pair_type.traits %}<span class="chip border border-line bg-paper text-ink-2">{{ t }}</span>{% endfor %}</div>
+      </div>
+    </div>
+    <blockquote class="relative mt-9 border-l-4 border-pair pl-6" data-reveal>
+      <span class="accent pointer-events-none absolute -left-1 -top-9 text-7xl text-pair" aria-hidden="true">“</span>
+      <p class="text-[1.08rem] leading-relaxed">{{ r.summary }}</p>
+      <footer class="mono mt-3 text-[0.7rem] text-ink-3">собрано из {{ r.kb_keys|length }} блоков базы знаний · каждый факт сверен с расчётом</footer>
+    </blockquote>
+  </div>
+</section>
+
+<section class="mt-5 grid gap-5 lg:grid-cols-[1fr_1fr_0.9fr]">
+  {% include "components/role_card.html" with person=a role=role_a why=r.pair_type.why_a side="a" i=0 %}
+  {% include "components/role_card.html" with person=b role=role_b why=r.pair_type.why_b side="b" i=1 %}
+  <article class="card flex flex-col p-6" data-reveal style="--i:2">
+    <p class="chapter"><b>×</b>динамика</p>
+    <h3 class="mt-3 text-2xl font-extrabold">{{ dynamic.title }}</h3>
+    <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ dynamic.text }}</p>
+    <p class="mt-auto pt-5 text-sm text-ink-3"><span class="font-bold text-ink-2">{{ elements|get_item:role_a.element|capfirst }}</span> × <span class="font-bold text-ink-2">{{ elements|get_item:role_b.element }}</span> — один из 78 типов пар</p>
+  </article>
+</section>
+
+<section class="mt-5 grid gap-5 md:grid-cols-[1.1fr_1fr]">
+  <article class="card p-6 sm:p-8" data-reveal>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"><h2 class="font-display font-extrabold">Карта совместимости</h2><span class="mono hidden text-xs text-ink-3 md:inline">наведите на категорию ниже</span></div>
+    <div class="mx-auto mt-2 max-w-[19rem]" data-observe>{% radar_svg r.categories %}</div>
+  </article>
+  {% include "components/accuracy.html" with compact=True %}
+</section>
+
+{# ─── multiverse ─── #}
+<section class="mt-14">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="chapter" data-reveal><b>01</b>мультивселенная</p>
+      <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Что видит <span class="marker">каждая вселенная</span></h2>
+    </div>
+    {% with agree=r.agreement_index %}
+    <div class="{% if agree >= 75 %}tone-synergy{% else %}tone-attention{% endif %} t-bg flex items-center gap-3 rounded-2xl px-4 py-2.5" data-reveal style="--i:2">
+      <span class="t-ink">{% icon 'scale' %}</span>
+      <div><p class="text-xs font-bold text-ink-2">Индекс согласия</p><p class="font-display text-lg font-extrabold leading-none t-ink"><span data-count="{{ agree }}">{{ agree }}</span><span class="text-sm">/100</span></p></div>
+    </div>
+    {% endwith %}
+  </div>
+
+  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% for u in r.universes %}{% include "components/universe_card.html" with u=u i=forloop.counter href=universe_tab|get_item:u.key %}{% endfor %}
+  </div>
+
+  {# agreement visual: dots on one axis show the spread #}
+  <div class="card mt-4 grid gap-6 p-6 md:grid-cols-[1fr_1.3fr] md:items-center" data-reveal>
+    <div>
+      <p class="flex items-center gap-2 font-bold {% if r.agreement_index >= 75 %}text-synergy-ink{% else %}text-attention-ink{% endif %}">
+        {% if r.agreement_index >= 75 %}{% icon 'check' %}Вселенные сходятся{% else %}{% icon 'split' %}Вселенные расходятся{% endif %}
+      </p>
+      <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ r.agreement_note }}</p>
+    </div>
+    <div data-observe class="relative h-24">
+      <div class="absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-gradient-to-r from-risk-soft via-attention-soft to-synergy-soft"></div>
+      <div class="mono absolute inset-x-0 bottom-0 flex justify-between text-[0.65rem] text-ink-3"><span>0</span><span>50</span><span>100</span></div>
+      {% for u in r.universes %}{% if u.score is not None %}
+      <div class="absolute -translate-x-1/2 -translate-y-1/2 transition-[left] duration-[1400ms] ease-[var(--ease-spring)]" style="left: 50%; top: calc(50% + {% cycle "-16px" "16px" %}); transition-delay: {{ forloop.counter0 }}00ms" x-data x-init="setTimeout(() => $el.style.left = '{{ u.score }}%', 200)">
+        <span class="grid size-9 place-items-center rounded-full border-2 border-ink bg-paper shadow-soft {% if u.layer == 'scientific' %}text-[#2f6243]{% endif %}" title="{{ u.title }}: {{ u.score }}">{% glyph u.icon 'size-4' %}</span>
+        <span class="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-[0.65rem] font-bold text-ink-2">{{ u.score }}</span>
+      </div>
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ─── categories ─── #}
+<section class="mt-14">
+  <p class="chapter" data-reveal><b>02</b>категории</p>
+  <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Где вам легко, а где нужна <span class="marker" style="--mk: var(--color-attention-soft)">договорённость</span></h2>
+  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {% for c in r.categories %}{% include "components/category_card.html" with c=c i=forloop.counter0 %}{% endfor %}
+  </div>
+</section>
+
+{# ─── zones ─── #}
+<p class="chapter mt-14" data-reveal><b>03</b>синергия и трение</p>
+<section class="mt-4 grid gap-8 lg:grid-cols-2">
+  <div>
+    <h2 class="flex items-center gap-2 text-xl font-extrabold" data-reveal><span class="grid size-9 place-items-center rounded-xl bg-synergy-soft text-synergy-ink">{% icon 'sparkles' 'size-4' %}</span>Зоны синергии</h2>
+    <div class="mt-4 space-y-4">{% for ins in r.synergy %}{% include "components/insight.html" with ins=ins i=forloop.counter %}{% endfor %}</div>
+  </div>
+  <div>
+    <h2 class="flex items-center gap-2 text-xl font-extrabold" data-reveal><span class="grid size-9 place-items-center rounded-xl bg-attention-soft text-attention-ink">{% icon 'zap' 'size-4' %}</span>Зоны трения</h2>
+    <div class="mt-4 space-y-4">{% for ins in r.friction %}{% include "components/insight.html" with ins=ins i=forloop.counter %}{% endfor %}</div>
+  </div>
+</section>
+
+{# ─── risk matrix ─── #}
+<section class="mt-14" x-data="{ active: 0 }">
+  <p class="chapter" data-reveal><b>04</b>матрица рисков</p>
+  <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Что может мешать — и что с этим делать</h2>
+  <div class="mt-6 grid gap-5 lg:grid-cols-[1fr_1.2fr]">
+    <div class="card p-5 sm:p-6" data-reveal>
+      <div class="grid grid-cols-[auto_1fr] gap-3">
+        <div class="flex items-center"><span class="mono -rotate-180 text-[0.65rem] uppercase tracking-wider text-ink-3 [writing-mode:vertical-rl]">вероятность →</span></div>
+        <div>
+          <div class="grid grid-cols-3 gap-1.5">
+            {% for lk in "hml" %}{% for im in "lmh" %}
+            <div class="relative grid aspect-square place-items-center rounded-xl {% if lk == 'h' and im == 'h' %}bg-risk-soft{% elif lk == 'l' and im == 'l' %}bg-synergy-soft{% elif lk == 'h' or im == 'h' %}bg-attention-soft{% else %}bg-sand{% endif %}">
+              <div class="flex flex-wrap justify-center gap-1">
+              {% for risk in r.risks %}{% if risk.likelihood|slice:":1" == lk and risk.impact|slice:":1" == im %}
+                <button class="grid size-8 place-items-center rounded-full border-2 border-ink bg-paper font-display text-sm font-extrabold transition hover:scale-110" :class="active === {{ forloop.counter0 }} && 'bg-ink text-milk scale-110'" @click="active = {{ forloop.counter0 }}" aria-label="{{ risk.title }}">{{ forloop.counter }}</button>
+              {% endif %}{% endfor %}
+              </div>
+            </div>
+            {% endfor %}{% endfor %}
+          </div>
+          <p class="mono mt-2 text-center text-[0.65rem] uppercase tracking-wider text-ink-3">влияние на пару →</p>
+        </div>
+      </div>
+    </div>
+    <ol class="space-y-3">
+      {% for risk in r.risks %}
+      <li data-reveal style="--i: {{ forloop.counter }}">
+        <button class="card w-full p-4 text-left transition sm:p-5" :class="active === {{ forloop.counter0 }} ? 'ring-2 ring-ink' : 'opacity-80 hover:opacity-100'" @click="active = {{ forloop.counter0 }}">
+          <div class="flex items-center gap-3">
+            <span class="grid size-8 shrink-0 place-items-center rounded-full border-2 border-ink font-display text-sm font-extrabold" :class="active === {{ forloop.counter0 }} && 'bg-ink text-milk'">{{ forloop.counter }}</span>
+            <span class="font-bold">{{ risk.title }}</span>
+            <span class="mono ml-auto hidden text-[0.68rem] text-ink-3 sm:inline">вероятность {{ risk.likelihood|label }} · влияние {{ risk.impact|label }}</span>
+          </div>
+          <div x-show="active === {{ forloop.counter0 }}" x-collapse>
+            <p class="mt-3 text-sm text-ink-2">{{ risk.note }}</p>
+            <p class="mt-2 flex items-start gap-2 rounded-2xl bg-synergy-soft px-3 py-2 text-sm font-semibold text-synergy-ink">{% icon 'lightbulb' 'size-4 mt-0.5' %}{{ risk.mitigation }}</p>
+          </div>
+        </button>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+{# ─── next steps ─── #}
+<section class="mt-14 grid gap-4 md:grid-cols-3">
+  <a href="{{ rbase }}habits/" class="sticker group bg-sage-soft p-6" data-reveal>
+    <span class="grid size-11 place-items-center rounded-2xl border-2 border-ink bg-paper">{% icon 'sprout' %}</span>
+    <h3 class="mt-5 font-display font-extrabold">План микропривычек</h3>
+    <p class="mt-1 text-sm text-ink-2">{{ r.habits|length }} маленьких шагов из вашего разбора</p>
+    <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Открыть {% icon 'arrow-right' 'size-4' %}</span>
+  </a>
+  <a href="{{ invite_url }}" class="sticker group bg-b-soft p-6" data-reveal style="--i:1">
+    <span class="grid size-11 place-items-center rounded-2xl border-2 border-ink bg-paper">{% icon 'user-plus' %}</span>
+    <h3 class="mt-5 font-display font-extrabold">Пригласить {{ b.name }}</h3>
+    <p class="mt-1 text-sm text-ink-2">Пусть ответит сам — разбор станет точнее</p>
+    <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Отправить ссылку {% icon 'arrow-right' 'size-4' %}</span>
+  </a>
+  <a href="{% url 'daily' %}" class="sticker group bg-pair-soft p-6" data-reveal style="--i:2">
+    <span class="grid size-11 place-items-center rounded-2xl border-2 border-ink bg-paper">{% icon 'sun' %}</span>
+    <h3 class="mt-5 font-display font-extrabold">Вопрос дня</h3>
+    <p class="mt-1 text-sm text-ink-2">«{{ r.daily.question|truncatechars:52 }}»</p>
+    <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Ответить {% icon 'arrow-right' 'size-4' %}</span>
+  </a>
+</section>
+{% endblock %}

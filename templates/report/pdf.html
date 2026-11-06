@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}PDF — {{ a.name }} и {{ b.name }}{% endblock %}
+{% block header %}{% endblock %}{% block footer %}{% endblock %}
+{% block main_class %}bg-sand py-8 print:bg-white print:py-0{% endblock %}
+{% block content %}
+<div class="no-print sticky top-0 z-30 mx-auto mb-6 flex max-w-[210mm] items-center gap-2 rounded-full bg-paper/90 p-2 shadow-soft backdrop-blur">
+  <a href="{{ rbase }}" class="btn btn-ghost btn-sm">{% icon 'arrow-left' 'size-4' %}К отчёту</a>
+  <span class="mono hidden text-xs text-ink-3 sm:inline">A4 · 3 страницы · вёрстка для WeasyPrint</span>
+  <button class="btn btn-primary btn-sm ml-auto" onclick="window.print()">{% icon 'printer' 'size-4' %}Сохранить PDF</button>
+</div>
+
+<article class="print-page mx-auto flex flex-col bg-paper p-[16mm] shadow-lift print:shadow-none" style="break-after: page">
+  <div class="flex items-center gap-2 font-display font-extrabold"><span class="block h-7 w-9" aria-hidden="true">{% mark "h-full w-full" %}</span>Duoverse</div>
+  <p class="mono mt-[30mm] text-xs uppercase tracking-widest text-ink-3">Отчёт о совместимости · {{ r.created_at|date:"j E Y" }}</p>
+  <h1 class="mt-3 text-5xl font-extrabold leading-tight">{{ a.name }} и {{ b.name }}</h1>
+  <p class="mt-3 text-lg text-ink-2">{{ a.sun_sign }} × {{ b.sun_sign }}</p>
+  <div class="mt-12 flex items-center gap-8">
+    {% include "components/score_ring.html" with value=r.total_score size=150 stroke=9 label="из 100" %}
+    <div><p class="eyebrow">Тип пары</p><p class="mt-2 font-display text-3xl font-extrabold">{{ r.pair_type.name }}</p><p class="mt-1 text-ink-2">{{ r.pair_type.tagline }}</p></div>
+  </div>
+  <p class="mt-12 text-[1.05rem] leading-relaxed">{{ r.summary }}</p>
+  <div class="mt-auto grid grid-cols-4 gap-3">
+    {% for u in r.universes %}<div class="rounded-2xl border border-line p-3"><p class="text-xs font-bold">{{ u.title }}</p><p class="font-display text-2xl font-extrabold">{{ u.score|default:"—" }}</p><p class="mono text-[0.6rem] text-ink-3">{{ u.layer|label }}</p></div>{% endfor %}
+  </div>
+</article>
+
+<article class="print-page mx-auto mt-8 bg-paper p-[16mm] shadow-lift print:mt-0 print:shadow-none" style="break-after: page">
+  <h2 class="text-2xl font-extrabold">Категории</h2>
+  <div class="mt-6 grid grid-cols-2 gap-4">
+    {% for c in r.categories %}
+    <div class="tone-{{ c.tone }} rounded-2xl border border-line p-4">
+      <div class="flex items-center justify-between"><p class="flex items-center gap-2 font-bold"><span class="t-ink">{% glyph c.icon 'size-4' %}</span>{{ c.title }}</p><span class="mono font-semibold">{{ c.score }}</span></div>
+      <div class="bar in mt-2" style="--v: {{ c.score }}"><i class="t-fill"></i></div>
+      <p class="mt-2 text-sm text-ink-2">{{ c.verdict }}</p>
+      <p class="mono mt-2 text-[0.65rem] text-ink-3">{% for e in c.evidence %}{{ e.source }} ({{ e.detail }}){% if not forloop.last %} · {% endif %}{% endfor %}</p>
+    </div>
+    {% endfor %}
+  </div>
+  <h2 class="mt-10 text-2xl font-extrabold">Зоны трения</h2>
+  <div class="mt-4 space-y-3">{% for f in r.friction %}<div class="rounded-2xl bg-attention-soft p-4"><p class="font-bold">{{ f.title }}</p><p class="mt-1 text-sm text-ink-2">{{ f.text }}</p></div>{% endfor %}</div>
+</article>
+
+<article class="print-page mx-auto mt-8 flex flex-col bg-paper p-[16mm] shadow-lift print:mt-0 print:shadow-none">
+  <h2 class="text-2xl font-extrabold">Риски и что с ними делать</h2>
+  <table class="mt-6 w-full text-left text-sm">
+    <thead><tr class="border-b-2 border-ink"><th class="py-2">Риск</th><th>Вероятность</th><th>Влияние</th><th class="w-1/2">Что делать</th></tr></thead>
+    <tbody>{% for k in r.risks %}<tr class="border-b border-line align-top"><td class="py-3 pr-3 font-bold">{{ k.title }}</td><td class="py-3">{{ k.likelihood|label }}</td><td class="py-3">{{ k.impact|label }}</td><td class="py-3 text-ink-2">{{ k.mitigation }}</td></tr>{% endfor %}</tbody>
+  </table>
+  <h2 class="mt-10 text-2xl font-extrabold">План микропривычек</h2>
+  <ol class="mt-4 space-y-3">{% for h in r.habits %}<li class="flex gap-3"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-sand font-display text-sm font-extrabold">{{ forloop.counter }}</span><div><p class="font-bold">{{ h.title }} <span class="mono text-xs font-normal text-ink-3">· {{ h.cadence }} · {{ h.duration }}</span></p><p class="text-sm text-ink-2">{{ h.why }}</p></div></li>{% endfor %}</ol>
+  <p class="mt-auto border-t border-line pt-4 text-[0.7rem] leading-relaxed text-ink-3">Астрология, нумерология и таро — символический слой для размышления, не научно доказанные методы. Психологический слой основан на исследованиях (Big Five, теория привязанности, работы Дж. Готтмана). Отчёт не является медицинской или терапевтической услугой. Алгоритм {{ r.algorithm_version }} · отчёт {{ r.id }}.</p>
+</article>
+{% endblock %}

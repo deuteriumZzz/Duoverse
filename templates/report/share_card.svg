@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" width="1080" height="1350">
+<style>svg { --color-a: #f2865c; --color-b: #5470ee; --color-pair: #f4c84f; --color-sage: #7fae8e; --color-lilac: #b9a7f2; --color-ink: #1e1a16; --color-paper: #ffffff; --color-milk: #fbf7f2;
+  --color-a-soft: #ffe6da; --color-b-soft: #e1e7ff; --color-pair-soft: #fbf0c9; --color-sage-soft: #e3efe6; --color-lilac-soft: #ece6ff; }
+text { font-family: Manrope, "Helvetica Neue", Arial, sans-serif; fill: #1e1a16; } .m { font-family: "JetBrains Mono", Menlo, monospace; }</style>
+<rect width="1080" height="1350" fill="#fbf7f2"/>
+<rect x="40" y="40" width="1000" height="1270" rx="64" fill="#fff" stroke="#1e1a16" stroke-width="6"/>
+<clipPath id="pc"><rect x="43" y="43" width="994" height="800" rx="61"/></clipPath>
+<g clip-path="url(#pc)"><svg x="43" y="43" width="994" height="800">{{ poster_svg|safe }}</svg></g>
+<line x1="40" y1="843" x2="1040" y2="843" stroke="#1e1a16" stroke-width="6"/>
+<circle cx="930" cy="150" r="80" fill="#fff" stroke="#1e1a16" stroke-width="6"/>
+<text x="930" y="176" text-anchor="middle" font-size="76" font-weight="800">{{ r.total_score }}</text>
+<text class="m" x="100" y="930" font-size="30" letter-spacing="4">{{ a.name|upper }} И {{ b.name|upper }}</text>
+<text x="100" y="1020" font-size="72" font-weight="800">{{ r.pair_type.name }}</text>
+<text x="100" y="1080" font-size="34" fill="#574d44">{{ r.pair_type.tagline }}</text>
+{% for c in top %}<g transform="translate({% cycle 100 400 700 %} 1140)"><rect width="270" height="76" rx="38" fill="#fff" stroke="#1e1a16" stroke-width="4"/><text x="32" y="50" font-size="28" font-weight="800">{{ c.title }} {{ c.score }}</text></g>{% endfor %}
+<text class="m" x="100" y="1270" font-size="26" fill="#847a70">duoverse.app · совместимость с объяснением</text>
+</svg>
