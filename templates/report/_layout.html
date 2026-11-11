@@ -6,6 +6,7 @@
   {# report header #}
   <div class="vt-report-head flex flex-wrap items-center gap-4">
     {% include "components/pair_avatars.html" %}
+    {% if invite %}{% include "components/invite_sheet.html" %}{% endif %}
     <div class="min-w-0">
       <h1 class="text-xl font-extrabold sm:text-2xl">{{ a.name }} <span class="text-ink-3">и</span> {{ b.name }}</h1>
       <p class="mono mt-0.5 text-xs text-ink-3">{{ a.sun_sign }} × {{ b.sun_sign }} · {{ r.created_at|date:"j E Y" }} · алгоритм {{ r.algorithm_version }}</p>

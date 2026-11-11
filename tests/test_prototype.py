@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from apps.compatibility.infrastructure.demo import SCENARIOS
 from apps.compatibility.infrastructure.engine_report_provider import STEPS
+from apps.compatibility.models import StoredReport
 from apps.tarot.domain.tarot import reduce22 as reduce_arcana
 
 SCREENS = [
@@ -102,7 +103,15 @@ def test_generation_polling_redirects_to_report(client):
 def test_wizard_requires_dates(client):
     assert client.post("/new/", {"a_date": "", "b_date": "1994-09-02"}).status_code == 422
     location = client.post("/new/", {"a_date": "1996-03-14", "b_date": "1994-09-02"})["Location"]
-    assert location.startswith("/login/?next=%2Fgenerating%2F%3Fr%3D")  # data first, then «where do we save it?»
+    assert location.startswith("/generating/?r=") and location.endswith("&save=1")  # data first, then the save sheet over it
+    page = client.get(location).content.decode()
+    assert "login-open" in page and "login-sheet-body" in page
+    rid = location.split("r=")[1].split("&")[0]
+    StoredReport.objects.filter(id=rid).update(status="ready")
+    ready = client.get(f"/generating/status/?step=99&r={rid}")
+    assert ready.status_code == 200 and "Сохранить и открыть" in ready.content.decode()  # no account: wait for the save, no redirect
+    sheet = client.get("/login/", {"sheet": "1", "why": "save", "next": "/generating/?r=" + rid}).content.decode()
+    assert "Сохраните разбор" in sheet and "<html" not in sheet  # just the card, for the panel
 
 
 def test_scenario_switch_rejects_open_redirect(client):

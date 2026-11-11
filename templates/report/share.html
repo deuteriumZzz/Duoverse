@@ -14,7 +14,7 @@
         <div class="mt-3 flex flex-wrap gap-1.5">
           {% for c in r.categories|dictsortreversed:"score"|slice:":3" %}<span class="chip border-2 border-ink bg-paper">{% glyph c.icon 'size-4' %}{{ c.title }} <b class="mono">{{ c.score }}</b></span>{% endfor %}
         </div>
-        <p class="mono mt-3 text-[0.65rem] text-ink-2" x-text="link"></p>
+        <p class="mono mt-3 text-xs font-bold tracking-wide text-ink-2" x-text="link.split('/')[0]"></p>
       </div>
     </div>
   </div>

@@ -1,0 +1,57 @@
+{# The sign-in card: the /login/ page and the sign-in sheet (sheet=True: forms swap the card in place through htmx) #}
+<div class="login-card">
+  <div class="text-center fade-up">
+    <div class="mx-auto {% if sheet %}h-10 w-14{% else %}h-14 w-20{% endif %}" aria-hidden="true">{% mark "h-full w-full" merge=True %}</div>
+    <h1 class="{% if sheet %}mt-4 text-2xl{% else %}mt-6 text-3xl{% endif %} font-extrabold"{% if sheet %} id="login-sheet-title"{% endif %}>{% if step == "code" %}Проверьте почту{% elif save %}Сохраните разбор{% else %}Вход в Duoverse{% endif %}</h1>
+    {% if step == "code" %}
+      <p class="mt-3 text-ink-2">Отправили код из 6 цифр на <b class="text-ink">{{ email }}</b>. Можно ввести его здесь или открыть ссылку из письма.</p>
+    {% elif why %}
+      <p class="mt-3 text-ink-2">{{ why }}</p>
+    {% else %}
+      <p class="mt-3 text-ink-2">Без пароля: пришлём код на почту. Разборы и план пары будут доступны с любого устройства.</p>
+    {% endif %}
+  </div>
+
+  {% if expired %}<p class="mt-6 rounded-2xl bg-attention-soft p-4 text-sm text-attention-ink" role="alert">Ссылка из письма устарела или уже использована. Запросите новый код.</p>{% endif %}
+
+  {% if step == "code" %}
+  <form method="post" action="{% url 'login_verify' %}" class="card mt-8 p-6 fade-up" style="--i:1"{% if sheet %} hx-post="{% url 'login_verify' %}" hx-target="closest .login-card" hx-swap="outerHTML"{% endif %}>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">{% if sheet %}<input type="hidden" name="sheet" value="1"><input type="hidden" name="why" value="{{ why_key }}">{% endif %}<input type="hidden" name="email" value="{{ email }}">
+    <label class="label" for="code">Код из письма</label>
+    <input id="code" name="code" class="field mono text-center text-2xl tracking-[0.5em]" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required autofocus placeholder="••••••">
+    {% if error %}<p class="mt-2 text-sm text-risk-ink" role="alert">Код не подошёл или устарел. После пяти ошибок запросите новый.</p>{% endif %}
+    {% if throttled %}<p class="mt-2 text-sm text-ink-3">Новый код можно запросить через минуту: используйте код из предыдущего письма.</p>{% endif %}
+    <button class="btn btn-primary mt-4 w-full">Войти</button>
+  </form>
+  <form method="post" action="{% url 'login' %}" class="mt-4 text-center"{% if sheet %} hx-post="{% url 'login' %}" hx-target="closest .login-card" hx-swap="outerHTML"{% endif %}>
+    {% csrf_token %}<input type="hidden" name="next" value="{{ next }}">{% if sheet %}<input type="hidden" name="sheet" value="1"><input type="hidden" name="why" value="{{ why_key }}">{% endif %}<input type="hidden" name="email" value="{{ email }}">
+    <button class="text-sm font-bold text-ink-3 underline hover:text-ink">Отправить код ещё раз</button>
+    <a href="{% url 'login' %}?next={{ next|urlencode }}" class="ml-3 text-sm font-bold text-ink-3 underline hover:text-ink"{% if sheet %} hx-get="{% url 'login' %}?sheet=1&next={{ next|urlencode }}" hx-target="closest .login-card" hx-swap="outerHTML"{% endif %}>Другая почта</a>
+  </form>
+  {% else %}
+  {% if provider_error %}<p class="mt-6 rounded-2xl bg-attention-soft p-4 text-sm text-attention-ink" role="alert">Не получилось войти через сервис. Попробуйте ещё раз или войдите по почте.</p>{% endif %}
+  {% if providers %}
+  <div class="mt-8 grid gap-2 fade-up" style="--i:1">
+    {% if "yandex" in providers %}<a href="{% url 'oauth_start' 'yandex' %}?next={{ next|urlencode }}" class="btn w-full border border-line bg-paper"><span class="grid size-6 place-items-center rounded-full bg-[#fc3f1d] text-xs font-extrabold text-white">Я</span>Войти с Яндекс ID</a>{% endif %}
+    {% if "vk" in providers %}<a href="{% url 'oauth_start' 'vk' %}?next={{ next|urlencode }}" class="btn w-full border border-line bg-paper"><span class="grid size-6 place-items-center rounded-md bg-[#0077ff] text-[0.6rem] font-extrabold text-white">VK</span>Войти с VK ID</a>{% endif %}
+    {% if "telegram" in providers %}
+    <div class="flex justify-center rounded-full border border-line bg-paper py-2">
+      <script async src="https://telegram.org/js/telegram-widget.js?22" data-telegram-login="{{ telegram_bot }}" data-size="large" data-radius="20" data-request-access="write"
+              data-auth-url="{{ request.scheme }}://{{ request.get_host }}{% url 'telegram_login' %}?next={{ next|urlencode }}"></script>
+    </div>
+    {% endif %}
+  </div>
+  <p class="mt-6 text-center text-xs font-bold uppercase tracking-wider text-ink-3">или по почте</p>
+  {% endif %}
+  <form method="post" action="{% url 'login' %}" class="card {% if providers %}mt-3{% else %}mt-8{% endif %} p-6 fade-up" style="--i:1"{% if sheet %} hx-post="{% url 'login' %}" hx-target="closest .login-card" hx-swap="outerHTML"{% endif %}>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">{% if sheet %}<input type="hidden" name="sheet" value="1"><input type="hidden" name="why" value="{{ why_key }}">{% endif %}
+    <label class="label" for="email">Почта</label>
+    <input id="email" name="email" type="email" class="field" autocomplete="email" required autofocus value="{{ email|default:'' }}" placeholder="you@example.com">
+    {% if error %}<p class="mt-2 text-sm text-risk-ink" role="alert">Проверьте адрес почты.</p>{% endif %}
+    <button class="btn btn-primary mt-4 w-full">{% icon 'mail' 'size-4' %}Получить код</button>
+    <p class="mt-4 text-xs leading-relaxed text-ink-3">Почту храним зашифрованной и используем только для входа и чеков. Входя, вы принимаете <a href="{% url 'terms' %}" class="underline">Соглашение</a> и <a href="{% url 'privacy' %}" class="underline">Политику обработки данных</a>.</p>
+  </form>
+  {% endif %}
+</div>

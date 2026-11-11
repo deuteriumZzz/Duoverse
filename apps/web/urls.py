@@ -30,6 +30,7 @@ urlpatterns = [
     path("profiles/<uuid:pid>/", views.profile_edit, name="profile_edit"),
     path("pricing/", views.pricing, name="pricing"),
     path("account/", views.account, name="account"),
+    path("account/profile/", views.profile_save, name="profile_save"),
     path("login/", views.login, name="login"),
     path("login/code/", views.login_verify, name="login_verify"),
     path("login/link/<str:token>/", views.login_link, name="login_link"),

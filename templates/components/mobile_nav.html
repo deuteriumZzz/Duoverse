@@ -4,7 +4,7 @@
     <li>
       <a href="{% url url_name %}" class="relative flex flex-col items-center gap-1 rounded-2xl py-2 {% if active %}text-ink{% else %}text-ink-3{% endif %}" {% if active %}aria-current="page"{% endif %}>
         {% if active %}<span class="tab-pill absolute inset-0 -z-10 rounded-2xl bg-sand"></span>{% endif %}
-        <span class="tab-ico relative">{% icon ic 'size-[1.35rem]' %}<i class="tab-dot absolute -right-1 -top-0.5 size-1.5 rounded-full bg-a"></i></span>
+        <span class="tab-ico relative">{% if url_name == 'account' and me %}{% avatar me.avatar 22 %}{% else %}{% icon ic 'size-[1.35rem]' %}{% endif %}<i class="tab-dot absolute -right-1 -top-0.5 size-1.5 rounded-full bg-a"></i></span>
         {{ label }}
       </a>
     </li>

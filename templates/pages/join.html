@@ -38,7 +38,7 @@
     <li class="flex gap-3"><span class="text-synergy-ink">{% icon 'check' 'size-5' %}</span>Отвязаться можно в любой момент в «Мои разборы».</li>
   </ul>
   {% if state == "login" %}
-    <a href="{{ login_url }}" class="btn btn-primary mt-6 w-full">{% icon 'mail' 'size-4' %}Войти по почте и присоединиться</a>
+    <a href="{{ login_url }}" class="btn btn-primary mt-6 w-full" @click.prevent="$dispatch('login-open', { why: 'join', next: '{{ request.path|escapejs }}' })">{% icon 'mail' 'size-4' %}Войти по почте и присоединиться</a>
   {% else %}
     <form method="post" class="mt-6">{% csrf_token %}<input type="hidden" name="action" value="accept">
       {% include "components/consent_check.html" %}

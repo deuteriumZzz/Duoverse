@@ -1,0 +1,34 @@
+{% load ui %}{# invite: {pair, code, link, name}. Opens on the window event «invite-open» with this pair's id. #}
+<div x-data="{ open: false }" @invite-open.window="if ($event.detail === '{{ invite.pair }}') open = true">
+  <template x-teleport="body">
+    <div x-show="open" x-cloak class="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6" @keydown.escape.window="open = false"
+      x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:leave="transition duration-200" x-transition:leave-end="opacity-0">
+      <div class="absolute inset-0 bg-ink/30 backdrop-blur-sm" @click="open = false"></div>
+      <section class="sheet-panel side-b" role="dialog" aria-modal="true" aria-labelledby="invite-title-{{ invite.pair }}" x-show="open" x-trap.noscroll="open"
+        x-transition:enter="transition duration-500 ease-[var(--ease-spring)]" x-transition:enter-start="translate-y-full sm:translate-y-6 sm:scale-95 sm:opacity-0"
+        x-transition:leave="transition duration-200 ease-in" x-transition:leave-end="translate-y-full sm:translate-y-6 sm:opacity-0"
+        x-data="{ link: '{{ invite.link|escapejs }}', code: '{{ invite.code|escapejs }}' }">
+        <div class="mx-auto mb-4 h-1.5 w-10 rounded-full bg-line sm:hidden"></div>
+        <div class="flex items-start gap-3">
+          <span class="pair-plus size-12 shrink-0">{% icon 'user-plus' 'size-5' %}</span>
+          <div class="min-w-0 flex-1">
+            <h2 id="invite-title-{{ invite.pair }}" class="font-display text-xl font-extrabold">Пригласите {{ invite.name|acc }}</h2>
+            <p class="mt-1 text-sm text-ink-2">Покажите QR-код или отправьте ссылку. {{ invite.name }} войдёт, заполнит свою анкету — и вы будете вести план и вопрос дня вместе.</p>
+          </div>
+          <button type="button" class="dp-nav shrink-0" @click="open = false" aria-label="Закрыть">{% icon 'x' 'size-5' %}</button>
+        </div>
+        <div class="mt-5 grid place-items-center rounded-3xl bg-sand p-5">
+          <div class="size-44 rounded-2xl bg-paper p-3 text-ink shadow-soft" role="img" aria-label="QR-код приглашения">{% qr_svg invite.link %}</div>
+          <p class="mono mt-3 text-xs text-ink-3">или код</p>
+          <p class="mt-1 font-display text-3xl font-extrabold tracking-[0.2em]">{{ invite.code|slice:":3" }}-{{ invite.code|slice:"3:" }}</p>
+        </div>
+        <div class="mt-4 flex gap-2">
+          <input class="field mono h-11 min-w-0 flex-1 text-xs" :value="link" readonly aria-label="Ссылка-приглашение" @focus="$el.select()">
+          <button type="button" class="btn btn-ghost btn-sm h-11 shrink-0" @click="navigator.clipboard?.writeText(link).catch(() => {}); toast('Ссылка скопирована', 'copy')">{% icon 'copy' 'size-4' %}<span class="hidden sm:inline">Копировать</span></button>
+        </div>
+        <button type="button" class="btn btn-primary mt-3 w-full" @click="navigator.share ? navigator.share({ title: 'Давай узнаем, как устроена наша пара', url: link }).catch(() => {}) : (navigator.clipboard?.writeText(link).catch(() => {}), toast('Ссылка скопирована — отправьте её в мессенджере', 'copy'))">{% icon 'send' 'size-4' %}Отправить в мессенджер</button>
+        <p class="mt-3 text-center text-xs text-ink-3">Ссылка работает, пока {{ invite.name }} не присоединится. Ваши ответы анкет партнёр не увидит — только общий разбор.</p>
+      </section>
+    </div>
+  </template>
+</div>

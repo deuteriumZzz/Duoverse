@@ -14,19 +14,28 @@ def pick(plan: dict, titles: list[str], allowed: list[str], today: date) -> dict
     return {**plan, "picked": picked, "started": plan.get("started") or today.isoformat()}
 
 
-def toggle(plan: dict, title: str, today: date) -> dict:
+def toggle(plan: dict, title: str, today: date, side: str = "a") -> dict:
+    """Mark or unmark a habit for one partner today; marks are stored as "a:title" / "b:title"."""
     if title not in plan.get("picked", []):
         return plan
     done = {k: list(v) for k, v in plan.get("done", {}).items()}
-    day = done.setdefault(today.isoformat(), [])
-    day.remove(title) if title in day else day.append(title)
+    day = [f"a:{x}" if ":" not in x else x for x in done.setdefault(today.isoformat(), [])]  # unprefixed = before per-person marks
+    mark = f"{side}:{title}"
+    day.remove(mark) if mark in day else day.append(mark)
+    done[today.isoformat()] = day
     if not day:
         del done[today.isoformat()]
     return {**plan, "done": done}
 
 
-def state(plan: dict, today: date) -> dict:
+def _by(marks: list[str], side: str, title: str) -> bool:
+    return f"{side}:{title}" in marks or (side == "a" and title in marks)
+
+
+def state(plan: dict, today: date, side: str = "a") -> dict:
+    """The week as one partner sees it: their own marks, the partner's today, and the shared week and streak."""
     done = plan.get("done", {})
+    other = "b" if side == "a" else "a"
     monday = today - timedelta(days=today.weekday())
     week = [(monday + timedelta(days=i)).isoformat() for i in range(7)]
     picked = plan.get("picked", [])
@@ -34,10 +43,17 @@ def state(plan: dict, today: date) -> dict:
     streak = 0
     while done.get(day.isoformat()):
         streak, day = streak + 1, day - timedelta(days=1)
+    t0 = done.get(today.isoformat(), [])
     return {
         "picked": picked,
         "habits": [
-            {"title": t, "today": t in done.get(today.isoformat(), []), "week": [t in done.get(d, []) for d in week]} for t in picked
+            {
+                "title": t,
+                "today": _by(t0, side, t),
+                "partner": _by(t0, other, t),
+                "week": [_by(done.get(d, []), "a", t) or _by(done.get(d, []), "b", t) for d in week],
+            }
+            for t in picked
         ],
         "week": [bool(done.get(d)) for d in week],
         "today": today.weekday(),

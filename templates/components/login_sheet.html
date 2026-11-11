@@ -1,0 +1,26 @@
+{# Sign-in as a panel over the current page. Open with $dispatch('login-open', { why: 'save'|'invite'|'join'|'pay', next: '/path/' });
+   ?save=1 in the address opens it on load (after the wizard). The card itself is components/login_card.html, swapped by htmx. #}
+<div x-data="{
+    open: false,
+    show(d) {
+      d = d || {};
+      const here = location.pathname + location.search.replace(/[?&]save=1/, '').replace(/^&/, '?');
+      this.open = true;
+      this.$nextTick(() => htmx.ajax('GET', '{% url 'login' %}?' + new URLSearchParams({ sheet: 1, why: d.why || '', next: d.next || here }), { target: '#login-sheet-body', swap: 'innerHTML' }));
+    },
+  }" @login-open.window="show($event.detail)"
+  {% if request.GET.save == '1' %}x-init="setTimeout(() => show({ why: 'save' }), 600)"{% endif %}>
+  <template x-teleport="body">
+    <div x-show="open" x-cloak class="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6" @keydown.escape.window="open = false"
+      x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:leave="transition duration-200" x-transition:leave-end="opacity-0">
+      <div class="absolute inset-0 bg-ink/30 backdrop-blur-sm" @click="open = false"></div>
+      <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="login-sheet-title" x-show="open" x-trap.noscroll="open"
+        x-transition:enter="transition duration-500 ease-[var(--ease-spring)]" x-transition:enter-start="translate-y-full sm:translate-y-6 sm:scale-95 sm:opacity-0"
+        x-transition:leave="transition duration-200 ease-in" x-transition:leave-end="translate-y-full sm:translate-y-6 sm:opacity-0">
+        <div class="mx-auto mb-2 h-1.5 w-10 rounded-full bg-line sm:hidden"></div>
+        <button type="button" class="dp-nav absolute right-3 top-3" @click="open = false" aria-label="Закрыть">{% icon 'x' 'size-5' %}</button>
+        <div id="login-sheet-body"><div class="grid h-56 place-items-center"><span class="size-6 rounded-full border-2 border-ink/20 border-t-ink spin"></span></div></div>
+      </section>
+    </div>
+  </template>
+</div>

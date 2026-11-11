@@ -17,6 +17,8 @@ class Owner(models.Model):
     email_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)  # keyed HMAC, for lookup
     email_verified_at = models.DateTimeField(null=True, blank=True)
     telegram_chat_id = EncryptedJSONField(null=True, blank=True)  # set when the person links the bot; notifications go there
+    name = models.CharField(max_length=60, blank=True)  # how the cabinet and the partner see this person
+    avatar = models.CharField(max_length=20, blank=True)  # a key of apps.web.avatars.AVATARS
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

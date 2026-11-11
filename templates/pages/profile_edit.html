@@ -2,7 +2,7 @@
 {% block title %}{{ p.name }} — профиль{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-2xl px-4 py-10 sm:px-6" x-data="{ del: false, typed: '' }">
-  <a href="{% url back|default:'profiles' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}{% if as_partner %}Мои разборы{% else %}Профили{% endif %}</a>
+  <a href="{% url back|default:'profiles' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}{% if as_partner %}Мои разборы{% else %}Сохранённые люди{% endif %}</a>
   {% if as_partner %}<p class="mt-4 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">Это ваши данные в паре: их вводил(а) пригласивший, но поправить можете только вы. Разбор пересчитается для вас обоих.</p>{% endif %}
   <div class="side-a mt-5 flex items-center gap-4">
     <span class="grid size-16 place-items-center rounded-3xl t-fill font-display text-2xl font-extrabold text-white">{{ p.name|first }}</span>

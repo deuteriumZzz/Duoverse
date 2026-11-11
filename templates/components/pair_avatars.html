@@ -1,4 +1,8 @@
+{% load ui %}{# a, b (names); stored pairs add av_a, av_b, b_joined, invite #}
 <div class="flex items-center">
-  <span class="side-a grid size-10 place-items-center rounded-full border-2 border-milk t-fill font-display text-sm font-extrabold text-white">{{ a.name|first }}</span>
-  <span class="side-b -ml-3 grid size-10 place-items-center rounded-full border-2 border-milk t-fill font-display text-sm font-extrabold text-white">{{ b.name|first }}</span>
+  {% if av_a %}<span class="rounded-full ring-[3px] ring-milk" title="{{ a.name }}">{% avatar av_a 40 %}</span>
+  {% else %}<span class="side-a grid size-10 place-items-center rounded-full border-2 border-milk t-fill font-display text-sm font-extrabold text-white">{{ a.name|first }}</span>{% endif %}
+  {% if av_b %}<span class="-ml-3 rounded-full ring-[3px] ring-milk" title="{{ b.name }} · в паре">{% avatar av_b 40 %}</span>
+  {% elif invite %}<button type="button" class="pair-plus -ml-3 size-10 ring-[3px] ring-milk" @click="$dispatch('invite-open', '{{ invite.pair }}')" aria-label="Пригласить {{ invite.name|acc }} в пару" title="Пригласить {{ invite.name|acc }}"><span class="pulse">{% icon 'plus' 'size-5' %}</span></button>
+  {% else %}<span class="side-b -ml-3 grid size-10 place-items-center rounded-full border-2 border-milk t-fill font-display text-sm font-extrabold text-white">{{ b.name|first }}</span>{% endif %}
 </div>

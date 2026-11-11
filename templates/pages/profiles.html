@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Профили — Duoverse{% endblock %}
+{% block title %}Сохранённые люди — Duoverse{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
   <div class="flex flex-wrap items-end justify-between gap-4">
-    <div><h1 class="text-3xl font-extrabold">Профили</h1><p class="mt-1 text-ink-2">Люди из ваших разборов. Данные рождения и ответы анкет зашифрованы.</p></div>
+    <div><h1 class="text-3xl font-extrabold">Сохранённые люди</h1><p class="mt-1 text-ink-2">Люди из ваших разборов. Данные рождения и ответы анкет зашифрованы.</p></div>
     <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm">{% icon 'user-plus' 'size-4' %}Новый разбор</a>
   </div>
   {% if profiles %}

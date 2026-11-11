@@ -265,3 +265,35 @@ def test_app_can_be_installed():
     manifest = Client().get("/manifest.webmanifest").json()
     assert manifest["display"] == "standalone" and any(i["purpose"] == "maskable" for i in manifest["icons"])
     assert b"offline" in Client().get("/sw.js").content
+
+
+def test_cabinet_avatar_invite_and_shared_tracker_with_marks_per_person():
+    anya = Client()
+    stored = make_pair(anya, email="anya@example.com")
+    pair = stored.pair
+    cabinet = anya.get("/account/").content.decode()
+    assert "Моя пара" in cabinet and "Пригласите Мишу" in cabinet and "/join/" in cabinet  # invite sheet with link and QR
+    assert "Пригласить Мишу" in anya.get(f"/r/{stored.id}/").content.decode()  # the «+» next to her avatar
+
+    anya.post("/account/profile/", {"name": "Аня", "avatar": "anchor"})
+    anya.post("/account/profile/", {"avatar": "<script>"})  # unknown keys are ignored
+    owner = Owner.objects.get(id=pair.owner_id)
+    assert (owner.name, owner.avatar) == ("Аня", "anchor")
+    assert 'aria-label="Якорь"' in anya.get("/account/").content.decode()  # header menu and profile
+
+    code = re.search(r"/join/([A-Z0-9]{6})/", cabinet).group(1)
+    misha = Client()
+    sign_in(misha, "misha@example.com")
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
+    title = anya.get(f"/r/{stored.id}/habits/").context["r"].habits[0].title
+    anya.post("/plan/pick/", {"rid": stored.id, "habit": [title]})
+    mine = anya.post("/plan/done/", {"rid": stored.id, "habit": title}).json()["habits"][0]
+    assert mine["today"] and not mine["partner"]
+    theirs = misha.post("/plan/done/", {"rid": stored.id, "habit": title}).json()["habits"][0]
+    assert theirs["today"] and theirs["partner"]  # Misha sees his own mark and Anya's
+    assert "Пригласить" not in anya.get(f"/r/{stored.id}/").content.decode().split("<nav")[0]  # joined: no «+» anymore
+
+
+def test_visitors_without_an_account_get_a_sign_in_button():
+    page = Client().get("/").content.decode()
+    assert 'aria-label="Профиль"' not in page and "Войти" in page

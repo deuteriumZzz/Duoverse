@@ -41,6 +41,13 @@ def _sprite_url() -> str:
 
 
 @register.simple_tag
+def avatar(key: str | None, size: int = 40, cls: str = "") -> str:
+    from apps.web.avatars import render
+
+    return render(key, size, cls)
+
+
+@register.simple_tag
 def icon(name: str, cls: str = "size-5") -> str:
     return format_html(
         '<svg class="{} shrink-0" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" '
@@ -423,3 +430,11 @@ def qr_svg(data: str) -> str:
     svg = segno.make(data, error="m").svg_inline(scale=1, border=2, dark="#000", light=None, omitsize=True)
     svg = svg.replace('stroke="#000"', 'stroke="currentColor"')  # segno validates colours; recolour after
     return mark_safe(svg.replace("<svg ", '<svg class="h-full w-full" ', 1))
+
+
+@register.filter(name="acc")
+def acc_filter(name: str) -> str:
+    """Accusative: «пригласить Тасю»."""
+    from apps.core.domain.names import forms
+
+    return forms(name)["_acc"]

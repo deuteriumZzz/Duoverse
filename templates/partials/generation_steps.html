@@ -13,4 +13,10 @@
   </li>
   {% endfor %}
 </ol>
-{% if step >= 0 %}<div hx-get="{% url 'generating_status' %}?step={{ step|add:1 }}&r={{ rid }}" hx-trigger="load delay:{% if step == 0 %}700{% else %}850{% endif %}ms" hx-target="#gen" hx-swap="innerHTML"></div>{% endif %}
+{% if save_needed %}
+<div class="mt-6 flex flex-col items-center gap-3 rounded-3xl bg-synergy-soft p-5 text-center fade-up">
+  <p class="font-display text-lg font-extrabold text-synergy-ink">Разбор готов</p>
+  <p class="text-sm text-ink-2">Сохраните его в аккаунт — и он откроется. Пароль не нужен: пришлём код на почту.</p>
+  <button type="button" class="btn btn-primary" @click="$dispatch('login-open', { why: 'save' })">{% icon 'mail' 'size-4' %}Сохранить и открыть</button>
+</div>
+{% elif step >= 0 %}<div hx-get="{% url 'generating_status' %}?step={{ step|add:1 }}&r={{ rid }}" hx-trigger="load delay:{% if step == 0 %}700{% else %}850{% endif %}ms" hx-target="#gen" hx-swap="innerHTML"></div>{% endif %}

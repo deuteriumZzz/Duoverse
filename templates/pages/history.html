@@ -4,7 +4,7 @@
 <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6" x-data="{ items: {{ items|length }}, confirm: null }">
   <div class="flex flex-wrap items-end justify-between gap-4">
     <div><h1 class="text-3xl font-extrabold">Мои разборы</h1><p class="mt-1 flex items-center gap-1.5 text-ink-2">{% icon 'smartphone' 'size-4' %}Ваши разборы и пары, к которым вы присоединились.</p></div>
-    <div class="flex gap-2"><a href="{% url 'profiles' %}" class="btn btn-ghost btn-sm">{% icon 'users' 'size-4' %}Профили</a><a href="{% url 'account' %}" class="btn btn-ghost btn-sm">{% icon 'settings' 'size-4' %}Мои данные</a></div>
+    <div class="flex gap-2"><a href="{% url 'profiles' %}" class="btn btn-ghost btn-sm">{% icon 'users' 'size-4' %}Сохранённые люди</a><a href="{% url 'account' %}" class="btn btn-ghost btn-sm">{% icon 'circle-user-round' 'size-4' %}Профиль</a></div>
   </div>
   <ul class="mt-8 space-y-3" x-show="items > 0">
     {% for it in items %}
@@ -37,7 +37,7 @@
     <div class="card relative w-full max-w-sm p-6" role="alertdialog" aria-modal="true" x-trap.noscroll="confirm">
       <span class="grid size-12 place-items-center rounded-2xl bg-risk-soft text-risk-ink">{% icon 'trash' %}</span>
       <h2 class="mt-4 text-xl font-extrabold">Удалить отчёт?</h2>
-      <p class="mt-2 text-sm text-ink-2">Отчёт и расчётный снимок удалятся без возможности восстановления. Профили людей останутся.</p>
+      <p class="mt-2 text-sm text-ink-2">Отчёт и расчётный снимок удалятся без возможности восстановления. Сохранённые люди останутся.</p>
       <div class="mt-6 flex gap-2"><button class="btn btn-ghost flex-1" @click="confirm = null">Отмена</button>
         <button class="btn flex-1 bg-risk text-white" @click="fetch('/r/' + confirm + '/delete/', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } }).then(() => { $dispatch('remove-' + confirm); confirm = null; toast('Отчёт удалён', 'trash') })">Удалить</button></div>
     </div>

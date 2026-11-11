@@ -60,6 +60,7 @@ from apps.compatibility.services import (
 from apps.core.domain.names import gen
 from apps.psychology.domain import scoring as psy
 from apps.psychology.domain.instruments import ITEMS, LIKERT, SECTIONS
+from apps.web.avatars import AVATARS
 from config.container import report_provider
 
 # What an ordinary reader needs: the answer, the spheres, what to do. The layers live one level down.
@@ -405,9 +406,15 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
     )
 
 
+def _my_side(request: HttpRequest, pair: Pair | None) -> str:
+    owner = get_owner(request)
+    return side_of(owner, pair) if owner and pair else "a"
+
+
 def _plan_ctx(request: HttpRequest, stored: StoredReport | None) -> dict:
     raw = stored.pair.plan if stored else request.session.get("plan", {})
-    return {**habit_plan.state(raw, timezone.localdate()), "rid": str(stored.id) if stored else "", "max": habit_plan.MAX_PICK}
+    side = _my_side(request, stored.pair if stored else None)
+    return {**habit_plan.state(raw, timezone.localdate(), side), "rid": str(stored.id) if stored else "", "max": habit_plan.MAX_PICK}
 
 
 def _plan_target(request: HttpRequest) -> tuple[dict, list[str], Pair | None]:
@@ -425,7 +432,7 @@ def _plan_save(request: HttpRequest, plan: dict, pair: Pair | None) -> JsonRespo
         pair.save(update_fields=["plan"])
     else:
         request.session["plan"] = plan
-    return JsonResponse(habit_plan.state(plan, timezone.localdate()))
+    return JsonResponse(habit_plan.state(plan, timezone.localdate(), _my_side(request, pair)))
 
 
 @require_POST
@@ -437,7 +444,8 @@ def plan_pick(request: HttpRequest) -> HttpResponse:
 @require_POST
 def plan_done(request: HttpRequest) -> HttpResponse:
     plan, _, pair = _plan_target(request)
-    return _plan_save(request, habit_plan.toggle(plan, request.POST.get("habit", ""), timezone.localdate()), pair)
+    side = _my_side(request, pair)
+    return _plan_save(request, habit_plan.toggle(plan, request.POST.get("habit", ""), timezone.localdate(), side), pair)
 
 
 def _demo(request: HttpRequest, template: str, **ctx) -> HttpResponse:
@@ -550,7 +558,9 @@ def daily(request: HttpRequest) -> HttpResponse:
             "plus": plus_for_pair(pair),
             "me_name": pair.a.name if side == "a" else pair.b.name,
             "partner_name": pair.b.name if side == "a" else pair.a.name,
+            **_pair_people(request, pair),
         }
+        extra["partner_av"] = extra["av_b"] if side == "a" else extra["av_a"]  # empty until the partner joins
         return _render_report(request, report, "pages/daily.html", reverse("stored_report", args=[stored.id]), extra)
     demo = report_provider().get_report(_scenario(request))
     return _render_report(request, demo, "pages/daily.html", reverse("report"), {"daily_question": question_of_day(demo, "demo", today)})
@@ -731,7 +741,7 @@ def wizard(request: HttpRequest) -> HttpResponse:
     pair = _own_pair(request, request.POST.get("pair"))
     if pair:  # the same pair, more precise: answers, plan and partner link stay
         update_person(pair.a, person("a", da))
-        if not pair.partner_id:  # a linked partner keeps their own data (they edit it in «Мои данные»)
+        if not pair.partner_id:  # a linked partner keeps their own data (they edit it from their «Профиль»)
             update_person(pair.b, person("b", db))
         pair.mode = mode
         pair.save(update_fields=["mode"])
@@ -739,8 +749,8 @@ def wizard(request: HttpRequest) -> HttpResponse:
         pair = create_pair(owner, person("a", da), person("b", db), mode)
     request.session.pop("quick_dates", None)
     target = reverse("person_quiz", args=[pair.a.id]) if mode == "deep" else reverse("generating") + f"?r={request_report(pair).id}"
-    if not owner.is_account:  # data first, then «where do we save it?» — the calculation already runs meanwhile
-        target = reverse("login") + "?" + urlencode({"next": target, "why": "save"})
+    if not owner.is_account:  # data first, then «where do we save it?» over the running calculation (login sheet)
+        target += ("&" if "?" in target else "?") + "save=1"
     return remember_owner(request, redirect(target), owner)
 
 
@@ -757,8 +767,12 @@ def generating_status(request: HttpRequest) -> HttpResponse:
     rid = request.GET.get("r", "")
     stored = StoredReport.objects.filter(id=rid).first() if rid else None
     if step >= len(steps):
+        owner = get_owner(request)
         if stored and stored.status == StoredReport.Status.PENDING:
             step = len(steps) - 1  # keep the last step spinning until the worker finishes
+        elif stored and not (owner and owner.is_account):  # ready, but it opens only once saved: the sign-in sheet is over this page
+            ctx = {"steps": steps, "step": len(steps), "progress": 100, "rid": rid, "save_needed": True}
+            return render(request, "partials/generation_steps.html", ctx)
         else:
             resp = HttpResponse(status=204)
             resp["HX-Redirect"] = (reverse("stored_report", args=[stored.id]) if stored else reverse("report")) + "?reveal=1"
@@ -800,6 +814,7 @@ def _stored(request: HttpRequest, rid, template: str, **ctx) -> HttpResponse:
     }
     if owner and pair.owner_id == owner.id:
         extra["upgrade_url"] = reverse("wizard") + "?" + urlencode({"mode": "extended", "pair": str(pair.id)})
+    extra |= _pair_people(request, pair)
     return _render_report(request, report_of(stored), template, reverse("stored_report", args=[stored.id]), extra, **ctx)
 
 
@@ -926,6 +941,40 @@ def pair_status(request: HttpRequest, pair_id) -> HttpResponse:
     return render(request, "pages/pair_waiting.html", {"partner": pair.b, "pair": pair})
 
 
+def _invite_info(request: HttpRequest, pair: Pair) -> dict:
+    code = invite_code(pair)
+    return {"pair": str(pair.id), "code": code, "link": request.build_absolute_uri(reverse("join", args=[code])), "name": pair.b.name}
+
+
+def _pair_people(request: HttpRequest, pair: Pair) -> dict:
+    """Both partners' avatars, and the invite while the creator still waits for the partner to join."""
+    owner = get_owner(request)
+    ctx: dict = {
+        "av_a": (pair.owner.avatar if pair.owner else "") or "sun",
+        "av_b": (pair.partner.avatar or "moon") if pair.partner else "",
+        "b_joined": bool(pair.partner_id),
+        "my_side": side_of(owner, pair) if owner else "a",
+        "invite": None,
+    }
+    if owner and owner.is_account and pair.owner_id == owner.id and not pair.partner_id:
+        ctx["invite"] = _invite_info(request, pair)
+    return ctx
+
+
+@require_POST
+def profile_save(request: HttpRequest) -> HttpResponse:
+    """Name and avatar from the cabinet."""
+    owner = get_owner(request)
+    if not owner:
+        raise Http404
+    if (av := request.POST.get("avatar", "")) in AVATARS:
+        owner.avatar = av
+    if "name" in request.POST:
+        owner.name = request.POST["name"].strip()[:60]
+    owner.save(update_fields=["avatar", "name"])
+    return redirect(_next_url(request) or reverse("account"))
+
+
 def together(request: HttpRequest) -> HttpResponse:
     """«Вдвоём» tab: the invite for your latest pair, the shared report if you joined one, the demo otherwise."""
     owner = get_owner(request)
@@ -1002,24 +1051,38 @@ LOGIN_WHY = {
     "save": "Почти готово. Куда сохранить ваш разбор? Пришлём код на почту: пароль не нужен, а разбор откроется с любого устройства.",
     "invite": "Чтобы пригласить партнёра, войдите по почте: так вы оба найдёте вашу пару с любого устройства.",
     "join": "Войдите по почте, чтобы присоединиться к паре. Пароль не нужен — пришлём код.",
+    "pay": "Войдите по почте: туда придёт чек, а покупка откроется с любого устройства. Пароль не нужен.",
 }
 
 
+def _in_sheet(request: HttpRequest) -> bool:
+    return (request.POST.get("sheet") or request.GET.get("sheet")) == "1"
+
+
+def _login_render(request: HttpRequest, ctx: dict, status: int = 200) -> HttpResponse:
+    """The full /login/ page, or just the card when the sign-in sheet asked for it (htmx swaps only 2xx answers)."""
+    if _in_sheet(request):
+        return render(request, "components/login_card.html", {**ctx, "sheet": True})
+    return render(request, "pages/login.html", ctx, status=status)
+
+
 def login(request: HttpRequest) -> HttpResponse:
+    why = request.POST.get("why") or request.GET.get("why", "")
     ctx = {
         "next": _next_url(request),
-        "why": LOGIN_WHY.get(request.GET.get("why", ""), ""),
-        "save": request.GET.get("why") == "save",
+        "why": LOGIN_WHY.get(why, ""),
+        "why_key": why if why in LOGIN_WHY else "",
+        "save": why == "save",
         "providers": oauth.enabled(),
         "telegram_bot": settings.TELEGRAM_BOT_NAME,
     }
     if request.method != "POST":
-        return render(request, "pages/login.html", {**ctx, "step": "email"})
+        return _login_render(request, {**ctx, "step": "email"})
     email = request.POST.get("email", "").strip()
     try:
         validate_email(email)
     except ValidationError:
-        return render(request, "pages/login.html", {**ctx, "step": "email", "email": email, "error": True}, status=422)
+        return _login_render(request, {**ctx, "step": "email", "email": email, "error": True}, status=422)
     code = issue_login_code(email)
     if code:
         link = (
@@ -1033,7 +1096,7 @@ def login(request: HttpRequest) -> HttpResponse:
             [email],
         )
     request.session["login_hash"] = email_hash(email)
-    return render(request, "pages/login.html", {**ctx, "step": "code", "email": email, "throttled": code is None})
+    return _login_render(request, {**ctx, "step": "code", "email": email, "throttled": code is None})
 
 
 @require_POST
@@ -1042,7 +1105,7 @@ def login_verify(request: HttpRequest) -> HttpResponse:
     email = check_login_code(h, request.POST.get("code", "")) if h else None
     if not email:
         ctx = {"next": _next_url(request), "step": "code", "email": request.POST.get("email", ""), "error": True}
-        return render(request, "pages/login.html", ctx, status=422)
+        return _login_render(request, ctx, status=422)
     return _finish_login(request, email)
 
 
@@ -1057,6 +1120,10 @@ def login_link(request: HttpRequest, token: str) -> HttpResponse:
 def _finish_login(request: HttpRequest, email: str) -> HttpResponse:
     account = sign_in(get_owner(request), email)
     request.session.pop("login_hash", None)
+    if _in_sheet(request):  # the sheet closes into the page the person was on (or where the action leads)
+        done = HttpResponse(status=204)
+        done["HX-Redirect"] = _next_url(request)
+        return remember_owner(request, done, account)
     return remember_owner(request, redirect(_next_url(request)), account)
 
 
@@ -1132,7 +1199,7 @@ def telegram_webhook(request: HttpRequest, secret: str) -> HttpResponse:
             owner.save(update_fields=["telegram_chat_id"])
             send_message(chat_id, "Готово: уведомления Duoverse подключены. Напишем, когда партнёр ответит на вопрос дня.")
         else:
-            send_message(chat_id, "Ссылка устарела. Нажмите «Подключить Telegram» в разделе «Мои данные» ещё раз.")
+            send_message(chat_id, "Ссылка устарела. Нажмите «Подключить Telegram» в разделе «Профиль» ещё раз.")
     return HttpResponse(status=200)
 
 
@@ -1353,8 +1420,19 @@ def account(request: HttpRequest) -> HttpResponse:
         "price_plus": settings.PRICE_PLUS,
         "privacy_email": settings.PRIVACY_EMAIL,
         "this_device": device.id if device else None,
+        "avatars": [(k, v[0]) for k, v in AVATARS.items()],
+        "pairs": [
+            _cabinet_pair(request, p) for p in pairs_of(owner).select_related("a", "b", "owner", "partner").order_by("-created_at")[:6]
+        ]
+        if owner
+        else [],
     }
     return render(request, "pages/account.html", ctx)
+
+
+def _cabinet_pair(request: HttpRequest, pair: Pair) -> dict:
+    stored = latest_ready(pair)
+    return {"a": pair.a, "b": pair.b, "url": reverse("stored_report", args=[stored.id]) if stored else "", **_pair_people(request, pair)}
 
 
 def export_data(request: HttpRequest) -> HttpResponse:

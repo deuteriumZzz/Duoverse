@@ -113,9 +113,13 @@
             <p class="font-semibold leading-snug" x-text="h.title"></p>
             <div class="mt-2.5 flex flex-col items-start gap-3">
               <div class="flex gap-1" aria-hidden="true"><template x-for="(d, j) in h.week"><i class="size-2.5 rounded-full" :class="d ? 'bg-synergy' : (j === {{ plan.today }} ? 'bg-ink-3/40' : 'bg-sand-2')"></i></template></div>
-              <button class="btn btn-sm" :class="h.today ? 'bg-synergy text-white' : 'btn-primary'" @click="mark(i, $el)" :aria-pressed="h.today">
-                <span x-show="!h.today">Сделали</span><span x-show="h.today" x-cloak class="inline-flex items-center gap-1.5">{% icon 'check' 'size-4' %}Сделано</span>
-              </button>
+              <div class="flex flex-wrap items-center gap-3">
+                <button class="btn btn-sm" :class="h.today ? 'bg-synergy text-white' : 'btn-primary'" @click="mark(i, $el)" :aria-pressed="h.today">
+                  <span x-show="!h.today">Отметить</span><span x-show="h.today" x-cloak class="inline-flex items-center gap-1.5">{% icon 'check' 'size-4' %}Сделано</span>
+                </button>
+                {% if partner_av %}<span class="inline-flex items-center gap-1.5 rounded-full py-1 pl-1 pr-3 text-xs font-bold transition" :class="h.partner ? 'bg-synergy-soft text-synergy-ink' : 'bg-sand text-ink-3'">
+                  {% avatar partner_av 22 %}<span x-text="h.partner ? '{{ partner_name|escapejs }} — сделано' : '{{ partner_name|escapejs }} — ещё нет'"></span></span>{% endif %}
+              </div>
             </div>
           </div>
         </li>

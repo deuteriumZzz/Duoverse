@@ -4,7 +4,7 @@
   <p class="mt-1 text-sm text-ink-2">Все 13 сфер с историей, сценариями ссор и упражнениями, четыре слоя с картами и графиками, PDF. Открывается вам обоим.</p>
   <form method="post" action="{% url 'checkout' 'deep' %}" class="mt-4 flex flex-wrap items-center gap-3">
     {% csrf_token %}<input type="hidden" name="pair" value="{{ stored.pair_id }}">
-    <button class="btn btn-primary">Открыть за {{ price_deep }} ₽</button>
+    <button class="btn btn-primary"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}>Открыть за {{ price_deep }} ₽</button>
     <span class="text-xs text-ink-3">разово · чек на почту · <a href="{% url 'pricing' %}" class="underline">все тарифы</a> · оплачивая, вы принимаете <a href="{% url 'terms' %}" class="underline">оферту</a></span>
   </form>
 </div>

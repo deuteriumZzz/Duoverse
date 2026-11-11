@@ -1,30 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Мои данные — Duoverse{% endblock %}
+{% block title %}Профиль — Duoverse{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6" x-data="{ del: false, typed: '' }">
-  <h1 class="text-3xl font-extrabold" data-split>Мои данные</h1>
-  <p class="mt-2 text-ink-2">{% if email %}Вход по почте без пароля. Данные рождения и ответы анкет хранятся зашифрованными.{% else %}Вы ещё не вошли: разборы пока привязаны только к этому браузеру.{% endif %}</p>
+  <h1 class="text-3xl font-extrabold" data-split>Профиль</h1>
+  <p class="mt-2 text-ink-2">Вы, ваша пара, тариф и данные — всё здесь. Профиль открывается с любой страницы: аватарка в правом верхнем углу, а на телефоне — вкладка «Профиль» внизу.</p>
 
-  <section class="sticker mt-8 grid gap-4 bg-sage-soft p-6 sm:grid-cols-3" data-reveal>
-    <div><p class="font-display text-3xl font-extrabold" data-count="{{ stats.reports }}">{{ stats.reports }}</p><p class="text-sm text-ink-2">разборов</p></div>
-    <div><p class="font-display text-3xl font-extrabold" data-count="{{ stats.people }}">{{ stats.people }}</p><p class="text-sm text-ink-2">профилей</p></div>
-    <div><p class="font-display text-3xl font-extrabold">0</p><p class="text-sm text-ink-2">паролей — вход по коду из письма</p></div>
+  {# profile #}
+  <section id="profile" class="card mt-6 p-5 sm:p-6" data-reveal x-data="{ edit: {% if not me.name %}true{% else %}false{% endif %} }">
+    <div class="flex flex-wrap items-center gap-4">
+      <button type="button" class="me-btn" @click="edit = !edit" aria-label="Сменить аватар">{% avatar me.avatar 72 %}</button>
+      <div class="min-w-[11rem] flex-1">
+        <p class="truncate font-display text-2xl font-extrabold">{{ me.name|default:"Как вас зовут?" }}</p>
+        <p class="truncate text-sm text-ink-3">{% if email %}{{ masked_email }}{% else %}Вы ещё не вошли: разборы привязаны к этому браузеру{% endif %}</p>
+        <span class="chip mt-2 h-6 {% if plus_until %}bg-pair-soft{% else %}bg-sand{% endif %}">{% icon 'sparkles' 'size-3.5' %}{% if plus_until %}Пара+ до {{ plus_until|date:"j E" }}{% else %}Бесплатный тариф{% endif %}</span>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" @click="edit = !edit" :aria-expanded="edit">{% icon 'pencil' 'size-4' %}Изменить</button>
+    </div>
+    <form x-show="edit" x-collapse method="post" action="{% url 'profile_save' %}" class="mt-5 border-t border-line pt-5">
+      {% csrf_token %}<input type="hidden" name="next" value="{% url 'account' %}">
+      <label class="block max-w-sm"><span class="label">Как вас называть</span><input class="field" name="name" value="{{ me.name }}" maxlength="60" placeholder="Например, Дима" autocomplete="given-name"></label>
+      <fieldset class="mt-5"><legend class="label">Аватар</legend>
+        <div class="mt-1 grid grid-cols-5 gap-2 sm:grid-cols-7 sm:gap-3">
+          {% for key, title in avatars %}<label class="av-pick" title="{{ title }}"><input type="radio" name="avatar" value="{{ key }}" class="sr-only" {% if key == me.avatar %}checked{% endif %}>{% avatar key 52 %}<span class="sr-only">{{ title }}</span></label>{% endfor %}
+        </div>
+      </fieldset>
+      <div class="mt-5 flex flex-wrap gap-2"><button class="btn btn-primary btn-sm">{% icon 'check' 'size-4' %}Сохранить</button><button type="button" class="btn btn-ghost btn-sm" @click="edit = false">Отмена</button></div>
+    </form>
+    <div class="mt-5 flex flex-wrap gap-2 border-t border-line pt-4">
+      {% if email %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% icon 'log-out' 'size-4' %}Выйти на этом устройстве</button></form>
+      {% else %}<a href="{% url 'login' %}" class="btn btn-primary btn-sm" @click.prevent="$dispatch('login-open')">{% icon 'mail' 'size-4' %}Войти или создать аккаунт</a>
+      <p class="w-full text-sm text-ink-3">Без входа разборы живут только в этом браузере и удаляются через 7 дней. С аккаунтом они откроются на любом устройстве, а партнёр сможет присоединиться.</p>{% endif %}
+    </div>
   </section>
 
-  <section class="card mt-4 p-6" data-reveal>
-    <div class="flex items-start gap-4">
-      <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-b-soft text-b-ink">{% icon 'mail' %}</span>
-      <div class="min-w-0 flex-1">
-        {% if email %}
-          <h2 class="font-extrabold">Аккаунт</h2>
-          <p class="mt-1 text-sm text-ink-2">Вы вошли как <b class="text-ink">{{ masked_email }}</b>. Чтобы открыть разборы на другом устройстве, войдите там по этой почте.</p>
-          <form method="post" action="{% url 'logout' %}" class="mt-4">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% icon 'log-out' 'size-4' %}Выйти на этом устройстве</button></form>
-        {% else %}
-          <h2 class="font-extrabold">Войти по почте</h2>
-          <p class="mt-1 text-sm text-ink-2">Сохраните разборы в аккаунт: они откроются с любого устройства, а партнёр сможет присоединиться к вашей паре. Пароль не нужен.</p>
-          <a href="{% url 'login' %}" class="btn btn-primary btn-sm mt-4">{% icon 'mail' 'size-4' %}Войти или создать аккаунт</a>
-        {% endif %}
-      </div>
+  {# the pair #}
+  <section id="pair" class="card mt-4 scroll-mt-24 p-2" data-reveal>
+    <div class="flex flex-wrap items-center justify-between gap-3 p-4">
+      <div><h2 class="font-extrabold">Моя пара</h2><p class="text-sm text-ink-3">Партнёр видит общий разбор, план и вопрос дня — но не ваши ответы анкет</p></div>
+      <a href="{% url 'join_by_code' %}" class="btn btn-ghost btn-sm">{% icon 'key-round' 'size-4' %}У меня есть код</a>
+    </div>
+    <ul class="divide-y divide-line">
+      {% for p in pairs %}
+      <li class="flex flex-wrap items-center gap-4 p-4">
+        {% include "components/pair_avatars.html" with a=p.a b=p.b av_a=p.av_a av_b=p.av_b invite=p.invite %}
+        <div class="min-w-[10rem] flex-1">
+          <p class="font-bold">{{ p.a.name }} и {{ p.b.name }}</p>
+          <p class="text-xs {% if p.b_joined %}text-synergy-ink{% else %}text-ink-3{% endif %}">{% if p.b_joined %}{% if p.my_side == 'b' %}Вы присоединились к этой паре{% else %}{{ p.b.name }} в паре — план и вопрос дня общие{% endif %}{% else %}Ждём, когда {{ p.b.name }} присоединится{% endif %}</p>
+        </div>
+        {% if p.invite %}<button type="button" class="btn btn-primary btn-sm" @click="$dispatch('invite-open', '{{ p.invite.pair }}')">{% icon 'user-plus' 'size-4' %}Пригласить</button>{% include "components/invite_sheet.html" with invite=p.invite %}{% endif %}
+        {% if p.url %}<a href="{{ p.url }}" class="btn btn-ghost btn-sm">Разбор {% icon 'arrow-right' 'size-4' %}</a>{% endif %}
+      </li>
+      {% empty %}
+      <li class="flex flex-col items-start gap-3 p-4"><p class="text-sm text-ink-2">Пары пока нет. Сделайте разбор — и пригласите партнёра по QR-коду или ссылке.</p>
+        <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}Новый разбор</a></li>
+      {% endfor %}
+    </ul>
+    <div class="flex flex-wrap gap-2 border-t border-line p-4">
+      <a href="{% url 'history' %}" class="btn btn-ghost btn-sm">{% icon 'archive' 'size-4' %}Все разборы{% if stats.reports %} · {{ stats.reports }}{% endif %}</a>
+      <a href="{% url 'profiles' %}" class="btn btn-ghost btn-sm">{% icon 'users' 'size-4' %}Сохранённые люди{% if stats.people %} · {{ stats.people }}{% endif %}</a>
     </div>
   </section>
 
@@ -50,7 +83,7 @@
   {% endif %}
 
   {% if email %}
-  <section class="card mt-4 p-6" data-reveal>
+  <section id="notify" class="card mt-4 scroll-mt-24 p-6" data-reveal>
     <div class="flex items-start gap-4">
       <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-b-soft text-b-ink">{% icon 'bell' %}</span>
       <div class="min-w-0 flex-1">
@@ -68,11 +101,11 @@
   {% endif %}
 
   {% if email %}
-  <section class="card mt-4 flex flex-wrap items-center gap-4 p-6" data-reveal>
+  <section id="plan" class="card mt-4 flex scroll-mt-24 flex-wrap items-center gap-4 p-6" data-reveal>
     <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
     <div class="min-w-[12rem] flex-1"><h2 class="font-extrabold">Пара+</h2>
       <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }}. Действует и для партнёра в связанной паре.{% else %}Все ваши разборы целиком, квизы и история ответов — {{ price_plus }} ₽ на 30 дней, без автосписаний.{% endif %}</p></div>
-    <form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn {% if plus_until %}btn-ghost{% else %}btn-primary{% endif %} btn-sm">{% if plus_until %}Продлить{% else %}Подключить{% endif %}</button></form>
+    <div class="flex flex-wrap gap-2"><a href="{% url 'pricing' %}" class="btn btn-ghost btn-sm">Все тарифы</a><form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn {% if plus_until %}btn-ghost{% else %}btn-primary{% endif %} btn-sm">{% if plus_until %}Продлить{% else %}Подключить{% endif %}</button></form></div>
   </section>
   {% endif %}
 

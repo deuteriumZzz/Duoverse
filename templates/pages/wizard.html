@@ -23,7 +23,7 @@
     {% csrf_token %}
     <input type="hidden" name="mode" :value="mode">
     {% if prefill.pair %}<input type="hidden" name="pair" value="{{ prefill.pair }}">
-    <p class="mb-6 flex items-start gap-2 rounded-2xl bg-synergy-soft p-4 text-sm text-synergy-ink">{% icon 'check' 'size-4 mt-0.5 shrink-0' %}<span>Ваши данные уже здесь. Добавьте время и город рождения — разбор пересчитаем для этой же пары, ответы анкет и план сохранятся.{% if prefill.partner_linked %} Данные партнёра он меняет сам в «Моих данных».{% endif %}</span></p>{% endif %}
+    <p class="mb-6 flex items-start gap-2 rounded-2xl bg-synergy-soft p-4 text-sm text-synergy-ink">{% icon 'check' 'size-4 mt-0.5 shrink-0' %}<span>Ваши данные уже здесь. Добавьте время и город рождения — разбор пересчитаем для этой же пары, ответы анкет и план сохранятся.{% if prefill.partner_linked %} Свои данные партнёр меняет сам в «Профиле».{% endif %}</span></p>{% endif %}
     {% if error %}<p class="mb-6 rounded-2xl bg-risk-soft p-4 text-sm font-bold text-risk-ink" role="alert">Проверьте даты рождения обоих партнёров.</p>{% endif %}
 
     {# step 0 — mode #}

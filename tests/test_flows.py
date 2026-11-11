@@ -48,6 +48,8 @@ def make_pair(client: Client, mode: str = "extended", email: str = "anya@example
     )
     assert resp.status_code == 302
     location = resp["Location"]
+    if "save=1" in location:  # no account yet: the sign-in sheet opens over the calculation
+        location = sign_in(client, email, location.replace("&save=1", "").replace("?save=1", ""))
     if location.startswith("/login/"):
         from urllib.parse import parse_qs, urlparse
 

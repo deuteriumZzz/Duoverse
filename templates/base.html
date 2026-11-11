@@ -34,7 +34,6 @@
         {% url 'report' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'report' or nav == 'report_tab' or nav == 'share' %}bg-sand text-ink{% endif %}">Отчёт</a>
         {% url 'daily' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'daily' %}bg-sand text-ink{% endif %}">Сегодня</a>
         {% url 'pair_invite' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav|slice:':4' == 'pair' %}bg-sand text-ink{% endif %}">Вдвоём</a>
-        {% url 'history' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'history' or nav == 'account' or nav == 'profiles' or nav == 'profile_edit' %}bg-sand text-ink{% endif %}">Мои разборы</a>
         {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
       </nav>
       <div class="ml-auto flex items-center gap-2">
@@ -42,7 +41,32 @@
           <button class="rounded-full bg-paper px-2.5 py-1 shadow-sm" aria-pressed="true">RU</button>
           <button class="rounded-full px-2.5 py-1 text-ink-3 hover:text-ink" @click="toast('English version — в следующей итерации прототипа', 'globe')">EN</button>
         </div>
-        <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm" data-magnetic>{% icon 'plus' 'size-4' %}<span>Новый разбор</span></a>
+        <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm" data-magnetic>{% icon 'plus' 'size-4' %}<span class="hidden sm:inline">Новый разбор</span></a>
+        {% if me %}
+        <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+          <button class="me-btn" @click="open = !open" :aria-expanded="open" aria-haspopup="menu" aria-label="Профиль">{% avatar me.avatar 38 %}</button>
+          <div x-show="open" x-cloak class="me-menu" role="menu" aria-label="Профиль"
+            x-transition:enter="dp-t-in" x-transition:enter-start="dp-t-from" x-transition:enter-end="dp-t-to" x-transition:leave="dp-t-out" x-transition:leave-start="dp-t-to" x-transition:leave-end="dp-t-from">
+            <a href="{% url 'account' %}" class="flex items-center gap-3 rounded-2xl p-3 hover:bg-sand" role="menuitem">
+              {% avatar me.avatar 48 %}
+              <span class="min-w-0"><span class="block truncate font-display font-extrabold">{{ me.name|default:"Мой профиль" }}</span>
+                <span class="chip mt-1 h-5 text-[0.65rem] {% if me.plus %}bg-pair-soft{% else %}bg-sand{% endif %}">{% if me.plus %}Пара+{% else %}Бесплатный тариф{% endif %}</span></span>
+            </a>
+            <hr class="my-1 border-line">
+            <a href="{% url 'account' %}" class="me-item" role="menuitem">{% icon 'circle-user-round' 'size-4' %}Профиль</a>
+            <a href="{% url 'account' %}#pair" class="me-item" role="menuitem">{% icon 'heart-handshake' 'size-4' %}Моя пара</a>
+            <a href="{% url 'history' %}" class="me-item" role="menuitem">{% icon 'archive' 'size-4' %}Мои разборы</a>
+            <a href="{% url 'profiles' %}" class="me-item" role="menuitem">{% icon 'users' 'size-4' %}Сохранённые люди</a>
+            <a href="{% url 'account' %}#plan" class="me-item" role="menuitem">{% icon 'sparkles' 'size-4' %}Тариф и оплата</a>
+            <a href="{% url 'account' %}#notify" class="me-item" role="menuitem">{% icon 'bell' 'size-4' %}Уведомления</a>
+            <hr class="my-1 border-line">
+            {% if me.account %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="me-item w-full text-ink-3" role="menuitem">{% icon 'log-out' 'size-4' %}Выйти</button></form>
+            {% else %}<a href="{% url 'login' %}" class="me-item" role="menuitem" @click.prevent="open = false; $dispatch('login-open')">{% icon 'log-in' 'size-4' %}Войти или создать аккаунт</a>{% endif %}
+          </div>
+        </div>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn btn-ghost btn-sm" @click.prevent="$dispatch('login-open')">{% icon 'log-in' 'size-4' %}<span class="hidden sm:inline">Войти</span></a>
+        {% endif %}
       </div>
     </div>
   </header>
@@ -71,8 +95,8 @@
       <div class="text-sm"><p class="eyebrow mb-3">Ваше</p>
         <ul class="space-y-2 font-semibold text-ink-2">
           <li><a class="hover:text-ink" href="{% url 'history' %}">Мои разборы</a></li>
-          <li><a class="hover:text-ink" href="{% url 'profiles' %}">Профили</a></li>
-          <li><a class="hover:text-ink" href="{% url 'account' %}">Мои данные и настройки</a></li>
+          <li><a class="hover:text-ink" href="{% url 'profiles' %}">Сохранённые люди</a></li>
+          <li><a class="hover:text-ink" href="{% url 'account' %}">Профиль и настройки</a></li>
         </ul></div>
       <div class="text-sm"><p class="eyebrow mb-3">Честно</p>
         <ul class="space-y-2 font-semibold text-ink-2">
@@ -87,6 +111,7 @@
   {% endblock %}
 
   {% include "components/mobile_nav.html" %}
+  {% if not me.account %}{% include "components/login_sheet.html" %}{% endif %}
   {% include "components/overlays.html" %}
   {% include "components/aligning_loader.html" %}
   {% if dev %}{% include "components/scenario_switcher.html" %}{% endif %}
