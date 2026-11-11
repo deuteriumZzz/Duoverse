@@ -230,6 +230,12 @@ def create_pair(owner: Owner, a: dict, b: dict, mode: str) -> Pair:
     return Pair.objects.create(owner=owner, a=pa, b=pb, mode=mode)
 
 
+def update_person(p: Person, data: dict) -> None:
+    p.name = data["name"] or p.name
+    p.birth = birth_payload(data["date"], data.get("time"), data.get("place"))
+    p.save(update_fields=["name", "birth"])
+
+
 def input_hash(pair: Pair) -> str:
     payload = [{"name": p.name, "birth": p.birth, "answers": p.answers} for p in (pair.a, pair.b)]
     return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()

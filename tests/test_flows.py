@@ -185,3 +185,41 @@ def test_legal_pages_render_from_docs(client, url):
     body = client.get(url).content.decode()
     assert "<table" in body or "<h2" in body
     assert "fonts.googleapis" not in body
+
+
+def test_making_a_pair_more_precise_keeps_the_data_and_the_pair():
+    client = Client()
+    sign_in(client)
+    resp = client.post("/new/", {"mode": "quick", "a_name": "Аня", "a_date": "1996-03-14", "b_name": "Миша", "b_date": "1994-09-02"})
+    stored = StoredReport.objects.get(id=resp["Location"].split("r=")[1])
+    pair = stored.pair
+    page = client.get(f"/r/{stored.id}/").content.decode()
+    assert f"pair={pair.id}" in page  # «add time and place» comes back to this pair
+    wizard = client.get(f"/new/?mode=extended&pair={pair.id}").content.decode()
+    assert "1996-03-14" in wizard and "Аня" in wizard and "Ваши данные уже здесь" in wizard
+    stranger = Client().get(f"/new/?pair={pair.id}").content.decode()
+    assert "1996-03-14" not in stranger
+    resp = client.post(
+        "/new/",
+        {
+            "mode": "extended",
+            "pair": str(pair.id),
+            "a_name": "Аня",
+            "a_date": "1996-03-14",
+            "a_time": "07:40",
+            "a_place": "Казань",
+            "b_name": "Миша",
+            "b_date": "1994-09-02",
+        },
+    )
+    assert resp.status_code == 302
+    pair.refresh_from_db()
+    pair.a.refresh_from_db()
+    assert pair.mode == "extended" and pair.a.birth["time"] == "07:40" and pair.a.birth["place"] == "Казань"
+    assert pair.owner.pairs.count() == 1  # no duplicate pair
+
+
+def test_quick_check_dates_carry_into_the_wizard(client):
+    client.post("/start/result/", {"date_a": "1991-05-20", "date_b": "1993-12-01"})
+    page = client.get("/new/?mode=extended").content.decode()
+    assert "1991-05-20" in page and "1993-12-01" in page

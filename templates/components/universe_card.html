@@ -1,8 +1,9 @@
 {# u: Universe · href: layer tab slug (optional) — makes the whole card open that layer #}
 <article class="card group relative flex flex-col p-5 {% if u.score is None %}border-dashed bg-transparent shadow-none{% endif %}" data-reveal style="--i: {{ i|default:0 }}">
-  <span class="flex items-center gap-2.5 font-display text-[0.95rem] font-extrabold">
+  <span class="flex w-full items-center gap-2.5 font-display text-[0.95rem] font-extrabold">
     <span {% if href %}style="view-transition-name: layer-{{ href }}"{% endif %}>{% glyph u.icon 'size-9' %}</span>
     {% if href %}<a href="{{ rbase }}{{ href }}/" class="after:absolute after:inset-0 after:rounded-[inherit] after:content-['']">{{ u.title }}</a>{% else %}{{ u.title }}{% endif %}
+    {% if href %}<span class="ml-auto grid size-8 shrink-0 place-items-center rounded-full border border-line text-ink-2 transition duration-300 group-hover:translate-x-0.5 group-hover:border-ink group-hover:bg-ink group-hover:text-milk" title="Открыть" aria-hidden="true">{% icon 'arrow-right' 'size-4' %}</span>{% endif %}
   </span>
   <div class="mt-4 flex items-center gap-4">
     {% include "components/score_ring.html" with value=u.score size=84 stroke=11 %}
@@ -13,7 +14,7 @@
   </div>
   <p class="mt-4 flex-1 text-sm leading-snug text-ink-2">{{ u.verdict }}</p>
   {% if u.missing %}
-    <a href="{% if u.key == 'psychology' %}{{ quiz_url|default:'/quiz/' }}{% else %}{% url 'wizard' %}?mode=extended{% endif %}" class="relative z-10 mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-attention-ink hover:underline">{% icon 'plus' 'size-4' %}{{ u.missing }}</a>
+    <a href="{% if u.key == 'psychology' %}{{ quiz_url|default:'/quiz/' }}{% else %}{{ upgrade_url|default:'/new/?mode=extended' }}{% endif %}" class="relative z-10 mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-attention-ink hover:underline">{% icon 'plus' 'size-4' %}{{ u.missing }}</a>
   {% endif %}
-  <div class="mt-4 flex items-center justify-between gap-2">{% include "components/layer_badge.html" with layer=u.layer %}{% if href %}<span class="flex items-center gap-1 text-sm font-bold text-ink-2 transition group-hover:translate-x-1 group-hover:text-ink">Открыть{% icon 'arrow-right' 'size-4' %}</span>{% endif %}</div>
+  <div class="mt-4">{% include "components/layer_badge.html" with layer=u.layer %}</div>
 </article>

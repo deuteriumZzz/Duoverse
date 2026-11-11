@@ -164,8 +164,7 @@
   </div>
   {% else %}
   <div class="card mt-5 border-dashed shadow-none" data-reveal>
-    {% url 'wizard' as wiz %}
-    {% include "components/empty_state.html" with icon="clock" bg="bg-attention-soft" title="Нужны время и место рождения обоих" text="Наложение домов показывает, в какую сферу жизни партнёр «попадает»: романтика, дом, близость, деньги. Для этого нужны точные дома — а значит, время и место рождения." cta="Добавить данные" cta_url=wiz %}
+    {% include "components/empty_state.html" with icon="clock" bg="bg-attention-soft" title="Нужны время и место рождения обоих" text="Наложение домов показывает, в какую сферу жизни партнёр «попадает»: романтика, дом, близость, деньги. Для этого нужны точные дома — а значит, время и место рождения." cta="Добавить данные" cta_url=upgrade_url %}
   </div>
   {% endif %}
 </section>

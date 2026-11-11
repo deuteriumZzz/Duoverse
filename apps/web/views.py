@@ -53,6 +53,7 @@ from apps.compatibility.services import (
     share_token,
     side_of,
     sign_in,
+    update_person,
 )
 from apps.core.domain.names import gen
 from apps.psychology.domain import scoring as psy
@@ -350,6 +351,8 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
         "quiz_url": reverse("quiz"),
         "invite_url": reverse("pair_invite"),
         "share_url": request.build_absolute_uri(rbase + "share/"),
+        # «add time and place» goes back to the wizard with this pair's data filled in (stored reports set it)
+        "upgrade_url": (extra or {}).get("upgrade_url") or reverse("wizard") + "?mode=extended",
     }
     astro = report.astrology
     from apps.astrology.domain.chart import ELEMENT_RU, MODALITY_RU
@@ -362,9 +365,9 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
                 d.get("time_place_a", False),
                 f"Время и место · {a.name}",
                 "дома, Асцендент, точная Луна",
-                reverse("wizard") + "?mode=extended",
+                links["upgrade_url"],
             ),
-            (d.get("time_place_b", False), f"Время и место · {b.name}", "наложения домов, композит", reverse("wizard") + "?mode=extended"),
+            (d.get("time_place_b", False), f"Время и место · {b.name}", "наложения домов, композит", links["upgrade_url"]),
             (d.get("psych", False), "Анкеты обоих", "научный слой: привязанность, конфликт, тени", links["quiz_url"]),
         ]
     }
@@ -632,6 +635,7 @@ def quick_result(request: HttpRequest) -> HttpResponse:
     da, db = _parse_date(request.POST.get("date_a")), _parse_date(request.POST.get("date_b"))
     if not (da and db):
         return render(request, "partials/quick_result.html", {"errors": {"a": not da, "b": not db}})
+    request.session["quick_dates"] = [da.isoformat(), db.isoformat()]  # «Полный разбор» starts from these
     return render(request, "partials/quick_result.html", {"q": report_provider().quick_result(da, db)})
 
 
@@ -639,9 +643,35 @@ def _wizard_ctx() -> dict:
     return {"modes": WIZARD_MODES, "quizzes": WIZARD_QUIZZES, "cities": CITIES}
 
 
+def _own_pair(request: HttpRequest, pair_id: str | None) -> Pair | None:
+    owner = get_owner(request)
+    if not (owner and pair_id):
+        return None
+    try:
+        return Pair.objects.select_related("a", "b").filter(id=pair_id, owner=owner).first()
+    except ValidationError:
+        return None
+
+
+def _person_prefill(p: Person) -> dict:
+    b = p.birth or {}
+    return {"name": p.name, "date": b.get("date") or "", "time": b.get("time") or "", "place": b.get("place") or "", "noTime": False}
+
+
+def _wizard_prefill(request: HttpRequest) -> dict | None:
+    """What the person already told us: the pair being made more precise, or the dates from the quick check."""
+    if pair := _own_pair(request, request.GET.get("pair")):
+        return {"pair": str(pair.id), "a": _person_prefill(pair.a), "b": _person_prefill(pair.b), "partner_linked": bool(pair.partner_id)}
+    if dates := request.session.get("quick_dates"):
+        return {"a": {"date": dates[0]}, "b": {"date": dates[1]}}
+    return None
+
+
 def wizard(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
-        return render(request, "pages/wizard.html", {**_wizard_ctx(), "mode": request.GET.get("mode", "quick")})
+        prefill = _wizard_prefill(request)
+        mode = request.GET.get("mode") or ("extended" if prefill and prefill.get("pair") else "quick")
+        return render(request, "pages/wizard.html", {**_wizard_ctx(), "mode": mode, "prefill": prefill})
     da, db = _parse_date(request.POST.get("a_date")), _parse_date(request.POST.get("b_date"))
     if not (da and db):
         return render(request, "pages/wizard.html", {**_wizard_ctx(), "error": True}, status=422)
@@ -656,7 +686,16 @@ def wizard(request: HttpRequest) -> HttpResponse:
             "place": request.POST.get(f"{prefix}_place", "").strip()[:80] or None,
         }
 
-    pair = create_pair(owner, person("a", da), person("b", db), mode)
+    pair = _own_pair(request, request.POST.get("pair"))
+    if pair:  # the same pair, more precise: answers, plan and partner link stay
+        update_person(pair.a, person("a", da))
+        if not pair.partner_id:  # a linked partner keeps their own data (they edit it in «Мои данные»)
+            update_person(pair.b, person("b", db))
+        pair.mode = mode
+        pair.save(update_fields=["mode"])
+    else:
+        pair = create_pair(owner, person("a", da), person("b", db), mode)
+    request.session.pop("quick_dates", None)
     target = reverse("person_quiz", args=[pair.a.id]) if mode == "deep" else reverse("generating") + f"?r={request_report(pair).id}"
     if not owner.is_account:  # data first, then «where do we save it?» — the calculation already runs meanwhile
         target = reverse("login") + "?" + urlencode({"next": target, "why": "save"})
@@ -717,6 +756,8 @@ def _stored(request: HttpRequest, rid, template: str, **ctx) -> HttpResponse:
         "invite_url": reverse("invite", args=[stored.id]),
         "share_url": request.build_absolute_uri(reverse("public_share", args=[share_token(stored)])),
     }
+    if owner and pair.owner_id == owner.id:
+        extra["upgrade_url"] = reverse("wizard") + "?" + urlencode({"mode": "extended", "pair": str(pair.id)})
     return _render_report(request, report_of(stored), template, reverse("stored_report", args=[stored.id]), extra, **ctx)
 
 
