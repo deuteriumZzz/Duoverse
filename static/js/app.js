@@ -201,7 +201,128 @@
   document.addEventListener("DOMContentLoaded", () => init(document));
   document.addEventListener("htmx:load", (e) => init(e.detail.elt));
 
+  /* ── Birth-date picker (templates/components/date_field.html): typing ДД.ММ.ГГГГ or a calendar with
+     day / month / year views; values are ISO strings, everything in UTC so time zones never shift a day. ── */
+  const pad = (n) => String(n).padStart(2, "0");
+  const isoOf = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const localToday = () => { const t = new Date(); return isoOf(t.getFullYear(), t.getMonth(), t.getDate()); };
+  const toText = (iso) => (iso ? iso.split("-").reverse().join(".") : "");
+  const fromText = (t) => {
+    const r = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(t);
+    if (!r) return "";
+    const [d, m, y] = [+r[1], +r[2] - 1, +r[3]];
+    const dt = new Date(Date.UTC(y, m, d));
+    return dt.getUTCMonth() === m && dt.getUTCDate() === d ? isoOf(y, m, d) : "";
+  };
+  const fmt = (o) => new Intl.DateTimeFormat(document.documentElement.lang || "ru", { ...o, timeZone: "UTC" });
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const MONTHS = [...Array(12)].map((_, i) => cap(fmt({ month: "long" }).format(Date.UTC(2000, i, 1))));
+  const MONTHS_SHORT = [...Array(12)].map((_, i) => cap(fmt({ month: "short" }).format(Date.UTC(2000, i, 1)).replace(".", "")));
+  const WEEK = [...Array(7)].map((_, i) => fmt({ weekday: "short" }).format(Date.UTC(2024, 0, 1 + i)));  // 2024-01-01 is a Monday
+  const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const datePicker = () => ({
+    value: "", text: "", open: false, view: "days", y: 1995, m: 5, focused: "",
+    min: "1900-01-01", max: localToday(), months: MONTHS, monthsShort: MONTHS_SHORT, week: WEEK,
+    init() {
+      this.value = this.value || this.$el.dataset.value || "";
+      this.text = toText(this.value);
+      this.$watch("value", (v) => { if (v !== fromText(this.text)) this.text = toText(v); this.check(); });
+      this.$nextTick(() => this.check());
+    },
+    get hint() {
+      return { days: "Можно ввести с клавиатуры: 14031996", months: "Выберите месяц", years: "Выберите год" }[this.view];
+    },
+    inRange(iso) { return iso >= this.min && iso <= this.max; },
+    check() {
+      const el = this.$refs.text;
+      if (el) el.setCustomValidity(this.text && !this.value ? "Укажите дату между 1900 годом и сегодняшним днём" : "");
+    },
+    typed(e) {
+      const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+      this.text = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join(".");
+      e.target.value = this.text;
+      const iso = fromText(this.text);
+      this.value = iso && this.inRange(iso) ? iso : "";
+      if (this.value) { this.go(this.value); this.view = "days"; this.focused = this.value; }
+      this.check();
+    },
+    go(iso) { this.y = +iso.slice(0, 4); this.m = +iso.slice(5, 7) - 1; },
+    openPicker(focusGrid = false) {
+      if (!this.open) {
+        if (this.value) { this.go(this.value); this.view = "days"; this.focused = this.value; }
+        else { this.y = 1995; this.view = "years"; this.focused = ""; }  // birth dates are decades back: start with years
+      }
+      this.open = true;
+      this.$nextTick(() => {
+        const pop = this.$refs.pop, box = this.$el.getBoundingClientRect();  // pop is mid-animation (scaled): use offset sizes
+        const over = box.left + pop.offsetWidth - (innerWidth - 12);
+        pop.style.left = over > 0 ? `${-over}px` : "0px";
+        const h = pop.offsetHeight, bar = document.querySelector(".tabbar")?.offsetHeight || 0;
+        const below = innerHeight - box.bottom - bar - 24, above = box.top - (document.querySelector("header")?.offsetHeight || 0) - 24;
+        const up = below < h && above >= h;
+        pop.classList.toggle("dp-up", up);
+        if (!up && below < h) scrollBy({ top: h - below, behavior: calm() ? "auto" : "smooth" });
+        if (focusGrid) (pop.querySelector('[tabindex="0"]') || pop.querySelector(".dp-cell:not(:disabled), .dp-day:not(:disabled)"))?.focus();
+      });
+    },
+    close(refocus = false) { this.open = false; if (refocus) this.$refs.text.focus(); },
+    get days() {
+      const lead = (new Date(Date.UTC(this.y, this.m, 1)).getUTCDay() + 6) % 7;
+      return [...Array(42)].map((_, i) => {
+        const dt = new Date(Date.UTC(this.y, this.m, i - lead + 1));
+        const iso = dt.toISOString().slice(0, 10);
+        return { iso, d: dt.getUTCDate(), out: dt.getUTCMonth() !== this.m, off: !this.inRange(iso) };
+      });
+    },
+    get years() { const start = 1900 + Math.floor((this.y - 1900) / 12) * 12; return [...Array(12)].map((_, i) => start + i); },
+    monthOk(i) { return isoOf(this.y, i, 1) <= this.max && isoOf(this.y, i, 28) >= this.min; },
+    canStep(dir) {
+      const maxY = +this.max.slice(0, 4);
+      if (this.view === "years") return dir < 0 ? this.years[0] > 1900 : this.years[11] < maxY;
+      if (this.view === "months") return dir < 0 ? this.y > 1900 : this.y < maxY;
+      const first = isoOf(this.y, this.m, 1);
+      return dir < 0 ? first > this.min : isoOf(this.y, this.m + 1, 1) <= this.max;
+    },
+    step(dir) {
+      if (!this.canStep(dir)) return;
+      if (this.view === "years") this.y += 12 * dir;
+      else if (this.view === "months") this.y += dir;
+      else { const d = new Date(Date.UTC(this.y, this.m + dir, 1)); this.y = d.getUTCFullYear(); this.m = d.getUTCMonth(); }
+      this.animate("slide", dir);
+    },
+    setView(v) { this.view = v; this.animate("zoom", v === "days" ? 1 : -1); },
+    pickYear(yr) { this.y = yr; this.setView("months"); },
+    pickMonth(i) { this.m = i; this.focused = this.value && this.value.slice(0, 7) === isoOf(this.y, i, 1).slice(0, 7) ? this.value : ""; this.setView("days"); },
+    pick(iso) {
+      this.value = iso;
+      this.focused = iso;
+      setTimeout(() => this.close(true), calm() ? 0 : 260);  // let the selection pop land first
+    },
+    label(iso) { return fmt({ day: "numeric", month: "long", year: "numeric" }).format(Date.parse(iso)); },
+    key(e) {
+      const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+      if (!(e.key in moves)) return;
+      e.preventDefault();
+      const from = this.focused || isoOf(this.y, this.m, 1);
+      const dt = new Date(Date.parse(from) + moves[e.key] * 864e5).toISOString().slice(0, 10);
+      if (!this.inRange(dt)) return;
+      const monthDir = Math.sign(dt.slice(0, 7).localeCompare(isoOf(this.y, this.m, 1).slice(0, 7)));
+      this.focused = dt;
+      if (monthDir) { this.go(dt); this.animate("slide", monthDir); }
+      this.$nextTick(() => this.$refs.grid.querySelector(`[data-iso="${dt}"]`)?.focus());
+    },
+    animate(kind, dir) {
+      if (calm()) return;
+      this.$nextTick(() => {
+        const from = kind === "slide" ? { opacity: 0, transform: `translateX(${dir * 22}px)` } : { opacity: 0, transform: `scale(${dir > 0 ? 1.06 : 0.94})` };
+        this.$refs.grid.animate([from, { opacity: 1, transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
+      });
+    },
+  });
+
   document.addEventListener("alpine:init", () => {
+    Alpine.data("datePicker", datePicker);
     Alpine.store("toasts", {
       items: [],
       push(text, icon = "sparkles") {

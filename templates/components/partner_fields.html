@@ -6,10 +6,11 @@
   </div>
   <label class="block"><span class="label">Имя</span>
     <input class="field" name="{{ who }}_name" x-model="form.{{ who }}.name" placeholder="{% if who == 'a' %}Аня{% else %}Миша{% endif %}" autocomplete="{% if who == 'a' %}given-name{% else %}off{% endif %}"></label>
-  <label class="block"><span class="label">Дата рождения <span class="text-risk">*</span></span>
-    <input class="field" type="date" name="{{ who }}_date" min="1900-01-01" x-model="form.{{ who }}.date" :max="today" :aria-invalid="touched && !validDate(form.{{ who }}.date)" required>
+  <div><label class="label" for="{{ who }}_date">Дата рождения <span class="text-risk">*</span></label>
+    {% if who == 'a' %}{% include "components/date_field.html" with name="a_date" id="a_date" model="form.a.date" invalid="touched && !validDate(form.a.date)" %}
+    {% else %}{% include "components/date_field.html" with name="b_date" id="b_date" model="form.b.date" invalid="touched && !validDate(form.b.date)" %}{% endif %}
     <span x-show="touched && !validDate(form.{{ who }}.date)" x-cloak class="mt-1.5 flex items-center gap-1 text-xs font-bold text-risk-ink">{% icon 'circle-exclamation-point' 'size-3.5' %}Укажите дату между 1900 годом и сегодняшним днём</span>
-  </label>
+  </div>
   <template x-if="mode !== 'quick'">
     <div class="space-y-5">
       <div>

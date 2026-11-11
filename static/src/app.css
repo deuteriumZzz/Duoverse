@@ -446,3 +446,50 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
   .legal table { display: block; overflow-x: auto; font-size: .875rem; border-collapse: collapse; }
   .legal th, .legal td { border: 1px solid var(--color-line); padding: .5rem .75rem; text-align: left; vertical-align: top; }
 }
+
+/* Birth-date picker (components/date_field.html) */
+@layer components {
+  .dp-icon { position: absolute; right: .45rem; top: 1.625rem; translate: 0 -50%; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: .8rem; color: var(--color-ink-3);
+    transition: background .2s, color .2s, rotate .45s var(--ease-spring); }
+  .dp-icon:hover, .dp-icon.is-open { background: var(--color-sand); color: var(--color-ink); }
+  .dp-icon.is-open { rotate: -8deg; }
+  .dp-chip { width: 7.6em; text-align: center; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .dp-chip::placeholder { color: var(--t-ink); opacity: .45; }
+
+  .dp-pop { position: absolute; z-index: 40; top: calc(100% + .6rem); left: 0; width: min(20.5rem, calc(100vw - 1.5rem)); padding: .8rem; border-radius: 1.4rem;
+    background: var(--color-paper); border: 1px solid var(--color-line); transform-origin: 1.5rem top;
+    box-shadow: 0 1px 0 rgb(255 255 255 / .7) inset, 0 2px 6px -2px rgb(60 40 20 / .08), 0 28px 60px -24px rgb(60 40 20 / .32);
+    font: 600 .875rem/1.4 var(--font-sans); letter-spacing: 0; color: var(--color-ink); text-align: left; white-space: normal; vertical-align: top; }
+  .dp-pop.dp-up { top: auto; bottom: calc(100% + .6rem); transform-origin: 1.5rem bottom; }
+  .dp-up.dp-t-from { transform: translateY(6px) scale(.94); }
+  .dp-t-in { transition: opacity .22s ease-out, transform .42s var(--ease-spring); }
+  .dp-t-out { transition: opacity .14s ease-in, transform .14s ease-in; }
+  .dp-t-from { opacity: 0; transform: translateY(-6px) scale(.94); }
+  .dp-t-to { opacity: 1; transform: none; }
+
+  .dp-nav { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: .8rem; color: var(--color-ink-2); transition: background .15s, transform .2s var(--ease-spring); }
+  .dp-nav:hover:not(:disabled) { background: var(--color-sand); color: var(--color-ink); }
+  .dp-nav:active:not(:disabled) { transform: scale(.86); }
+  .dp-nav:disabled { opacity: .25; cursor: default; }
+  .dp-head { padding: .3rem .55rem; border-radius: .7rem; font-family: var(--font-display); font-size: 1rem; font-weight: 800; letter-spacing: -.02em; transition: background .15s; }
+  .dp-head:hover { background: var(--color-sand); }
+
+  .dp-day, .dp-cell { position: relative; border-radius: .85rem; font-variant-numeric: tabular-nums;
+    transition: background .15s, color .15s, transform .25s var(--ease-spring), box-shadow .2s; }
+  .dp-day { height: 2.45rem; }
+  .dp-cell { height: 2.9rem; font-weight: 700; }
+  .dp-day:hover:not(:disabled):not(.is-sel), .dp-cell:hover:not(:disabled):not(.is-sel) { background: var(--color-sand); transform: translateY(-1px); }
+  .dp-day:active:not(:disabled), .dp-cell:active:not(:disabled) { transform: scale(.88); }
+  .dp-day.is-out { color: var(--color-ink-3); opacity: .55; }
+  .dp-day:disabled, .dp-cell:disabled { color: var(--color-ink-3); opacity: .28; cursor: not-allowed; }
+  .dp-day.is-today::after { content: ""; position: absolute; left: 50%; bottom: .32rem; width: .26rem; height: .26rem; margin-left: -.13rem; border-radius: 999px; background: currentColor; }
+  .dp-day.is-sel, .dp-cell.is-sel { background: var(--t, var(--color-ink)); color: #fff; opacity: 1;
+    box-shadow: 0 8px 18px -8px var(--t, var(--color-ink)); animation: dp-pop .45s var(--ease-spring); }
+  .dp-day:focus-visible, .dp-cell:focus-visible, .dp-nav:focus-visible, .dp-head:focus-visible, .dp-icon:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+}
+@keyframes dp-pop { 0% { transform: scale(.55); } 55% { transform: scale(1.14); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .dp-day, .dp-cell, .dp-nav, .dp-icon { transition: none; animation: none; }
+  .dp-t-in, .dp-t-out { transition: opacity .12s; }
+  .dp-t-from { transform: none; }
+}

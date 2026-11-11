@@ -13,7 +13,7 @@
     {% csrf_token %}
     <label class="block"><span class="label">Имя</span><input class="field" name="name" value="{{ p.name }}" maxlength="80"></label>
     <div class="grid gap-5 sm:grid-cols-2">
-      <label class="block"><span class="label">Дата рождения</span><input class="field" type="date" name="date" min="1900-01-01" max="{% now 'Y-m-d' %}" value="{{ p.birth_date|date:'Y-m-d' }}" required></label>
+      <div><label class="label" for="p_date">Дата рождения</label>{% include "components/date_field.html" with name="date" id="p_date" value=p.birth_date|date:'Y-m-d' required=True %}</div>
       <label class="block"><span class="label">Время рождения</span><input class="field" type="time" name="time" value="{{ p.birth_time|time:'H:i' }}"></label>
     </div>
     <label class="block"><span class="label">Город рождения</span><input class="field" name="place" list="cities" value="{{ p.birth_place|default:'' }}" placeholder="Город"></label>
