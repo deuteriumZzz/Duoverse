@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./fonts.css";
 @source "../../templates";
 @source "../../apps";
 
@@ -432,3 +433,16 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
 .p-float-a { animation: float-a 6s ease-in-out infinite; }
 .p-float-b { animation: float-a 7s ease-in-out -3s infinite reverse; }
 @keyframes float-a { 0%, 100% { translate: 0 0; rotate: 0deg; } 50% { translate: 0 -6px; rotate: -2deg; } }
+
+/* Legal documents rendered from docs/legal/*.md */
+@layer components {
+  .legal h2 { margin-top: 2.25rem; font-size: 1.25rem; font-weight: 800; color: var(--color-ink); }
+  .legal h3 { margin-top: 1.5rem; font-weight: 800; color: var(--color-ink); }
+  .legal p, .legal ul, .legal table, .legal blockquote { margin-top: .75rem; }
+  .legal ul { list-style: disc; padding-left: 1.25rem; }
+  .legal li + li { margin-top: .35rem; }
+  .legal a { font-weight: 700; text-decoration: underline; }
+  .legal blockquote { border-left: 3px solid var(--color-line); padding-left: 1rem; color: var(--color-ink-3); }
+  .legal table { display: block; overflow-x: auto; font-size: .875rem; border-collapse: collapse; }
+  .legal th, .legal td { border: 1px solid var(--color-line); padding: .5rem .75rem; text-align: left; vertical-align: top; }
+}

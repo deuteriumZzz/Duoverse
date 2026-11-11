@@ -84,7 +84,11 @@
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Почта — только для входа и чеков. Зашифрована, рассылок нет.</li>
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'check' 'size-4' %}</span>Аналитики и рекламных трекеров нет. Cookies — только для входа.</li>
     </ul>
-    <a class="btn btn-ghost btn-sm mt-4" href="{% url 'export_data' %}" download>{% icon 'download' 'size-4' %}Скачать мои данные (JSON)</a>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <a class="btn btn-ghost btn-sm" href="{% url 'export_data' %}" download>{% icon 'download' 'size-4' %}Скачать мои данные (JSON)</a>
+      <a class="btn btn-ghost btn-sm" href="{% url 'privacy' %}">Политика обработки данных</a>
+    </div>
+    <p class="mt-4 text-sm text-ink-2">Вопрос о ваших данных, отзыв согласия или удаление данных партнёра, который не пользуется сервисом, — пишите на <a class="font-bold underline" href="mailto:{{ privacy_email }}">{{ privacy_email }}</a>. Ответим в течение 10 рабочих дней.</p>
   </section>
 
   <section class="mt-6 rounded-[var(--radius-card)] border-2 border-risk/30 p-6" data-reveal>

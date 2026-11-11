@@ -301,6 +301,23 @@ def page(request: HttpRequest, name: str) -> HttpResponse:
     return render(request, PAGES[name])
 
 
+LEGAL = {"privacy": "privacy-policy.md", "consent": "consent.md", "terms": "offer.md"}
+LEGAL_LINKS = {"(privacy-policy.md)": "(/privacy/)", "(consent.md)": "(/consent/)", "(offer.md)": "(/terms/)"}
+
+
+def legal(request: HttpRequest, doc: str) -> HttpResponse:
+    """The documents are kept as Markdown in docs/legal so a lawyer edits one file and the site follows."""
+    import markdown
+
+    text = (settings.BASE_DIR / "docs" / "legal" / LEGAL[doc]).read_text(encoding="utf-8")
+    for md, url in LEGAL_LINKS.items():
+        text = text.replace(md, url)
+    title, _, body = text.partition("\n")
+    return render(
+        request, "pages/legal.html", {"title": title.lstrip("# "), "body": markdown.markdown(body, extensions=["tables"]), "doc": doc}
+    )
+
+
 def set_scenario(request: HttpRequest, key: str) -> HttpResponse:
     if key in {s.key for s in report_provider().scenarios()}:
         request.session["scenario"] = key
@@ -856,12 +873,13 @@ def join(request: HttpRequest, code: str) -> HttpResponse:
             {**ctx, "state": "login", "login_url": reverse("login") + "?" + urlencode({"next": request.path, "why": "join"})},
         )
     if pair.partner_id != owner.id:
-        if request.method == "POST" and request.POST.get("action") == "accept":
+        consent_missing = request.method == "POST" and request.POST.get("consent") != "on"
+        if request.method == "POST" and request.POST.get("action") == "accept" and not consent_missing:
             pair.partner = owner
             pair.save(update_fields=["partner"])
             notify_partner(pair, "b", "joined")
             return redirect("join", code=pair.invite_code)
-        return render(request, "pages/join.html", {**ctx, "state": "accept"})
+        return render(request, "pages/join.html", {**ctx, "state": "accept", "consent_missing": consent_missing})
     if not pair.b.answers:  # the partner fills in their own questionnaire
         if request.method == "POST":
             if _save_answers(request, pair.b) is None:
@@ -1243,6 +1261,7 @@ def account(request: HttpRequest) -> HttpResponse:
         if has_plus(owner)
         else None,
         "price_plus": settings.PRICE_PLUS,
+        "privacy_email": settings.PRIVACY_EMAIL,
         "this_device": device.id if device else None,
     }
     return render(request, "pages/account.html", ctx)

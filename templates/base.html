@@ -7,9 +7,7 @@
   <meta name="description" content="Совместимость пары в четырёх вселенных: астрология, числа, таро и психология отношений. Каждый вывод — с объяснением.">
   <meta name="theme-color" content="#fbf7f2">
   <link rel="icon" type="image/png" href="{% static 'pwa/icon-192.png' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap">
+  <link rel="preload" href="{% static 'fonts/manrope-normal-cyrillic.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% asset 'dist/app.css' %}">
   <link rel="manifest" href="{% url 'manifest' %}">
   <link rel="apple-touch-icon" href="{% static 'pwa/apple-touch-icon.png' %}">
@@ -79,11 +77,12 @@
       <div class="text-sm"><p class="eyebrow mb-3">Честно</p>
         <ul class="space-y-2 font-semibold text-ink-2">
           <li><a class="hover:text-ink" href="{% url 'disclaimer' %}">О методе и дисклеймер</a></li>
-          <li><a class="hover:text-ink" href="{% url 'account' %}#privacy">Приватность · 152-ФЗ</a></li>
+          <li><a class="hover:text-ink" href="{% url 'privacy' %}">Политика обработки данных</a></li>
+          <li><a class="hover:text-ink" href="{% url 'terms' %}">Соглашение и оферта</a></li>
           <li><a class="hover:text-ink" href="{% url 'states' %}">Состояния интерфейса</a></li>
         </ul></div>
     </div>
-    <div class="mx-auto max-w-6xl px-4 pb-10 text-xs text-ink-3 sm:px-6">© 2026 Duoverse · сделано с заботой о парах</div>
+    <div class="mx-auto max-w-6xl px-4 pb-10 text-xs text-ink-3 sm:px-6"><span class="mr-2 inline-grid h-5 place-items-center rounded border border-current px-1 font-bold" title="Для лиц старше 18 лет">18+</span>© 2026 Duoverse · сделано с заботой о парах</div>
   </footer>
   {% endblock %}
 

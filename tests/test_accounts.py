@@ -52,7 +52,7 @@ def test_partner_sees_only_the_shared_pair_and_loses_it_when_unlinked():
 
     misha = Client()
     sign_in(misha, "misha@example.com")
-    misha.post(f"/join/{code}/", {"action": "accept"})
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
     assert misha.get(f"/r/{shared.id}/").status_code == 200
     assert misha.get(f"/r/{other.id}/").status_code == 404
     assert misha.get(f"/r/{shared.id}/invite/").status_code == 404  # only the creator invites
@@ -149,7 +149,7 @@ def test_partner_edits_own_birth_data_but_cannot_delete_it():
     code = re.search(r"/join/([A-Z0-9]{6})/", anya.get(f"/r/{stored.id}/invite/").content.decode()).group(1)
     misha = Client()
     sign_in(misha, "misha@example.com")
-    misha.post(f"/join/{code}/", {"action": "accept"})
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
     b = stored.pair.b
     assert misha.get(f"/profiles/{b.id}/").status_code == 200
     misha.post(f"/profiles/{b.id}/", {"name": "Миша", "date": "1994-09-03", "time": "", "place": ""})
@@ -179,7 +179,7 @@ def _linked_pair():
     code = re.search(r"/join/([A-Z0-9]{6})/", anya.get(f"/r/{stored.id}/invite/").content.decode()).group(1)
     misha = Client()
     sign_in(misha, "misha@example.com")
-    misha.post(f"/join/{code}/", {"action": "accept"})
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
     return anya, misha, stored
 
 

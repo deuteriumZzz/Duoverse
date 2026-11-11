@@ -40,7 +40,10 @@
   {% if state == "login" %}
     <a href="{{ login_url }}" class="btn btn-primary mt-6 w-full">{% icon 'mail' 'size-4' %}Войти по почте и присоединиться</a>
   {% else %}
-    <form method="post" class="mt-6">{% csrf_token %}<input type="hidden" name="action" value="accept"><button class="btn btn-primary w-full">{% icon 'heart-handshake' 'size-4' %}Присоединиться к паре</button></form>
+    <form method="post" class="mt-6">{% csrf_token %}<input type="hidden" name="action" value="accept">
+      {% include "components/consent_check.html" %}
+      {% if consent_missing %}<p class="mt-2 text-sm font-bold text-risk" role="alert">Отметьте галочку, чтобы присоединиться.</p>{% endif %}
+      <button class="btn btn-primary mt-5 w-full">{% icon 'heart-handshake' 'size-4' %}Присоединиться к паре</button></form>
   {% endif %}
   {% elif state == "own" %}
     <a href="{% url 'history' %}" class="btn btn-ghost mt-8 w-full">Мои разборы</a>

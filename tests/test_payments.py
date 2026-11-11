@@ -32,7 +32,7 @@ def test_test_checkout_unlocks_the_pair_for_both(settings):
     code = re.search(r"/join/([A-Z0-9]{6})/", anya.get(f"/r/{stored.id}/invite/").content.decode()).group(1)
     misha = Client()
     sign_in(misha, "misha@example.com")
-    misha.post(f"/join/{code}/", {"action": "accept"})
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
 
     checkout = misha.post("/pay/deep/", {"pair": stored.pair.id})["Location"]  # the partner can pay too
     assert checkout.startswith("/pay/test/")
@@ -88,7 +88,7 @@ def test_quiz_of_the_week_is_plus_and_opens_after_both_answer():
     code = re.search(r"/join/([A-Z0-9]{6})/", anya.get(f"/r/{stored.id}/invite/").content.decode()).group(1)
     misha = Client()
     sign_in(misha, "misha@example.com")
-    misha.post(f"/join/{code}/", {"action": "accept"})
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
     assert "Квизы — в «Паре+»" in anya.get("/daily/quiz/").content.decode()
 
     mark_paid(Purchase.objects.create(owner=stored.pair.owner, kind="plus", amount=249))

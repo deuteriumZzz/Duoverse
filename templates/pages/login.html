@@ -53,7 +53,7 @@
     <input id="email" name="email" type="email" class="field" autocomplete="email" required autofocus value="{{ email|default:'' }}" placeholder="you@example.com">
     {% if error %}<p class="mt-2 text-sm text-risk-ink" role="alert">Проверьте адрес почты.</p>{% endif %}
     <button class="btn btn-primary mt-4 w-full">{% icon 'mail' 'size-4' %}Получить код</button>
-    <p class="mt-4 text-xs leading-relaxed text-ink-3">Почту храним зашифрованной и используем только для входа и чеков. <a href="{% url 'disclaimer' %}" class="underline">Как мы обращаемся с данными</a></p>
+    <p class="mt-4 text-xs leading-relaxed text-ink-3">Почту храним зашифрованной и используем только для входа и чеков. Входя, вы принимаете <a href="{% url 'terms' %}" class="underline">Соглашение</a> и <a href="{% url 'privacy' %}" class="underline">Политику обработки данных</a>.</p>
   </form>
   {% endif %}
 </div>

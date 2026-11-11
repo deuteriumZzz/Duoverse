@@ -1,0 +1,4 @@
+<label class="flex cursor-pointer items-start gap-3 text-sm text-ink-2">
+  <input type="checkbox" name="consent" required class="mt-0.5 size-4 shrink-0 accent-[var(--color-ink)]">
+  <span>Мне есть 18 лет. Я даю <a href="{% url 'consent' %}" target="_blank" class="font-bold underline">согласие на обработку персональных данных</a>{% if partner_data %}, в том числе данных партнёра, которые ввожу с его согласия,{% endif %} и принимаю <a href="{% url 'privacy' %}" target="_blank" class="font-bold underline">Политику</a>.</span>
+</label>

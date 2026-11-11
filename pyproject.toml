@@ -15,6 +15,7 @@ dependencies = [
   "anthropic~=2.6",
   "whitenoise~=6.9",
   "segno~=1.6",
+  "markdown~=3.7",
 ]
 
 [dependency-groups]

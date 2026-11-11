@@ -9,10 +9,11 @@ from pathlib import Path
 from typing import Protocol
 
 from apps.compatibility.domain.report import Report
+from apps.core.domain.names import forms
 from apps.insights.domain.validator import PLANETS, check_paragraph
 
 log = logging.getLogger(__name__)
-PROMPT_VERSION = "stitch_v1"
+PROMPT_VERSION = "stitch_v2"
 SYSTEM = (Path(__file__).resolve().parent.parent / "prompts" / f"{PROMPT_VERSION}.md").read_text(encoding="utf-8")
 MAX_ATTEMPTS = 3  # first try + 2 retries with the validator's feedback
 
@@ -53,14 +54,32 @@ class Cache(Protocol):
     def set(self, key: str, value: object, timeout: int | None = None) -> None: ...
 
 
+def masks(report: Report) -> list[tuple[str, str]]:
+    """(name form, token) pairs, longest first: names never leave our servers (152-ФЗ, no cross-border transfer).
+    The model writes {a_gen}, {b_dat}… and `apply` puts the real forms back."""
+    pairs = [(form, "{" + who + case + "}") for who, p in zip("ab", report.partners, strict=True) for case, form in forms(p.name).items()]
+    return sorted(pairs, key=lambda m: -len(m[0]))
+
+
+def _mask(text: str, pairs: list[tuple[str, str]]) -> str:
+    for form, token in pairs:
+        text = re.sub(rf"(?<!\w){re.escape(form)}(?!\w)", token, text)
+    return text
+
+
+def _unmask(text: str, pairs: list[tuple[str, str]]) -> str:
+    for form, token in pairs:
+        text = text.replace(token, form)
+    return text
+
+
 def facts_of(report: Report) -> dict:
-    """The closed context: facts + blocks with ids. Nothing else reaches the model."""
-    a, b = report.partners
+    """The closed context: facts + blocks with ids, names replaced by tokens. Nothing else reaches the model."""
     blocks = {"summary": report.summary, **{f"sphere:{s.key}:{i}": p for s in report.spheres for i, p in enumerate(s.story)}}
     blocks |= {f"insight:{i.title}": i.text for i in report.synergy + report.friction}
     blocks |= {f"evidence:{e.source}": f"{e.source} — {e.detail}" for s in report.spheres for e in s.evidence}
-    return {
-        "names": [a.name, b.name],
+    facts = {
+        "names": ["{a}", "{b}"],
         "pair_type": {"name": report.pair_type.name, "tagline": report.pair_type.tagline, "dynamic": report.pair_type.dynamic},
         "total_score": report.total_score,
         "categories": [{"title": c.title, "score": c.score, "tone": c.tone} for c in report.categories],
@@ -76,6 +95,7 @@ def facts_of(report: Report) -> dict:
         ],
         "blocks": [{"id": k, "text": v} for k, v in blocks.items()],
     }
+    return json.loads(_mask(json.dumps(facts, ensure_ascii=False), masks(report)))
 
 
 def _allowed(facts: dict) -> tuple[set[str], set[str], set[str]]:
@@ -90,6 +110,9 @@ def validate(payload: dict, facts: dict) -> list[str]:
     ids, numbers, planets = _allowed(facts)
     errors = [f"summary: {e}" for e in check_paragraph(payload["summary"]["text"], payload["summary"]["block_ids"], ids, numbers, planets)]
     keys = {s["key"] for s in facts["spheres"]}
+    tokens = {"{" + w + c + "}" for w in "ab" for c in ("", "_gen", "_dat", "_acc", "_ins", "_pre")}
+    texts = [payload["summary"]["text"]] + [p["text"] for s in payload["spheres"] for p in s["paragraphs"]]
+    errors += [f"неизвестная метка {t}" for t in sorted({t for x in texts for t in re.findall(r"\{[^{}]*\}", x)} - tokens)]
     for s in payload["spheres"]:
         if s["key"] not in keys:
             errors.append(f"неизвестная сфера {s['key']}")
@@ -136,6 +159,7 @@ class Stitcher:
 
 
 def apply(report: Report, payload: dict) -> Report:
-    stories = {s["key"]: [p["text"] for p in s["paragraphs"]] for s in payload["spheres"] if s["paragraphs"]}
+    m = masks(report)
+    stories = {s["key"]: [_unmask(p["text"], m) for p in s["paragraphs"]] for s in payload["spheres"] if s["paragraphs"]}
     spheres = [s.model_copy(update={"story": stories.get(s.key, s.story)}) for s in report.spheres]
-    return report.model_copy(update={"summary": payload["summary"]["text"], "spheres": spheres})
+    return report.model_copy(update={"summary": _unmask(payload["summary"]["text"], m), "spheres": spheres})

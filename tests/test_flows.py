@@ -108,7 +108,9 @@ def test_quiz_answers_are_saved_and_unlock_psychology():
     partner = Client()  # another phone
     assert "Войти по почте" in partner.get(f"/join/{code}/").content.decode()
     sign_in(partner, "misha@example.com")
-    assert partner.post(f"/join/{code}/", {"action": "accept"}).status_code == 302
+    assert "Отметьте галочку" in partner.post(f"/join/{code}/", {"action": "accept"}).content.decode()  # 18+ and consent first
+    assert pair.partner_id is None
+    assert partner.post(f"/join/{code}/", {"action": "accept", "consent": "on"}).status_code == 302
     assert partner.post(f"/join/{code}/", {"answers": json.dumps(answers_for("misha"))}).status_code == 302
     status = client.get(f"/p/{pair.id}/status/")
     rid = status["Location"].split("r=")[1]
@@ -176,3 +178,10 @@ def test_report_nav_hides_layers_behind_one_tab_and_factors_link_into_them(clien
     assert "Все слои" in astro and 'id="asp-' in astro
     razbor = client.get("/report/razbor/").content.decode()
     assert 'href="/report/astrology/#asp-' in razbor and "Венера (Аня)" not in razbor
+
+
+@pytest.mark.parametrize("url", ["/privacy/", "/consent/", "/terms/"])
+def test_legal_pages_render_from_docs(client, url):
+    body = client.get(url).content.decode()
+    assert "<table" in body or "<h2" in body
+    assert "fonts.googleapis" not in body
