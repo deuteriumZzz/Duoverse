@@ -14,6 +14,7 @@ dependencies = [
   "cryptography~=46.0",
   "anthropic~=2.6",
   "whitenoise~=6.9",
+  "segno~=1.6",
 ]
 
 [dependency-groups]
@@ -39,6 +40,8 @@ ignore = ["E731"]
 "apps/web/views.py" = ["E501"]
 # user-facing Russian copy is kept on one line for translators and reviewers
 "apps/*/domain/*.py" = ["E501"]
+# the drafting prompt is prose for the model, one rule per line
+"apps/knowledge/management/commands/kb_draft.py" = ["E501"]
 "apps/*/infrastructure/*.py" = ["E501"]
 "apps/*/application/*.py" = ["E501"]
 "apps/compatibility/services.py" = ["E501"]

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6" x-data="{ items: {{ items|length }}, confirm: null }">
   <div class="flex flex-wrap items-end justify-between gap-4">
-    <div><h1 class="text-3xl font-extrabold">Мои разборы</h1><p class="mt-1 flex items-center gap-1.5 text-ink-2">{% icon 'smartphone' 'size-4' %}Хранятся на этом устройстве — без регистрации.</p></div>
+    <div><h1 class="text-3xl font-extrabold">Мои разборы</h1><p class="mt-1 flex items-center gap-1.5 text-ink-2">{% icon 'smartphone' 'size-4' %}Ваши разборы и пары, к которым вы присоединились.</p></div>
     <div class="flex gap-2"><a href="{% url 'profiles' %}" class="btn btn-ghost btn-sm">{% icon 'users' 'size-4' %}Профили</a><a href="{% url 'account' %}" class="btn btn-ghost btn-sm">{% icon 'settings' 'size-4' %}Мои данные</a></div>
   </div>
   <ul class="mt-8 space-y-3" x-show="items > 0">
@@ -14,11 +14,14 @@
       <div class="min-w-0 flex-1">
         <p class="font-bold">{{ it.names }}</p>
         <p class="text-sm text-ink-3">{{ it.pair_type }} · <span class="mono">{{ it.created_at|date:"j E Y" }}</span></p>
+        {% if it.shared %}<p class="mt-1 flex items-center gap-1.5 text-xs font-bold text-synergy-ink">{% icon 'heart-handshake' 'size-3.5' %}{% if it.mine %}партнёр присоединился{% else %}вы в этой паре как партнёр{% endif %}</p>{% endif %}
       </div>
       <span class="chip bg-sand">{{ it.mode }}</span>
       <div class="flex gap-1.5">
         <a href="{% url 'stored_report' it.id %}" class="btn btn-ghost btn-sm">Открыть</a>
-        <button class="btn btn-ghost btn-icon btn-sm text-risk-ink hover:bg-risk-soft" aria-label="Удалить отчёт {{ it.names }}" @click="confirm = '{{ it.id }}'">{% icon 'trash' 'size-4' %}</button>
+        {% if it.shared and not it.mine %}<a href="{% url 'profile_edit' it.b_id %}" class="btn btn-ghost btn-sm">Мои данные</a>{% endif %}
+        {% if it.shared %}<form method="post" action="{% url 'unlink_partner' it.pair_id %}" onsubmit="return confirm('{% if it.mine %}Отвязать партнёра? Он(а) больше не увидит эту пару.{% else %}Выйти из пары? Вы больше не увидите этот разбор.{% endif %}')">{% csrf_token %}<button class="btn btn-ghost btn-sm" title="{% if it.mine %}Отвязать партнёра{% else %}Выйти из пары{% endif %}">{% icon 'unlink' 'size-4' %}<span class="sr-only">{% if it.mine %}Отвязать партнёра{% else %}Выйти из пары{% endif %}</span></button></form>{% endif %}
+        {% if it.mine %}        <button class="btn btn-ghost btn-icon btn-sm text-risk-ink hover:bg-risk-soft" aria-label="Удалить отчёт {{ it.names }}" @click="confirm = '{{ it.id }}'">{% icon 'trash' 'size-4' %}</button>{% endif %}
       </div>
     </li>
     {% endfor %}

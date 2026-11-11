@@ -12,3 +12,11 @@ def knowledge_seed(request):
 
         if not KnowledgeBlock.objects.exists():
             load_seed(KnowledgeBlock)
+
+
+@pytest.fixture(autouse=True)
+def fresh_cache():
+    """Sign-in codes and resend throttling live in the cache; every test starts without them."""
+    from django.core.cache import cache
+
+    cache.clear()

@@ -378,3 +378,48 @@ def tab_active(tab: str, key: str) -> bool:
 @register.simple_tag
 def sprite_url() -> str:
     return _sprite_url()
+
+
+@register.filter
+def device_label(ua: str) -> str:
+    """«iPhone · Safari» from a user agent — enough to recognise your own devices."""
+    os_ = next(
+        (
+            n
+            for k, n in [
+                ("iPhone", "iPhone"),
+                ("iPad", "iPad"),
+                ("Android", "Android"),
+                ("Mac OS X", "Mac"),
+                ("Windows", "Windows"),
+                ("Linux", "Linux"),
+            ]
+            if k in ua
+        ),
+        "Устройство",
+    )
+    br = next(
+        (
+            n
+            for k, n in [
+                ("YaBrowser", "Яндекс Браузер"),
+                ("Edg/", "Edge"),
+                ("Firefox", "Firefox"),
+                ("Chrome", "Chrome"),
+                ("Safari", "Safari"),
+            ]
+            if k in ua
+        ),
+        "",
+    )
+    return f"{os_} · {br}" if br else os_
+
+
+@register.simple_tag
+def qr_svg(data: str) -> str:
+    """Inline SVG QR code for invite links; scales with its box and follows the text colour."""
+    import segno
+
+    svg = segno.make(data, error="m").svg_inline(scale=1, border=2, dark="#000", light=None, omitsize=True)
+    svg = svg.replace('stroke="#000"', 'stroke="currentColor"')  # segno validates colours; recolour after
+    return mark_safe(svg.replace("<svg ", '<svg class="h-full w-full" ', 1))

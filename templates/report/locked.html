@@ -1,0 +1,9 @@
+{% extends "report/_layout.html" %}
+{% block report %}
+<section class="mx-auto max-w-2xl py-6 text-center">
+  <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-sand">{% icon 'lock' 'size-6' %}</span>
+  <h2 class="mt-5 text-2xl font-extrabold">{{ locked_title }}</h2>
+  <p class="mt-2 text-ink-2">Здесь всё, из чего сложился ваш разбор: карты и аспекты, психологические шкалы, числа и арканы — с графиками и объяснениями.</p>
+  <div class="text-left">{% include "components/paywall.html" %}</div>
+</section>
+{% endblock %}

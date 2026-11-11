@@ -16,7 +16,22 @@ pytestmark = pytest.mark.django_db(transaction=True)  # on_commit hooks fire, Ce
 TABS = ["", "astrology/", "psychology/", "numbers/", "tarot/", "habits/", "share/", "pdf/", "weights/", "razbor/"]
 
 
-def make_pair(client: Client, mode: str = "extended") -> StoredReport:
+def sign_in(client: Client, email: str = "anya@example.com", next_url: str = "") -> str:
+    """Email-code sign-in as a person would do it; returns where the app sends them next."""
+    from django.core.cache import cache
+
+    from apps.compatibility.services import email_hash
+
+    mail.outbox.clear()
+    cache.delete(f"login-sent:{email_hash(email)}")  # tests sign in faster than the 45 s resend pause
+    client.post("/login/", {"email": email, "next": next_url})
+    code = re.search(r"Ваш код: (\d{6})", mail.outbox[-1].body).group(1)
+    resp = client.post("/login/code/", {"code": code, "next": next_url})
+    assert resp.status_code == 302, resp
+    return resp["Location"]
+
+
+def make_pair(client: Client, mode: str = "extended", email: str = "anya@example.com") -> StoredReport:
     resp = client.post(
         "/new/",
         {
@@ -32,9 +47,15 @@ def make_pair(client: Client, mode: str = "extended") -> StoredReport:
         },
     )
     assert resp.status_code == 302
+    location = resp["Location"]
+    if location.startswith("/login/"):
+        from urllib.parse import parse_qs, urlparse
+
+        location = sign_in(client, email, parse_qs(urlparse(location).query)["next"][0])
     if mode == "deep":
+        resp["Location"] = location
         return resp
-    rid = resp["Location"].split("r=")[1]
+    rid = location.split("r=")[1]
     return StoredReport.objects.get(id=rid)
 
 
@@ -83,10 +104,12 @@ def test_quiz_answers_are_saved_and_unlock_psychology():
 
     pair = person.owner.pairs.first()
     invite_page = client.get(resp["Location"]).content.decode()
-    token = re.search(r"/join/([^/\"']+)/", invite_page).group(1)
-    partner = Client()  # another device, no owner cookie
-    assert partner.get(f"/join/{token}/").status_code == 200
-    assert partner.post(f"/join/{token}/", {"answers": json.dumps(answers_for("misha"))}).status_code == 200
+    code = re.search(r"/join/([A-Z0-9]{6})/", invite_page).group(1)
+    partner = Client()  # another phone
+    assert "Войти по почте" in partner.get(f"/join/{code}/").content.decode()
+    sign_in(partner, "misha@example.com")
+    assert partner.post(f"/join/{code}/", {"action": "accept"}).status_code == 302
+    assert partner.post(f"/join/{code}/", {"answers": json.dumps(answers_for("misha"))}).status_code == 302
     status = client.get(f"/p/{pair.id}/status/")
     rid = status["Location"].split("r=")[1]
     report = StoredReport.objects.get(id=rid)
@@ -110,10 +133,8 @@ def test_export_magic_link_and_delete_everything():
     export = json.loads(client.get("/account/export/").content)
     assert export["people"][0]["birth"]["date"] == "1996-03-14" and len(export["reports"]) == 1
 
-    assert client.post("/account/email/", {"email": "me@example.com"}).status_code == 204
-    link = re.search(r"http://testserver(/m/[^\s]+/)", mail.outbox[0].body).group(1)
     other_device = Client()
-    other_device.get(link)
+    sign_in(other_device, "anya@example.com")  # same account on a second phone
     assert other_device.get(f"/r/{stored.id}/").status_code == 200
 
     client.post("/account/delete/")

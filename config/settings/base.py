@@ -77,6 +77,23 @@ SHARE_LINK_MAX_AGE = 60 * 60 * 24 * 30
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Duoverse <hello@duoverse.app>")
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
+# One-tap sign-in (ADR-0010). A button appears only when its keys are set.
+YANDEX_CLIENT_ID = env("YANDEX_CLIENT_ID", default="")
+YANDEX_CLIENT_SECRET = env("YANDEX_CLIENT_SECRET", default="")
+VK_CLIENT_ID = env("VK_CLIENT_ID", default="")
+VK_SERVICE_TOKEN = env("VK_SERVICE_TOKEN", default="")  # only for apps registered as confidential
+TELEGRAM_BOT_NAME = env("TELEGRAM_BOT_NAME", default="")  # without @; set the site domain with BotFather /setdomain
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", default="")
+TELEGRAM_WEBHOOK_SECRET = env("TELEGRAM_WEBHOOK_SECRET", default="")  # random string; registered with `manage.py telegram_setup`
+SITE_URL = env("SITE_URL", default="http://localhost:8000")  # absolute links in notifications
+REMINDER_HOUR = env.int("REMINDER_HOUR", default=19)
+# Payments (ADR-0011): YooKassa. Without keys, DEBUG shows a test checkout and production hides payment.
+YOOKASSA_SHOP_ID = env("YOOKASSA_SHOP_ID", default="")
+YOOKASSA_SECRET_KEY = env("YOOKASSA_SECRET_KEY", default="")
+YOOKASSA_VAT_CODE = env.int("YOOKASSA_VAT_CODE", default=1)  # 1 = без НДС; set to your tax regime
+PRICE_DEEP = env.int("PRICE_DEEP", default=490)
+PRICE_PLUS = env.int("PRICE_PLUS", default=249)
+PLUS_DAYS = 30  # local time for the evening «question of the day» reminder
 LLM_MODEL = env("LLM_MODEL", default="claude-opus-5-5")
 LLM_EFFORT = env("LLM_EFFORT", default="medium")
 

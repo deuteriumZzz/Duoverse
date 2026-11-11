@@ -101,7 +101,8 @@ def test_generation_polling_redirects_to_report(client):
 
 def test_wizard_requires_dates(client):
     assert client.post("/new/", {"a_date": "", "b_date": "1994-09-02"}).status_code == 422
-    assert client.post("/new/", {"a_date": "1996-03-14", "b_date": "1994-09-02"})["Location"].startswith("/generating/?r=")
+    location = client.post("/new/", {"a_date": "1996-03-14", "b_date": "1994-09-02"})["Location"]
+    assert location.startswith("/login/?next=%2Fgenerating%2F%3Fr%3D")  # data first, then «where do we save it?»
 
 
 def test_scenario_switch_rejects_open_redirect(client):

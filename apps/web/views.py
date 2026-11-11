@@ -1,37 +1,58 @@
 """Thin views: read from the ReportProvider and render. No business logic here."""
 
+import hashlib
 import json
+import secrets
+import uuid
 from datetime import date, time
 
+from django.conf import settings
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.db import models
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from apps.compatibility import plan as habit_plan
+from apps.compatibility.access import has_plus, mark_paid, plus_for_pair, unlocked
 from apps.compatibility.domain.archetypes import DYNAMICS, ELEMENTS, MODES, ROLES, dynamic_for, pair_name
 from apps.compatibility.domain.report import Report, ReportUnavailable
-from apps.compatibility.models import Owner, Pair, Person, StoredReport
+from apps.compatibility.infrastructure import oauth, yookassa
+from apps.compatibility.infrastructure.telegram import send_message
+from apps.compatibility.models import DailyAnswer, Device, Owner, Pair, Person, Purchase, QuizAnswer, StoredReport
+from apps.compatibility.notify import notify_partner
 from apps.compatibility.services import (
     birth_payload,
+    check_login_code,
     create_pair,
-    forget_owner,
-    from_invite_token,
-    from_magic_token,
+    daily_state,
+    email_hash,
+    forget_device,
+    from_login_link,
     from_share_token,
+    get_device,
     get_owner,
-    invite_token,
+    invite_code,
+    issue_login_code,
     latest_ready,
-    magic_token,
+    login_link_token,
+    pair_by_code,
+    pairs_of,
     person_input,
     remember_owner,
     report_of,
     request_report,
     share_token,
+    side_of,
+    sign_in,
 )
 from apps.core.domain.names import gen
 from apps.psychology.domain import scoring as psy
@@ -116,8 +137,8 @@ PLANS = [
         "per": "навсегда",
         "free": True,
         "cta": "Начать",
-        "small": "без карты и регистрации",
-        "features": ["Быстрый отчёт по датам", "Балл пары и 3 категории", "Арканы партнёров и пары", "Вопрос дня"],
+        "small": "без карты · вход по почте за минуту",
+        "features": ["Итог: тип пары, балл и точность", "Приглашение партнёра", "Вопрос дня на двоих", "План привычек на неделю"],
     },
     {
         "name": "Глубокий разбор",
@@ -125,13 +146,13 @@ PLANS = [
         "price": "490 ₽",
         "per": "разово",
         "featured": True,
-        "cta": "Открыть разбор",
-        "small": "без регистрации · чек придёт на email",
+        "cta": "Выбрать разбор",
+        "small": "разово за пару · открывается вам обоим · чек на почту",
         "features": [
             "Все 4 вселенные и индекс согласия",
             "Научный слой: Big Five, привязанность, Готтман",
             "«Почему так» у каждого вывода",
-            "Парный режим",
+            "Открывается вам обоим",
             "План микропривычек",
             "PDF-версия",
         ],
@@ -142,8 +163,14 @@ PLANS = [
         "price": "249 ₽",
         "per": "в месяц",
         "cta": "Подключить",
-        "small": "отмена в один клик · без аккаунта",
-        "features": ["Всё из глубокого разбора", "Безлимитные пересчёты", "Ежедневный слой без ограничений", "История и сравнение отчётов"],
+        "kind": "plus",
+        "small": "на 30 дней · без автосписаний",
+        "features": [
+            "Полные разборы всех ваших пар",
+            "Квизы для пары каждую неделю",
+            "История ответов на вопросы дня",
+            "Действует и для партнёра",
+        ],
     },
 ]
 COMPARE = [
@@ -151,9 +178,10 @@ COMPARE = [
     ("Четыре вселенные", ("2 из 4", True, True)),
     ("Научный слой", (False, True, True)),
     ("«Почему так»", ("частично", True, True)),
-    ("Парный режим", (False, True, True)),
+    ("Партнёр по приглашению", (True, True, True)),
     ("PDF", (False, True, True)),
-    ("Вопрос дня", ("1 в день", "1 в день", "без лимита")),
+    ("Вопрос дня на двоих", (True, True, True)),
+    ("Квизы и история ответов", (False, False, True)),
 ]
 
 MARQUEE = [
@@ -460,15 +488,100 @@ def weights(request: HttpRequest) -> HttpResponse:
     return _demo(request, "pages/weights.html")
 
 
+def question_of_day(report: Report, seed: str, today: date) -> str:
+    """A new question every day, leaning on the pair's weakest spheres; both partners get the same one."""
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    kb = KnowledgeRepository()
+    order = [s.key for s in sorted(report.spheres, key=lambda s: s.score)]
+    pools = {k: kb.series(f"QUESTION:{k}:") for k in order}
+    order = [k for k in order if pools[k]]
+    if not order:
+        return report.daily.question
+    n = (today - date(2026, 1, 1)).days + int(hashlib.sha256(seed.encode()).hexdigest()[:6], 16)
+    weak = order[:4]
+    sphere = weak[(n // 2) % len(weak)] if n % 2 == 0 else order[(n // 2) % len(order)]  # every other day a weak sphere
+    pool = pools[sphere]
+    return pool[(n // 7) % len(pool)]["question"]
+
+
 def daily(request: HttpRequest) -> HttpResponse:
     owner = get_owner(request)
-    pair = owner.pairs.first() if owner else None
+    pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None  # anonymous: demo until signed in
     stored = latest_ready(pair) if pair else None
-    if stored:
-        return _render_report(
-            request, report_of(stored), "pages/daily.html", reverse("stored_report", args=[stored.id]), {"stored": stored}
-        )
-    return _demo(request, "pages/daily.html")
+    today = timezone.localdate()
+    if stored and pair and owner:
+        report = report_of(stored)
+        side = side_of(owner, pair)
+        extra = {
+            "stored": stored,
+            "pair": pair,
+            "daily_question": question_of_day(report, str(pair.id), today),
+            "answers": daily_state(pair, side, today),
+            "plus": plus_for_pair(pair),
+            "me_name": pair.a.name if side == "a" else pair.b.name,
+            "partner_name": pair.b.name if side == "a" else pair.a.name,
+        }
+        return _render_report(request, report, "pages/daily.html", reverse("stored_report", args=[stored.id]), extra)
+    demo = report_provider().get_report(_scenario(request))
+    return _render_report(request, demo, "pages/daily.html", reverse("report"), {"daily_question": question_of_day(demo, "demo", today)})
+
+
+@require_POST
+def daily_answer(request: HttpRequest) -> HttpResponse:
+    """Save today's answer for this side of the owner's latest pair; the question is recomputed, never taken from the form."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None
+    stored = latest_ready(pair) if pair else None
+    text = request.POST.get("text", "").strip()[:500]
+    if not (pair and stored and owner) or len(text) < 2:
+        return redirect("daily")
+    today = timezone.localdate()
+    side = side_of(owner, pair)
+    _, created = DailyAnswer.objects.update_or_create(
+        pair=pair, side=side, day=today, defaults={"question": question_of_day(report_of(stored), str(pair.id), today), "text": text}
+    )
+    if created:
+        notify_partner(pair, side, "answered")
+    return redirect(reverse("daily") + "#question")
+
+
+def quiz_week(request: HttpRequest) -> HttpResponse:
+    """Quiz of the week (Пара+): each partner answers about themselves; matches show once both have answered."""
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    owner = get_owner(request)
+    pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None
+    if not pair or not owner:
+        return _to_login(request, "save")
+    quizzes = KnowledgeRepository().series("QUIZ:")
+    if not quizzes:
+        raise Http404
+    quiz = quizzes[timezone.localdate().isocalendar().week % len(quizzes)]
+    side = side_of(owner, pair)
+    ctx = {"quiz": quiz, "pair": pair, "plus": plus_for_pair(pair), "has_partner": bool(pair.partner_id), "price_plus": settings.PRICE_PLUS}
+    if request.method == "POST" and ctx["plus"]:
+        try:
+            picks = [int(request.POST[f"q{i}"]) for i in range(len(quiz["items"]))]
+        except (KeyError, ValueError):
+            return render(request, "pages/quiz_week.html", {**ctx, "error": True}, status=422)
+        if all(0 <= p < len(item["options"]) for p, item in zip(picks, quiz["items"], strict=True)):
+            _, created = QuizAnswer.objects.update_or_create(pair=pair, side=side, quiz_key=quiz["key"], defaults={"picks": picks})
+            if created:
+                notify_partner(pair, side, "quiz")
+        return redirect("quiz_week")
+    rows = {r.side: r.picks for r in QuizAnswer.objects.filter(pair=pair, quiz_key=quiz["key"])}
+    mine, theirs = rows.get(side), rows.get("b" if side == "a" else "a")
+    if mine and theirs:
+        results = [
+            {"q": item["q"], "mine": item["options"][m], "theirs": item["options"][t], "same": m == t}
+            for item, m, t in zip(quiz["items"], mine, theirs, strict=True)
+        ]
+        ctx |= {"results": results, "match": round(100 * sum(r["same"] for r in results) / len(results))}
+    me, partner = (pair.a.name, pair.b.name) if side == "a" else (pair.b.name, pair.a.name)
+    return render(
+        request, "pages/quiz_week.html", {**ctx, "mine": mine, "partner_done": bool(theirs), "me_name": me, "partner_name": partner}
+    )
 
 
 def pair_ready(request: HttpRequest) -> HttpResponse:
@@ -520,11 +633,10 @@ def wizard(request: HttpRequest) -> HttpResponse:
         }
 
     pair = create_pair(owner, person("a", da), person("b", db), mode)
-    if mode == "deep":
-        resp = redirect(reverse("person_quiz", args=[pair.a.id]))
-    else:
-        resp = redirect(reverse("generating") + f"?r={request_report(pair).id}")
-    return remember_owner(resp, owner)
+    target = reverse("person_quiz", args=[pair.a.id]) if mode == "deep" else reverse("generating") + f"?r={request_report(pair).id}"
+    if not owner.is_account:  # data first, then «where do we save it?» — the calculation already runs meanwhile
+        target = reverse("login") + "?" + urlencode({"next": target, "why": "save"})
+    return remember_owner(request, redirect(target), owner)
 
 
 def generating(request: HttpRequest) -> HttpResponse:
@@ -554,20 +666,29 @@ def generating_status(request: HttpRequest) -> HttpResponse:
 def _owned_report(request: HttpRequest, rid) -> StoredReport:
     owner = get_owner(request)
     stored = StoredReport.objects.select_related("pair").filter(id=rid).first()
-    if not stored or not owner or stored.pair.owner_id != owner.id:
-        raise Http404
+    if not stored or not owner or owner.id not in (stored.pair.owner_id, stored.pair.partner_id):
+        raise Http404  # the creator and the joined partner only
     return stored
 
 
 def _stored(request: HttpRequest, rid, template: str, **ctx) -> HttpResponse:
+    owner = get_owner(request)
+    if owner and not owner.is_account:
+        return _to_login(request, "save")
     stored = _owned_report(request, rid)
     if stored.status == StoredReport.Status.PENDING:
         return redirect(reverse("generating") + f"?r={stored.id}")
     if stored.status == StoredReport.Status.FAILED:
         return render(request, "report/error.html", {"retry_url": reverse("retry_report", args=[stored.id])}, status=503)
     pair = stored.pair
+    locked = not unlocked(pair)
+    if locked and (ctx.get("tab") in LAYER_TABS or template == "report/pdf.html"):
+        template = "report/locked.html"
+        ctx["locked_title"] = f"{LAYER_TABS[ctx['tab']][0] if ctx.get('tab') in LAYER_TABS else 'PDF'} — в полном разборе"
     extra = {
         "stored": stored,
+        "locked": locked,
+        "price_deep": settings.PRICE_DEEP,
         "quiz_url": reverse("person_quiz", args=[pair.a_id]),
         "invite_url": reverse("invite", args=[stored.id]),
         "share_url": request.build_absolute_uri(reverse("public_share", args=[share_token(stored)])),
@@ -635,14 +756,12 @@ def _save_answers(request: HttpRequest, person: Person) -> dict[str, int] | None
 
 
 def person_quiz(request: HttpRequest, pid) -> HttpResponse:
+    person, _ = _editable_person(request, pid)
     owner = get_owner(request)
-    person = Person.objects.filter(id=pid, owner=owner).first() if owner else None
-    if not person:
-        raise Http404
     if request.method == "POST":
         if _save_answers(request, person) is None:
             return HttpResponse("answers incomplete", status=422)
-        pair = Pair.objects.filter(owner=owner).filter(models.Q(a=person) | models.Q(b=person)).first()
+        pair = pairs_of(owner).filter(models.Q(a=person) | models.Q(b=person)).first()  # type: ignore[arg-type]
         if pair is None:
             return redirect("history")
         if pair.mode == "deep" and person == pair.a and not pair.b.answers:
@@ -651,9 +770,11 @@ def person_quiz(request: HttpRequest, pid) -> HttpResponse:
     return render(request, "pages/quiz.html", {**_quiz_ctx(), "person": person, "submit_url": request.path})
 
 
-# ── pair mode: partner answers by signed link ─────────────────────────────
+# ── pair mode: the partner joins from their own account (ADR-0010) ────────
 def invite(request: HttpRequest, rid) -> HttpResponse:
     stored = _owned_report(request, rid)
+    if stored.pair.owner_id != get_owner(request).id:  # type: ignore[union-attr]
+        raise Http404
     return _invite_page(request, stored.pair)
 
 
@@ -665,10 +786,26 @@ def invite_new(request: HttpRequest, pair_id) -> HttpResponse:
     return _invite_page(request, pair)
 
 
+def _to_login(request: HttpRequest, why: str) -> HttpResponse:
+    return redirect(reverse("login") + "?" + urlencode({"next": request.get_full_path(), "why": why}))
+
+
 def _invite_page(request: HttpRequest, pair: Pair) -> HttpResponse:
-    link = request.build_absolute_uri(reverse("join", args=[invite_token(pair.b)]))
+    if not get_owner(request).is_account:  # type: ignore[union-attr]
+        return _to_login(request, "invite")  # inviting needs an account, so both sides can find the pair later
+    if request.method == "POST":
+        invite_code(pair, fresh=True)  # the old code and link stop working
+    code = invite_code(pair)
     return render(
-        request, "pages/pair_invite.html", {"invite_link": link, "partner": pair.b, "waiting_url": reverse("pair_status", args=[pair.id])}
+        request,
+        "pages/pair_invite.html",
+        {
+            "invite_link": request.build_absolute_uri(reverse("join", args=[code])),
+            "code": code,
+            "partner": pair.b,
+            "pair": pair,
+            "waiting_url": reverse("pair_status", args=[pair.id]),
+        },
     )
 
 
@@ -682,22 +819,341 @@ def pair_status(request: HttpRequest, pair_id) -> HttpResponse:
     return render(request, "pages/pair_waiting.html", {"partner": pair.b, "pair": pair})
 
 
-def join(request: HttpRequest, token: str) -> HttpResponse:
-    person = from_invite_token(token)
-    if not person:
+def together(request: HttpRequest) -> HttpResponse:
+    """«Вдвоём» tab: the invite for your latest pair, the shared report if you joined one, the demo otherwise."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).order_by("-created_at").first() if owner else None
+    if pair and pair.owner_id == owner.id and not pair.partner_id:  # type: ignore[union-attr]
+        return redirect("invite_new", pair_id=pair.id)
+    if pair and (stored := latest_ready(pair)):
+        return redirect("stored_report", rid=stored.id)
+    return render(request, "pages/pair_invite.html", {})
+
+
+def join_by_code(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        pair = pair_by_code(request.POST.get("code", ""))
+        if pair and pair.invite_code:
+            return redirect("join", code=pair.invite_code)
+        return render(request, "pages/join.html", {"state": "enter", "error": True}, status=404)
+    return render(request, "pages/join.html", {"state": "enter"})
+
+
+def join(request: HttpRequest, code: str) -> HttpResponse:
+    pair = pair_by_code(code)
+    if not pair:
+        return render(request, "pages/join.html", {"state": "enter", "error": True}, status=404)
+    owner = get_owner(request)
+    ctx = {"pair": pair, "inviter": pair.a, "partner": pair.b}
+    if owner and owner.id == pair.owner_id:
+        return render(request, "pages/join.html", {**ctx, "state": "own"})
+    if pair.partner_id and (not owner or pair.partner_id != owner.id):
+        return render(request, "pages/join.html", {**ctx, "state": "taken"}, status=410)
+    if not owner or not owner.is_account:
+        return render(
+            request,
+            "pages/join.html",
+            {**ctx, "state": "login", "login_url": reverse("login") + "?" + urlencode({"next": request.path, "why": "join"})},
+        )
+    if pair.partner_id != owner.id:
+        if request.method == "POST" and request.POST.get("action") == "accept":
+            pair.partner = owner
+            pair.save(update_fields=["partner"])
+            notify_partner(pair, "b", "joined")
+            return redirect("join", code=pair.invite_code)
+        return render(request, "pages/join.html", {**ctx, "state": "accept"})
+    if not pair.b.answers:  # the partner fills in their own questionnaire
+        if request.method == "POST":
+            if _save_answers(request, pair.b) is None:
+                return HttpResponse("answers incomplete", status=422)
+            return redirect(reverse("generating") + f"?r={request_report(pair).id}")
+        return render(request, "pages/quiz.html", {**_quiz_ctx(), "person": pair.b, "submit_url": request.path, "joining": True})
+    stored = latest_ready(pair)
+    return redirect(reverse("stored_report", args=[stored.id]) if stored else reverse("generating") + f"?r={request_report(pair).id}")
+
+
+@require_POST
+def unlink_partner(request: HttpRequest, pair_id) -> HttpResponse:
+    owner = get_owner(request)
+    pair = pairs_of(owner).filter(id=pair_id).first() if owner else None
+    if not pair:
+        raise Http404
+    pair.partner = None
+    pair.save(update_fields=["partner"])
+    invite_code(pair, fresh=True)
+    return redirect("history")
+
+
+# ── accounts: sign in by an emailed code, no passwords (ADR-0010) ─────────
+def _next_url(request: HttpRequest) -> str:
+    nxt = request.POST.get("next") or request.GET.get("next") or ""
+    return nxt if url_has_allowed_host_and_scheme(nxt, {request.get_host()}, require_https=request.is_secure()) else reverse("account")
+
+
+LOGIN_WHY = {
+    "save": "Почти готово. Куда сохранить ваш разбор? Пришлём код на почту: пароль не нужен, а разбор откроется с любого устройства.",
+    "invite": "Чтобы пригласить партнёра, войдите по почте: так вы оба найдёте вашу пару с любого устройства.",
+    "join": "Войдите по почте, чтобы присоединиться к паре. Пароль не нужен — пришлём код.",
+}
+
+
+def login(request: HttpRequest) -> HttpResponse:
+    ctx = {
+        "next": _next_url(request),
+        "why": LOGIN_WHY.get(request.GET.get("why", ""), ""),
+        "save": request.GET.get("why") == "save",
+        "providers": oauth.enabled(),
+        "telegram_bot": settings.TELEGRAM_BOT_NAME,
+    }
+    if request.method != "POST":
+        return render(request, "pages/login.html", {**ctx, "step": "email"})
+    email = request.POST.get("email", "").strip()
+    try:
+        validate_email(email)
+    except ValidationError:
+        return render(request, "pages/login.html", {**ctx, "step": "email", "email": email, "error": True}, status=422)
+    code = issue_login_code(email)
+    if code:
+        link = (
+            request.build_absolute_uri(reverse("login_link", args=[login_link_token(email, code)])) + "?" + urlencode({"next": ctx["next"]})
+        )
+        send_mail(
+            f"Код входа в Duoverse: {code}",
+            f"Ваш код: {code}\n\nИли откройте ссылку на этом же устройстве (действует 15 минут):\n{link}\n\n"
+            "Если вы не запрашивали вход, просто удалите это письмо.",
+            None,
+            [email],
+        )
+    request.session["login_hash"] = email_hash(email)
+    return render(request, "pages/login.html", {**ctx, "step": "code", "email": email, "throttled": code is None})
+
+
+@require_POST
+def login_verify(request: HttpRequest) -> HttpResponse:
+    h = request.session.get("login_hash", "")
+    email = check_login_code(h, request.POST.get("code", "")) if h else None
+    if not email:
+        ctx = {"next": _next_url(request), "step": "code", "email": request.POST.get("email", ""), "error": True}
+        return render(request, "pages/login.html", ctx, status=422)
+    return _finish_login(request, email)
+
+
+def login_link(request: HttpRequest, token: str) -> HttpResponse:
+    parsed = from_login_link(token)
+    email = check_login_code(*parsed) if parsed else None
+    if not email:
+        return render(request, "pages/login.html", {"next": _next_url(request), "step": "email", "expired": True}, status=410)
+    return _finish_login(request, email)
+
+
+def _finish_login(request: HttpRequest, email: str) -> HttpResponse:
+    account = sign_in(get_owner(request), email)
+    request.session.pop("login_hash", None)
+    return remember_owner(request, redirect(_next_url(request)), account)
+
+
+def oauth_start(request: HttpRequest, provider: str) -> HttpResponse:
+    if provider not in oauth.enabled() or provider == "telegram":
+        raise Http404
+    state = secrets.token_urlsafe(32)
+    verifier, challenge = oauth.pkce()
+    request.session["oauth"] = {"provider": provider, "state": state, "verifier": verifier, "next": _next_url(request)}
+    return redirect(oauth.authorize_url(provider, request.build_absolute_uri(reverse("oauth_callback", args=[provider])), state, challenge))
+
+
+def oauth_callback(request: HttpRequest, provider: str) -> HttpResponse:
+    pending = request.session.pop("oauth", None)
+    if not pending or pending["provider"] != provider or not secrets.compare_digest(pending["state"], request.GET.get("state", "")):
+        return render(request, "pages/login.html", {"step": "email", "provider_error": True, "providers": oauth.enabled()}, status=400)
+    try:
+        user = oauth.exchange(provider, request.GET.dict(), request.build_absolute_uri(request.path), pending["verifier"], pending["state"])
+    except oauth.OAuthError:
+        return render(request, "pages/login.html", {"step": "email", "provider_error": True, "providers": oauth.enabled()}, status=502)
+    account = sign_in(get_owner(request), user.email, user.provider, user.subject, trust_email=user.email_verified)
+    return remember_owner(request, redirect(pending["next"]), account)
+
+
+def telegram_login(request: HttpRequest) -> HttpResponse:
+    if "telegram" not in oauth.enabled():
+        raise Http404
+    params = {k: v for k, v in request.GET.items() if k not in {"next"}}
+    try:
+        user = oauth.telegram_user(params)
+    except (oauth.OAuthError, KeyError, ValueError):
+        return render(request, "pages/login.html", {"step": "email", "provider_error": True, "providers": oauth.enabled()}, status=400)
+    account = sign_in(get_owner(request), None, user.provider, user.subject)
+    return remember_owner(request, redirect(_next_url(request)), account)
+
+
+def telegram_link(request: HttpRequest) -> HttpResponse:
+    """Open the bot with a one-time code; the bot's /start <code> ties this chat to the account."""
+    owner = get_owner(request)
+    if not owner or not owner.is_account or not settings.TELEGRAM_BOT_NAME:
+        raise Http404
+    code = secrets.token_urlsafe(16)
+    cache.set(f"tg-link:{code}", str(owner.id), 3600)
+    return redirect(f"https://t.me/{settings.TELEGRAM_BOT_NAME}?start={code}")
+
+
+@require_POST
+def telegram_unlink(request: HttpRequest) -> HttpResponse:
+    if owner := get_owner(request):
+        owner.telegram_chat_id = None
+        owner.save(update_fields=["telegram_chat_id"])
+    return redirect("account")
+
+
+@csrf_exempt
+@require_POST
+def telegram_webhook(request: HttpRequest, secret: str) -> HttpResponse:
+    """Bot updates. Only /start <code> matters: it links the chat to the account that asked for the code."""
+    expected = settings.TELEGRAM_WEBHOOK_SECRET
+    header = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+    if not expected or not (secrets.compare_digest(secret, expected) and secrets.compare_digest(header, expected)):
+        raise Http404
+    try:
+        message = json.loads(request.body).get("message") or {}
+    except ValueError:
+        return HttpResponse(status=200)
+    chat_id, text = (message.get("chat") or {}).get("id"), message.get("text") or ""
+    if chat_id and text.startswith("/start "):
+        owner_id = cache.get(f"tg-link:{text.split(maxsplit=1)[1].strip()}")
+        owner = Owner.objects.filter(id=owner_id).first() if owner_id else None
+        if owner:
+            owner.telegram_chat_id = chat_id
+            owner.save(update_fields=["telegram_chat_id"])
+            send_message(chat_id, "Готово: уведомления Duoverse подключены. Напишем, когда партнёр ответит на вопрос дня.")
+        else:
+            send_message(chat_id, "Ссылка устарела. Нажмите «Подключить Telegram» в разделе «Мои данные» ещё раз.")
+    return HttpResponse(status=200)
+
+
+# ── payments (ADR-0011) ───────────────────────────────────────────────────
+@require_POST
+def checkout(request: HttpRequest, kind: str) -> HttpResponse:
+    owner = get_owner(request)
+    if kind not in ("deep", "plus"):
+        raise Http404
+    if not owner or not owner.is_account:
+        return _to_login(request, "save")
+    pair = None
+    if kind == "deep":
+        try:
+            pair = pairs_of(owner).filter(id=uuid.UUID(request.POST.get("pair", ""))).first()
+        except ValueError:
+            pair = None
+    if kind == "deep" and not pair:
+        raise Http404
+    amount = settings.PRICE_DEEP if kind == "deep" else settings.PRICE_PLUS
+    purchase = Purchase.objects.create(owner=owner, pair=pair, kind=kind, amount=amount)
+    description = "Duoverse: полный разбор пары" if kind == "deep" else f"Duoverse: Пара+ на {settings.PLUS_DAYS} дней"
+    return_url = request.build_absolute_uri(reverse("pay_return", args=[purchase.id]))
+    if yookassa.enabled():
+        if not owner.email:
+            return _to_login(request, "save")  # a receipt needs an email
+        try:
+            pid, url = yookassa.create_payment(str(purchase.id), amount, description, str(owner.email), return_url)
+        except yookassa.PaymentError:
+            purchase.delete()
+            return render(request, "pages/pay_result.html", {"ok": False, "retry": True}, status=502)
+        purchase.provider_id = pid
+        purchase.save(update_fields=["provider_id"])
+        return redirect(url)
+    if settings.DEBUG:  # no shop keys: a test checkout so the flow can be tried end to end
+        return redirect("dev_checkout", pid=purchase.id)
+    purchase.delete()
+    return render(request, "pages/pay_result.html", {"ok": False, "unavailable": True}, status=503)
+
+
+def _settle(purchase: Purchase) -> None:
+    """Ask YooKassa for the real status; notifications and return visits only tell us *when* to ask."""
+    if purchase.status != Purchase.Status.PENDING or not purchase.provider_id or not yookassa.enabled():
+        return
+    try:
+        status = yookassa.payment_status(purchase.provider_id)
+    except yookassa.PaymentError:
+        return
+    if status == "succeeded":
+        mark_paid(purchase)
+    elif status == "canceled":
+        purchase.status = Purchase.Status.CANCELED
+        purchase.save(update_fields=["status"])
+
+
+def pay_return(request: HttpRequest, pid) -> HttpResponse:
+    owner = get_owner(request)
+    purchase = Purchase.objects.filter(id=pid, owner=owner).first() if owner else None
+    if not purchase:
+        raise Http404
+    _settle(purchase)
+    stored = latest_ready(purchase.pair) if purchase.pair else None
+    back = reverse("stored_report", args=[stored.id]) + "razbor/" if stored else reverse("history")
+    return render(
+        request,
+        "pages/pay_result.html",
+        {"ok": purchase.status == "succeeded", "pending": purchase.status == "pending", "purchase": purchase, "back": back},
+    )
+
+
+@csrf_exempt
+@require_POST
+def yookassa_webhook(request: HttpRequest) -> HttpResponse:
+    try:
+        payment_id = json.loads(request.body)["object"]["id"]
+    except (ValueError, KeyError, TypeError):
+        return HttpResponse(status=400)
+    purchase = Purchase.objects.filter(provider_id=payment_id).first()
+    if purchase:
+        _settle(purchase)
+    return HttpResponse(status=200)  # unknown ids are acknowledged so YooKassa stops retrying
+
+
+def dev_checkout(request: HttpRequest, pid) -> HttpResponse:
+    """DEBUG-only stand-in for the YooKassa page."""
+    if not settings.DEBUG or yookassa.enabled():
+        raise Http404
+    owner = get_owner(request)
+    purchase = Purchase.objects.filter(id=pid, owner=owner).first() if owner else None
+    if not purchase:
         raise Http404
     if request.method == "POST":
-        if _save_answers(request, person) is None:
-            return HttpResponse("answers incomplete", status=422)
-        return render(request, "pages/join_done.html", {"person": person})
-    return render(request, "pages/quiz.html", {**_quiz_ctx(), "person": person, "submit_url": request.path, "joining": True})
+        if request.POST.get("result") == "ok":
+            mark_paid(purchase)
+        else:
+            purchase.status = Purchase.Status.CANCELED
+            purchase.save(update_fields=["status"])
+        return redirect("pay_return", pid=purchase.id)
+    return render(request, "pages/dev_checkout.html", {"purchase": purchase})
+
+
+@require_POST
+def logout(request: HttpRequest) -> HttpResponse:
+    return forget_device(request, redirect("landing"))
+
+
+@require_POST
+def device_revoke(request: HttpRequest, did) -> HttpResponse:
+    device = get_device(request)
+    if not device:
+        raise Http404
+    if str(did) == str(device.id):
+        return forget_device(request, redirect("landing"))
+    Device.objects.filter(owner=device.owner, id=did).delete()
+    return redirect("account")
+
+
+@require_POST
+def logout_others(request: HttpRequest) -> HttpResponse:
+    if device := get_device(request):
+        Device.objects.filter(owner=device.owner).exclude(id=device.id).delete()
+    return redirect("account")
 
 
 # ── history, profiles, data ownership ─────────────────────────────────────
 def history(request: HttpRequest) -> HttpResponse:
     owner = get_owner(request)
     items = []
-    for pair in owner.pairs.select_related("a", "b") if owner else []:
+    for pair in pairs_of(owner).select_related("a", "b", "owner", "partner") if owner else []:
         stored = latest_ready(pair)
         if stored:
             r = report_of(stored)
@@ -709,6 +1165,10 @@ def history(request: HttpRequest) -> HttpResponse:
                     "total_score": r.total_score,
                     "pair_type": r.pair_type.name,
                     "mode": dict(quick="Быстрый", extended="Расширенный", deep="Глубокий").get(pair.mode, pair.mode),
+                    "pair_id": pair.id,
+                    "b_id": pair.b_id,
+                    "shared": pair.partner_id is not None,
+                    "mine": pair.owner_id == owner.id,  # type: ignore[union-attr]
                 }
             )
     return render(request, "pages/history.html", {"items": items})
@@ -716,7 +1176,10 @@ def history(request: HttpRequest) -> HttpResponse:
 
 @require_POST
 def delete_report(request: HttpRequest, rid) -> HttpResponse:
-    _owned_report(request, rid).pair.reports.all().delete()
+    stored = _owned_report(request, rid)
+    if stored.pair.owner_id != get_owner(request).id:  # type: ignore[union-attr]
+        raise Http404  # a partner can leave the pair, not delete it
+    stored.pair.reports.all().delete()
     return HttpResponse(status=204)
 
 
@@ -726,13 +1189,25 @@ def profiles(request: HttpRequest) -> HttpResponse:
     return render(request, "pages/profiles.html", {"profiles": people})
 
 
-def profile_edit(request: HttpRequest, pid) -> HttpResponse:
+def _editable_person(request: HttpRequest, pid) -> tuple[Person, bool]:
+    """A person this device may edit: its own profiles, or — for a joined partner — their own side of the pair."""
     owner = get_owner(request)
-    person = Person.objects.filter(id=pid, owner=owner).first() if owner else None
-    if not person:
+    if not owner:
         raise Http404
+    person = Person.objects.filter(id=pid, owner=owner).first()
+    if person:
+        return person, False
+    pair = Pair.objects.select_related("b").filter(partner=owner, b_id=pid).first()
+    if not pair:
+        raise Http404
+    return pair.b, True
+
+
+def profile_edit(request: HttpRequest, pid) -> HttpResponse:
+    person, as_partner = _editable_person(request, pid)
+    back = "history" if as_partner else "profiles"
     if request.method == "POST":
-        if request.POST.get("action") == "delete":
+        if request.POST.get("action") == "delete" and not as_partner:
             Pair.objects.filter(models.Q(a=person) | models.Q(b=person)).delete()
             person.delete()
             return redirect("profiles")
@@ -743,27 +1218,46 @@ def profile_edit(request: HttpRequest, pid) -> HttpResponse:
             person.save()
             for pair in Pair.objects.filter(models.Q(a=person) | models.Q(b=person)):
                 request_report(pair)
-        return redirect("profiles")
-    return render(request, "pages/profile_edit.html", {"p": person_input(person), "cities": CITIES})
+        return redirect(back)
+    return render(request, "pages/profile_edit.html", {"p": person_input(person), "cities": CITIES, "as_partner": as_partner, "back": back})
 
 
 def account(request: HttpRequest) -> HttpResponse:
     owner = get_owner(request)
-    stats = {
-        "reports": StoredReport.objects.filter(pair__owner=owner, status="ready").count() if owner else 0,
-        "people": owner.people.count() if owner else 0,
+    device = get_device(request)
+    email = str(owner.email) if owner and owner.is_account and owner.email else ""
+    ctx = {
+        "stats": {
+            "reports": StoredReport.objects.filter(pair__in=pairs_of(owner), status="ready").count() if owner else 0,
+            "people": owner.people.count() if owner else 0,
+        },
+        "email": email,
+        "masked_email": (email[:2] + "•••" + email[email.index("@") :]) if "@" in (email or "") else "",
+        "devices": owner.devices.all() if owner and owner.is_account else [],
+        "telegram_bot": settings.TELEGRAM_BOT_NAME,
+        "telegram_linked": bool(owner and owner.telegram_chat_id),
+        "plus_until": Purchase.objects.filter(owner=owner, kind="plus", status="succeeded")
+        .order_by("-valid_until")
+        .values_list("valid_until", flat=True)
+        .first()
+        if has_plus(owner)
+        else None,
+        "price_plus": settings.PRICE_PLUS,
+        "this_device": device.id if device else None,
     }
-    return render(request, "pages/account.html", {"stats": stats})
+    return render(request, "pages/account.html", ctx)
 
 
 def export_data(request: HttpRequest) -> HttpResponse:
-    """GDPR/152-ФЗ: everything we keep for this device, decrypted, as one JSON file."""
+    """GDPR/152-ФЗ: everything we keep for this account, decrypted, as one JSON file."""
     owner = get_owner(request)
     if not owner:
         raise Http404
     data = {
+        "email": owner.email if owner.is_account else None,
         "people": [{"id": str(p.id), "name": p.name, "birth": p.birth, "answers": p.answers} for p in owner.people.all()],
-        "reports": [s.snapshot for s in StoredReport.objects.filter(pair__owner=owner, status="ready")],
+        "reports": [s.snapshot for s in StoredReport.objects.filter(pair__in=pairs_of(owner), status="ready")],
+        "plans": [{"pair": str(p.id), **p.plan} for p in pairs_of(owner) if p.plan],
     }
     resp = HttpResponse(json.dumps(data, ensure_ascii=False, indent=2, default=str), content_type="application/json; charset=utf-8")
     resp["Content-Disposition"] = 'attachment; filename="duoverse-data.json"'
@@ -771,36 +1265,13 @@ def export_data(request: HttpRequest) -> HttpResponse:
 
 
 @require_POST
-def send_magic_link(request: HttpRequest) -> HttpResponse:
-    owner = get_owner(request)
-    email = request.POST.get("email", "").strip()
-    if not owner or "@" not in email:
-        return HttpResponse("Нет данных для переноса или неверный email", status=422)
-    owner.email = email
-    owner.save(update_fields=["email"])
-    link = request.build_absolute_uri(reverse("magic", args=[magic_token(owner)]))
-    send_mail(
-        "Ваши разборы Duoverse",
-        f"Откройте ссылку на новом устройстве, чтобы увидеть свои разборы (действует сутки):\n{link}",
-        None,
-        [email],
-    )
-    return HttpResponse(status=204)
-
-
-def magic(request: HttpRequest, token: str) -> HttpResponse:
-    owner = from_magic_token(token)
-    if not owner:
-        raise Http404
-    return remember_owner(redirect("history"), owner)
-
-
-@require_POST
 def delete_everything(request: HttpRequest) -> HttpResponse:
     owner = get_owner(request)
     if owner:
-        owner.delete()  # cascades to people, answers, pairs, reports
-    return forget_owner(redirect("landing"))
+        owner.delete()  # cascades to devices, people, answers, own pairs and reports; joined pairs just lose this partner
+    resp = redirect("landing")
+    resp.delete_cookie(settings.OWNER_COOKIE)
+    return resp
 
 
 def not_found(request: HttpRequest, exception: Exception | None = None) -> HttpResponse:
@@ -809,6 +1280,46 @@ def not_found(request: HttpRequest, exception: Exception | None = None) -> HttpR
 
 def server_error(request: HttpRequest) -> HttpResponse:
     return render(request, "errors/500.html", status=500)
+
+
+def manifest(request: HttpRequest) -> HttpResponse:
+    """Web app manifest: lets people put Duoverse on the home screen like an app."""
+    icon = lambda path, size, purpose="any": {"src": static(path), "sizes": size, "type": "image/png", "purpose": purpose}  # noqa: E731
+    data = {
+        "name": "Duoverse",
+        "short_name": "Duoverse",
+        "description": "Совместимость пары: разбор, вопрос дня и привычки на двоих",
+        "lang": "ru",
+        "start_url": "/daily/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#fbf7f2",
+        "theme_color": "#fbf7f2",
+        "icons": [
+            icon("pwa/icon-192.png", "192x192"),
+            icon("pwa/icon-512.png", "512x512"),
+            icon("pwa/maskable-512.png", "512x512", "maskable"),
+        ],
+    }
+    return HttpResponse(json.dumps(data, ensure_ascii=False), content_type="application/manifest+json")
+
+
+SERVICE_WORKER = """
+const CACHE = "duoverse-v1";
+self.addEventListener("install", (e) => e.waitUntil(caches.open(CACHE).then((c) => c.add("/offline/")).then(() => self.skipWaiting())));
+self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener("fetch", (e) => {
+  if (e.request.mode !== "navigate") return;  // pages only: data stays live, static has its own caching
+  e.respondWith(fetch(e.request).catch(() => caches.match("/offline/")));
+});
+"""
+
+
+def service_worker(request: HttpRequest) -> HttpResponse:
+    """Served from the site root so its scope covers every page; shows the offline page when there is no network."""
+    resp = HttpResponse(SERVICE_WORKER, content_type="application/javascript")
+    resp["Cache-Control"] = "no-cache"
+    return resp
 
 
 def healthz(request: HttpRequest) -> HttpResponse:

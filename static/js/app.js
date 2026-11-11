@@ -216,6 +216,7 @@
   window.toast = (text, icon) => Alpine.store("toasts").push(text, icon);
   window.demo = (title, text) => Alpine.store("demo").show(title, text);
   window.burst = burst;
+  if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
   /* POST form fields (arrays become repeated keys) with the CSRF header from <body hx-headers>, get JSON back */
   window.postForm = async (url, fields) => {
     const body = new URLSearchParams();

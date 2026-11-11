@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Тестовая оплата — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-md px-4 py-16 sm:px-6">
+  <div class="card p-6">
+    <p class="chip bg-attention-soft text-attention-ink">тестовый режим · ключей ЮKassa нет</p>
+    <h1 class="mt-4 text-2xl font-extrabold">{% if purchase.kind == "plus" %}Пара+ на 30 дней{% else %}Полный разбор пары{% endif %}</h1>
+    <p class="mt-1 font-display text-3xl font-extrabold">{{ purchase.amount }} ₽</p>
+    <p class="mt-3 text-sm text-ink-2">Эта страница видна только в режиме разработки и заменяет страницу оплаты ЮKassa.</p>
+    <form method="post" class="mt-6 flex gap-3">{% csrf_token %}
+      <button name="result" value="ok" class="btn btn-primary">Оплата прошла</button>
+      <button name="result" value="fail" class="btn btn-ghost">Отказ банка</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

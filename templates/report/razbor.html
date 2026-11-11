@@ -65,6 +65,13 @@
             <span class="text-ink-3 transition duration-300" :class="open && 'rotate-180'">{% icon 'chevron-down' %}</span>
           </button>
           <div x-show="open" x-collapse {% if not forloop.first %}x-cloak{% endif %}>
+            {% if locked and not forloop.first %}
+            <div class="border-t border-line p-5 sm:p-6">
+              <p class="leading-relaxed">{{ s.story.0 }}</p>
+              <p class="mt-2 select-none leading-relaxed blur-[5px]" aria-hidden="true">{{ s.story.1|default:s.summary }}</p>
+              {% include "components/paywall.html" %}
+            </div>
+            {% else %}
             <div class="grid gap-6 border-t border-line p-5 sm:p-6 md:grid-cols-[1.4fr_1fr]">
               <div class="space-y-3 leading-relaxed">
                 {% for paragraph in s.story %}<p>{{ paragraph }}</p>{% endfor %}
@@ -108,6 +115,7 @@
                 <span x-show="!read.includes('{{ s.key }}')">Обсудили</span><span x-show="read.includes('{{ s.key }}')" x-cloak class="inline-flex items-center gap-1.5">{% icon 'check' 'size-4' %}Обсудили</span>
               </button>
             </div>
+            {% endif %}
           </div>
         </article>
         {% endfor %}

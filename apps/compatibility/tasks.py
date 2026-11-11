@@ -28,3 +28,22 @@ def generate_report(self, report_id: str) -> str:
     stored.snapshot, stored.status = report.model_dump(mode="json"), StoredReport.Status.READY
     stored.save(update_fields=["snapshot", "status"])
     return report_id
+
+
+@shared_task
+def deliver(owner_id: str, text: str, url: str) -> str:
+    """One notification: Telegram if the person linked the bot, otherwise a short email."""
+    from django.core.mail import send_mail
+
+    from .infrastructure.telegram import send_message
+    from .models import Owner
+
+    owner = Owner.objects.filter(id=owner_id).first()
+    if owner is None:
+        return "gone"
+    if owner.telegram_chat_id and send_message(owner.telegram_chat_id, text, url):
+        return "telegram"
+    if owner.email:
+        send_mail("Duoverse", f"{text}\n\n{url}", None, [str(owner.email)])
+        return "email"
+    return "none"

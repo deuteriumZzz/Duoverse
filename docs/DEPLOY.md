@@ -21,7 +21,15 @@ cp .env.example .env
 | `DJANGO_ALLOWED_HOSTS` | тот же домен |
 | `POSTGRES_PASSWORD` | пароль базы: `openssl rand -hex 24` |
 | `FIELD_ENCRYPTION_KEY` | ключ шифрования данных рождения и анкет (см. ниже). **Сохраните его отдельно**: без него данные не расшифровать |
-| `EMAIL_URL` | SMTP для писем со ссылкой входа: `smtp+tls://user:pass@smtp.example.com:587` |
+| `EMAIL_URL` | SMTP для писем с кодом входа (российский сервис рассылок или почта на домене): `smtp+tls://user:pass@smtp.example.com:587` |
+| `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET` | по желанию: кнопка «Войти с Яндекс ID». Redirect URI: `https://<домен>/login/yandex/callback/` |
+| `VK_CLIENT_ID` (+ `VK_SERVICE_TOKEN` для конфиденциального приложения) | по желанию: «Войти с VK ID». Redirect: `https://<домен>/login/vk/callback/` |
+| `TELEGRAM_BOT_NAME`, `TELEGRAM_BOT_TOKEN` | по желанию: вход через Telegram. В @BotFather: `/setdomain <домен>` |
+| `TELEGRAM_WEBHOOK_SECRET` | случайная строка для уведомлений через бота; после запуска: `docker compose -f docker-compose.prod.yml exec web python manage.py telegram_setup` |
+| `SITE_URL` | `https://<домен>` — для ссылок в уведомлениях и вебхука бота |
+| `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` | магазин ЮKassa (сначала тестовый). В личном кабинете ЮKassa укажите HTTP-уведомления на `https://<домен>/yookassa/webhook/` для событий `payment.succeeded` и `payment.canceled` |
+| `YOOKASSA_VAT_CODE` | код НДС для чека по вашей системе налогообложения (`1` — без НДС) |
+| `PRICE_DEEP`, `PRICE_PLUS` | цены в рублях (по умолчанию 490 и 249) |
 | `ANTHROPIC_API_KEY` | по желанию: без ключа отчёт собирается из базы знаний без ИИ-сшивки |
 
 ```bash
@@ -29,6 +37,8 @@ python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().
 docker compose -f docker-compose.prod.yml up -d --build
 docker compose -f docker-compose.prod.yml exec web python manage.py createsuperuser        # доступ к /staff/
 ```
+
+Сервис `scheduler` раз в час чистит брошенные анонимные данные (старше 7 дней) и в `REMINDER_HOUR` шлёт напоминания в Telegram.
 
 При каждом старте контейнер сам применяет миграции и подгружает базу знаний (`kb_seed` не трогает блоки, которые кто-то уже проверил в админке).
 

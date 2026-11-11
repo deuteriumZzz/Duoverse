@@ -48,7 +48,7 @@ from apps.compatibility.domain.report import (
     UniverseKey,
 )
 from apps.compatibility.domain.report import Layer as EvidenceLayer
-from apps.core.domain.names import dat, gen
+from apps.core.domain.names import forms, gen
 from apps.core.domain.scoring import Factor, ScoreResult, clamp
 from apps.numerology.domain import numerology as num
 from apps.psychology.domain import scoring as psy
@@ -102,6 +102,8 @@ LEVELS: dict[str, int] = {"low": 0, "mid": 1, "high": 2}
 class Knowledge(Protocol):
     used: list[str]
 
+    def series(self, prefix: str) -> list[dict]: ...
+
     def text(self, key: str, default: str = "", **fmt: object) -> str: ...
 
     def data(self, key: str) -> dict: ...
@@ -150,7 +152,7 @@ def _cap(s: str) -> str:
 
 def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> Report:
     kb, today = deps.kb, deps.today()
-    names = {"a": a.name, "b": b.name, "a_gen": gen(a.name), "b_gen": gen(b.name), "a_dat": dat(a.name), "b_dat": dat(b.name)}
+    names = {f"a{k}": v for k, v in forms(a.name).items()} | {f"b{k}": v for k, v in forms(b.name).items()}  # {a}, {b_gen}, {a_ins}…
 
     # ── charts and universes ────────────────────────────────────────────────
     def chart_of(p: PersonInput) -> Chart:
@@ -258,8 +260,12 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
     # ── sections ───────────────────────────────────────────────────────────
     top = hits[0] if hits else None
 
-    def kb_text(key: str, default: str) -> str:
-        return kb.text(key, default.replace("{", "(").replace("}", ")"), a=a.name, b=b.name)
+    def kb_text(key: str, default: str, **extra: str) -> str:
+        """Reviewed block for `key` if there is one, else our generated text. Blocks may use {a}, {b_gen}, {owner_dat}…"""
+        return kb.text(key, default.replace("{", "(").replace("}", ")"), **names, **extra)
+
+    def person_names(prefix: str, name: str) -> dict[str, str]:
+        return {f"{prefix}{k}": v for k, v in forms(name).items()}
 
     def planet_rows(c: Chart, name: str) -> list[PlanetPos]:
         return [
@@ -273,7 +279,9 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
                 retro=c.retro(p),
                 dignity=c.dignity(p),
                 text=kb_text(
-                    f"PLACEMENT:{p}:{c.sign(p)}", interpret.placement_text(name, p, c.sign(p), c.house(p), c.retro(p), c.dignity(p))
+                    f"PLACEMENT:{p}:{c.sign(p)}",
+                    interpret.placement_text(name, p, c.sign(p), c.house(p), c.retro(p), c.dignity(p)),
+                    **person_names("name", name),
                 ),
             )
             for p in c.points
@@ -302,7 +310,12 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             owner=o.owner,
             house=o.house,
             tone=tone_of(65 + round(o.effect * 4)),  # type: ignore[arg-type]
-            text=kb_text(f"OVERLAY:{o.key}", interpret.overlay_text(o, *names_by_side[o.owner])),
+            text=kb_text(
+                f"OVERLAY:{o.key}",
+                interpret.overlay_text(o, *names_by_side[o.owner]),
+                **person_names("owner", names_by_side[o.owner][0]),
+                **person_names("other", names_by_side[o.owner][1]),
+            ),
         )
         for o in (overlay.hits if overlay else [])
     ]
@@ -574,7 +587,12 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         items += [
             SphereFactor(
                 title=interpret.overlay_title(o, *names_by_side[o.owner]),
-                text=kb_text(f"OVERLAY:{o.key}", interpret.overlay_text(o, *names_by_side[o.owner])),
+                text=kb_text(
+                    f"OVERLAY:{o.key}",
+                    interpret.overlay_text(o, *names_by_side[o.owner]),
+                    **person_names("owner", names_by_side[o.owner][0]),
+                    **person_names("other", names_by_side[o.owner][1]),
+                ),
                 tone=tone_of(65 + round(o.effect * 4)),
                 layer="symbolic",
                 universe="astrology",
@@ -607,10 +625,18 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
                 script=interpret.conflict_script(min(tense, key=lambda h: h.effect), a.name, b.name)
                 if key in TENSE_SPHERES and tense
                 else None,
-                exercise=d.get("exercise", ""),
+                exercise=_exercise(kb.series(f"EXERCISE:{key}:"), d.get("exercise", "")),
                 adult=bool(d.get("adult")),
             )
         )
+
+    # habits grow out of the weakest spheres: two per sphere, each tied to that sphere's strongest reason
+    sphere_habits = []
+    for weak_sphere in sorted(spheres, key=lambda x: x.score)[:3]:
+        reason = weak_sphere.evidence[0] if weak_sphere.evidence else ev(factors[0])
+        for hb in kb.series(f"HABIT:{weak_sphere.key}:")[:2]:
+            sphere_habits.append(Habit(title=hb["title"], cadence=hb["cadence"], duration=hb["duration"], why=hb["why"], evidence=reason))
+    habits = sphere_habits or habits
 
     report = Report(
         id=report_id,
@@ -667,3 +693,12 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
     )
     report = deps.stitcher.stitch(report) if deps.stitcher else report
     return report.model_copy(update={"kb_keys": sorted(set(kb.used))})
+
+
+def _exercise(items: list[dict], fallback: str) -> str:
+    """First exercise for the sphere from the knowledge base, as one readable paragraph."""
+    if not items:
+        return fallback
+    e = items[0]
+    steps = " ".join(f"{i}) {step}" for i, step in enumerate(e.get("steps", []), 1))
+    return f"{e['title']} ({e.get('minutes', 10)} мин). {steps}".strip()

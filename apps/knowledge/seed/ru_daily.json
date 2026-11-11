@@ -1,0 +1,5696 @@
+[
+ {
+  "key": "QUESTION:attraction:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что в моей внешности или манерах ты заметил(а) первым и что замечаешь до сих пор?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой наш день ты бы хотел(а) прожить ещё раз?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "В какой момент ты в последний раз подумал(а): «как же мне с тобой повезло»?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что я делаю такого, от чего тебе хочется быть ближе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда ты чувствуешь себя для меня самым интересным человеком?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое новое «впервые» ты хотел(а) бы попробовать вместе в этом месяце?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что из нашего начала ты скучаешь больше всего — и можно ли это вернуть?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой мой взгляд, жест или фраза действует на тебя сильнее всего?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что тебе меня не хватает, даже когда мы рядом? Когда?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое место в городе для тебя — «наше», и почему?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что гасит в тебе желание быть рядом — без обвинений, просто как наблюдение?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя романтика сейчас — не в фильмах, а в нашей жизни?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:attraction:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Шесть секунд объятий",
+   "cadence": "каждый день",
+   "duration": "6 секунд",
+   "why": "Долгое объятие при встрече снижает напряжение и напоминает телу, что вы — пара, а не соседи."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:attraction:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Свидание без телефонов",
+   "cadence": "раз в неделю",
+   "duration": "1 час",
+   "why": "Новизна и внимание друг к другу — главный источник притяжения в долгих отношениях."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:attraction:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Комплимент по делу",
+   "cadence": "каждый день",
+   "duration": "1 фраза",
+   "why": "Конкретная похвала («как ты сегодня спокойно разрулил(а) это») ценится сильнее общих слов."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:attraction:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Новое «впервые»",
+   "cadence": "раз в месяц",
+   "duration": "вечер",
+   "why": "Совместные новые впечатления поддерживают влюблённость лучше привычных маршрутов."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:attraction:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Флирт в переписке",
+   "cadence": "пару раз в неделю",
+   "duration": "1 сообщение",
+   "why": "Маленький игривый знак среди дня держит искру, даже когда много дел."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:attraction:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Вспомнить начало",
+   "cadence": "раз в месяц",
+   "duration": "15 минут",
+   "why": "Разговор о том, как вы познакомились, возвращает тёплые чувства и общую историю."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:attraction:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Карта нашего начала",
+   "minutes": 20,
+   "steps": [
+    "Вспомните вместе день знакомства: где, что было на вас, что подумали.",
+    "Каждый расскажет, что зацепило в другом тогда.",
+    "Назовите, что из этого есть и сейчас.",
+    "Выберите одно, что хотите вернуть в этом месяце."
+   ],
+   "source": "Готтман: «карты любви» и история пары"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:attraction:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Тридцать шесть вопросов",
+   "minutes": 30,
+   "steps": [
+    "Задавайте друг другу вопросы по очереди, от простых к личным.",
+    "Отвечайте честно, не перебивая.",
+    "В конце 2 минуты молча посмотрите друг другу в глаза."
+   ],
+   "source": "Арон и соавторы, 1997: эксперимент о близости"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое прикосновение в обычный день тебе особенно приятно?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что помогает тебе расслабиться и почувствовать себя желанным(ой)?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "В какое время дня ты чувствуешь больше всего близости ко мне?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли что-то, о чём тебе хотелось бы попросить, но неловко сказать?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя делает вечер вдвоём особенным?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам говорить о разном ритме желания так, чтобы никто не чувствовал себя отвергнутым?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие слова или знаки от меня дают тебе понять, что я тебя хочу?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что меняется в тебе, когда ты устал(а) или напряжён(а), — и как мне это лучше замечать?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Было ли что-то в нашей близости, что тебя задело, а ты промолчал(а)?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая мелочь в течение дня настраивает тебя на близость вечером?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего тебе хочется больше: нового или привычного и надёжного? Почему?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе нужно, чтобы чувствовать себя в безопасности, когда говоришь о желаниях?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Прикосновение без продолжения",
+   "cadence": "каждый день",
+   "duration": "1 минута",
+   "why": "Нежность, которая ничего не требует, снимает давление и делает близость безопаснее."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Вечер только для двоих",
+   "cadence": "раз в неделю",
+   "duration": "1–2 часа",
+   "why": "Близость растёт, когда для неё есть время и силы, а не только остатки дня."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Сказать, что понравилось",
+   "cadence": "после близости",
+   "duration": "1 фраза",
+   "why": "Тёплая обратная связь помогает узнавать друг друга без неловкости."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разговор о желаниях",
+   "cadence": "раз в месяц",
+   "duration": "20 минут",
+   "why": "Спокойный разговор не в спальне снимает догадки и обиды из-за разного ритма."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Мягкий отказ",
+   "cadence": "когда нужно",
+   "duration": "1 фраза",
+   "why": "«Не сегодня, но я тебя очень хочу обнять» сохраняет связь, даже когда желания расходятся."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Забота о себе",
+   "cadence": "пару раз в неделю",
+   "duration": "15 минут",
+   "why": "Отдых и спокойствие каждого напрямую влияют на желание быть ближе."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:sex:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Да, нет, может быть",
+   "minutes": 25,
+   "steps": [
+    "Каждый отдельно отмечает в списке: «да», «нет», «может быть».",
+    "Сравните только совпадения «да» и «может быть».",
+    "Обсудите одно «может быть» без давления.",
+    "«Нет» не обсуждается и не оспаривается."
+   ],
+   "source": "Сексологическая практика согласия"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:sex:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Прикосновение без цели",
+   "minutes": 20,
+   "steps": [
+    "10 минут один касается другого только ради ощущений, без продолжения.",
+    "Тот, кого касаются, говорит, что приятно.",
+    "Поменяйтесь ролями.",
+    "Обсудите, что нового узнали."
+   ],
+   "source": "Мастерс и Джонсон: сенсорное фокусирование"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что сегодня было самым приятным в твоём дне?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как мне понять, что у тебя был тяжёлый день, если ты не скажешь?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе помогает больше, когда ты расстроен(а): совет, объятие или просто тишина рядом?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда ты в последний раз почувствовал(а), что я тебя по-настоящему понял(а)?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая песня, фильм или место лучше всего поднимают тебе настроение?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "О чём ты переживаешь сейчас больше всего, даже если это кажется мелочью?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую свою эмоцию тебе сложнее всего показывать мне?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что я делаю, когда ты грустишь, — и что из этого правда помогает?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "За что ты сегодня благодарен(на) — себе, мне или миру?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Были ли моменты, когда ты чувствовал(а) себя рядом со мной одиноко?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что тебя любят, — по словам, делам, времени или прикосновениям?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую поддержку от меня ты хотел(а) бы получать чаще?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Вечерний check-in",
+   "cadence": "каждый день",
+   "duration": "10 минут",
+   "why": "Короткое «как ты сегодня» снимает накопленное до того, как оно станет ссорой."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Спросить, что нужно",
+   "cadence": "когда партнёру плохо",
+   "duration": "1 вопрос",
+   "why": "«Тебе сейчас помочь советом или просто побыть рядом?» — и вы не промахиваетесь с поддержкой."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Три благодарности",
+   "cadence": "каждый вечер",
+   "duration": "3 минуты",
+   "why": "Замечать хорошее друг в друге смещает баланс к позитиву, а это опора пары."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Назвать чувство",
+   "cadence": "в напряжённый момент",
+   "duration": "1 фраза",
+   "why": "«Мне тревожно» вместо молчания или упрёка помогает партнёру понять, что происходит."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Повернуться навстречу",
+   "cadence": "каждый день",
+   "duration": "секунды",
+   "why": "Отвечать на мелкие «смотри!» и «знаешь что?» — главный признак крепких пар у Готтмана."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Тихий час вдвоём",
+   "cadence": "раз в неделю",
+   "duration": "1 час",
+   "why": "Время без дел и телефонов, когда можно просто быть рядом, восстанавливает связь."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:emotions:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разговор о стрессе",
+   "minutes": 20,
+   "steps": [
+    "Каждый по 10 минут рассказывает о стрессе вне отношений.",
+    "Слушающий только сочувствует и задаёт вопросы, не советует.",
+    "В конце спросите: «Как мне тебя поддержать?»"
+   ],
+   "source": "Готтман: разговор о снижении стресса"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:emotions:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Языки заботы",
+   "minutes": 15,
+   "steps": [
+    "Каждый называет три вещи, от которых чувствует себя любимым.",
+    "Сравните списки.",
+    "Выберите по одной, которую сделаете на этой неделе."
+   ],
+   "source": "Идея языков любви (Чепмен); проверяйте на себе, а не по теории"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "О чём тебе всегда интересно со мной говорить?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой наш разговор ты запомнил(а) надолго?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда тебе легче говорить о важном: сразу, вечером или после паузы?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли тема, о которой мы давно не говорили, а стоило бы?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что я тебя слушаю, а не просто жду своей очереди?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что новое ты узнал(а) или подумал(а) на этой неделе?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую мою фразу в споре тебе тяжелее всего слышать?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как тебе удобнее получать критику — и бывает ли она у нас слишком резкой?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Если бы у нас был свой «тайный язык», какое слово в нём было бы первым?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "О чём ты молчишь, чтобы не расстраивать меня?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе помогает договориться со мной быстрее?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам лучше обсуждать бытовые мелочи, чтобы они не копились?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Двадцать минут разговора",
+   "cadence": "каждый день",
+   "duration": "20 минут",
+   "why": "Ежедневный разговор не о быте поддерживает близость и интерес друг к другу."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Пересказать своими словами",
+   "cadence": "в важном разговоре",
+   "duration": "1 фраза",
+   "why": "«Правильно я понял(а), что…» снимает половину недопониманий."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Мягкий старт",
+   "cadence": "в каждом споре",
+   "duration": "1 фраза",
+   "why": "Начинайте с себя и конкретной ситуации: как разговор начинается, так он обычно и заканчивается."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Встреча «наши планы»",
+   "cadence": "раз в неделю",
+   "duration": "30 минут",
+   "why": "Обсуждать дела по расписанию проще, чем в спешке на ходу."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Спросить, а не угадывать",
+   "cadence": "когда непонятно",
+   "duration": "1 вопрос",
+   "why": "Догадки о мыслях партнёра почти всегда хуже, чем простой вопрос."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Отложить на «позже» с датой",
+   "cadence": "когда нет сил",
+   "duration": "1 фраза",
+   "why": "«Давай вернёмся к этому в 8 вечера» — тема не потеряется и не превратится в ссору."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:talk:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Говорящий и слушающий",
+   "minutes": 20,
+   "steps": [
+    "Один говорит о важном 5 минут.",
+    "Второй пересказывает услышанное своими словами.",
+    "Говорящий уточняет, что упущено.",
+    "Поменяйтесь ролями."
+   ],
+   "source": "Техника отражения (Imago, PREP)"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:talk:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Неделя без «всегда» и «никогда»",
+   "minutes": 10,
+   "steps": [
+    "Договоритесь неделю не говорить «ты всегда» и «ты никогда».",
+    "Замечайте их у себя и заменяйте на конкретную ситуацию.",
+    "В конце недели обсудите, что изменилось."
+   ],
+   "source": "Готтман: критика против жалобы"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что помогает тебе остыть после ссоры быстрее всего?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое слово или знак мог бы стать нашим «стоп» в споре, чтобы взять паузу?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что я готов(а) мириться?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Из-за чего мы ссоримся чаще всего на самом деле — не повод, а причина?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что я говорю в ссоре такого, от чего становится только хуже?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое примирение у нас было самым тёплым?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли старая ссора, которая у тебя до сих пор не закрыта?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе важнее в конфликте: быть правым(ой) или быть услышанным(ой)?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам договориться не уходить спать в обиде, если сил говорить уже нет?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что мне сделать, чтобы ты почувствовал(а): мы на одной стороне, даже когда спорим?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего ты боишься, когда мы ссоримся?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое правило для наших споров ты бы предложил(а)?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Правило паузы",
+   "cadence": "в ссоре",
+   "duration": "20 минут",
+   "why": "Когда пульс высокий, слышать друг друга невозможно — пауза с оговорённым временем возвращения помогает."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Стоп-слово",
+   "cadence": "в ссоре",
+   "duration": "1 слово",
+   "why": "Заранее выбранное слово позволяет остановить спор без обид."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Попытка примирения",
+   "cadence": "в каждой ссоре",
+   "duration": "1 жест",
+   "why": "Шутка, прикосновение или «прости, я вспылил(а)» — по Готтману, умение мириться важнее отсутствия ссор."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Я-сообщение",
+   "cadence": "в споре",
+   "duration": "1 фраза",
+   "why": "«Мне обидно, когда…» вместо «ты всегда…» снижает оборону у партнёра."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разбор после ссоры",
+   "cadence": "через день после спора",
+   "duration": "15 минут",
+   "why": "Спокойно обсудить, что каждый чувствовал, — и что сделать иначе в следующий раз."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Одна тема за раз",
+   "cadence": "в споре",
+   "duration": "весь разговор",
+   "why": "Не вспоминать старое: спор об одном решается, спор обо всём — нет."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:conflicts:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разбор ссоры",
+   "minutes": 30,
+   "steps": [
+    "Через день после ссоры сядьте спокойно.",
+    "Каждый говорит, что чувствовал, без оценок партнёра.",
+    "Каждый называет свою долю ответственности.",
+    "Договоритесь, что сделаете иначе в следующий раз."
+   ],
+   "source": "Готтман: восстановление после ссоры"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:conflicts:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "План паузы",
+   "minutes": 15,
+   "steps": [
+    "Договоритесь о стоп-слове.",
+    "Решите, сколько длится пауза (20–60 минут) и кто напоминает вернуться.",
+    "Решите, чем каждый занят в паузе — не накручивать себя.",
+    "Запишите это и попробуйте в следующем споре."
+   ],
+   "source": "Физиологическое затопление (Готтман)"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что я делаю такого, от чего тебе спокойно?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие договорённости между нами для тебя особенно важны?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя значит «быть честным» в отношениях — где проходит граница?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты ревнуешь, но не говоришь об этом? Что это вызывает?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как мне вести себя, когда тебе тревожно, чтобы стало легче?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда ты впервые почувствовал(а), что мне можно доверять?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что могло бы пошатнуть твоё доверие ко мне, даже если это кажется мелочью?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие вещи у нас общие, а какие для тебя важно оставить личными?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам восстанавливать доверие, если кто-то из нас ошибётся?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое моё обещание ты особенно ценишь?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли что-то из прошлых отношений, что до сих пор мешает тебе доверять полностью?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе важно знать обо мне, чтобы чувствовать себя спокойно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:trust:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Держать маленькие обещания",
+   "cadence": "каждый день",
+   "duration": "—",
+   "why": "Доверие строится не на клятвах, а на мелочах: сказал(а) — сделал(а)."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:trust:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Предупредить заранее",
+   "cadence": "когда планы меняются",
+   "duration": "1 сообщение",
+   "why": "«Задержусь на час» снимает тревогу и показывает уважение."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:trust:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Ответ на тревогу",
+   "cadence": "когда партнёр тревожится",
+   "duration": "5 минут",
+   "why": "Спокойное объяснение без раздражения успокаивает лучше, чем «ты опять»."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:trust:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Свои границы вслух",
+   "cadence": "раз в месяц",
+   "duration": "15 минут",
+   "why": "Договориться, что у вас общее, а что личное, — и пересматривать это без обид."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:trust:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Признать ошибку первым",
+   "cadence": "когда ошибся(лась)",
+   "duration": "1 фраза",
+   "why": "Быстрое честное «я был(а) неправ(а)» укрепляет доверие сильнее, чем оправдания."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:trust:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Рассказать о дне",
+   "cadence": "каждый вечер",
+   "duration": "5 минут",
+   "why": "Открытость в мелочах делает пару ближе и снимает почву для подозрений."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:trust:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Карта доверия",
+   "minutes": 20,
+   "steps": [
+    "Каждый пишет 3 вещи, от которых ему спокойно рядом с партнёром.",
+    "И одну, от которой тревожно.",
+    "Обсудите тревожную без обвинений.",
+    "Договоритесь об одном маленьком шаге навстречу."
+   ],
+   "source": "Теория привязанности: безопасная база"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:trust:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Восстановление после ошибки",
+   "minutes": 30,
+   "steps": [
+    "Тот, кто ошибся, признаёт ошибку без «но».",
+    "Второй говорит, что почувствовал.",
+    "Вместе решите, что поможет вернуть доверие.",
+    "Назначьте разговор-проверку через неделю."
+   ],
+   "source": "Готтман: модель восстановления доверия"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое решение мы недавно приняли вместе очень удачно?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "В каких вопросах тебе важно решать самому(ой), а в каких — вместе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чувствуешь ли ты, что у нас равный голос? Где больше, где меньше?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что тебе кажется, будто я тебя контролирую? Когда?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь, чтобы я спорил(а) с твоими решениями?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую обязанность ты с радостью отдал(а) бы мне?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя значит «уступить» — слабость или забота?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Кто у нас чаще сдаётся первым — и как тебе с этим?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам принимать крупные решения, когда мнения разошлись?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "В чём ты доверяешь моему вкусу или опыту больше, чем своему?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты делаешь, когда чувствуешь, что теряешь влияние в нашей паре?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам делить ответственность так, чтобы никто не чувствовал себя «главным по всему»?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Спросить мнение до решения",
+   "cadence": "перед общими решениями",
+   "duration": "1 вопрос",
+   "why": "Даже если решение очевидно, вопрос показывает: голос партнёра важен."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Поделить зоны",
+   "cadence": "раз в месяц",
+   "duration": "20 минут",
+   "why": "Ясно, кто за что отвечает, — меньше поводов для контроля и упрёков."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Принять влияние",
+   "cadence": "в споре",
+   "duration": "1 уступка",
+   "why": "По Готтману, пары крепче, когда каждый готов в чём-то согласиться с партнёром."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Решение «на пробу»",
+   "cadence": "при разногласиях",
+   "duration": "неделя",
+   "why": "Попробовать вариант партнёра на время проще, чем спорить, чей лучше."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Без «я же говорил(а)»",
+   "cadence": "всегда",
+   "duration": "—",
+   "why": "Победа в споре ценой обиды партнёра — проигрыш для пары."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Сказать «спасибо, что решил(а)»",
+   "cadence": "когда партнёр взял решение на себя",
+   "duration": "1 фраза",
+   "why": "Признание снимает ощущение, что один тащит всё."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:power:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Что я могу уступить",
+   "minutes": 20,
+   "steps": [
+    "Возьмите спорный вопрос.",
+    "Каждый называет, в чём непреклонен, а где может уступить.",
+    "Найдите решение, которое уважает непреклонное у обоих."
+   ],
+   "source": "Готтман: компромисс через «ядро и гибкость»"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:power:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Карта ответственности",
+   "minutes": 25,
+   "steps": [
+    "Выпишите все регулярные дела пары.",
+    "Отметьте, кто делает каждое сейчас.",
+    "Отметьте, кто думает и помнит о нём.",
+    "Перераспределите то, что вызывает обиду."
+   ],
+   "source": "Исследования невидимого труда в паре"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебя легко ранит, хотя со стороны это кажется пустяком?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой страх из детства иногда просыпается в наших отношениях?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты защищаешься, когда тебе больно: уходишь, нападаешь, шутишь?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты боишься мне показать, потому что кажется, что я разлюблю?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая моя реакция напоминает тебе кого-то из прошлого?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что помогает тебе чувствовать себя «достаточно хорошим(ей)» рядом со мной?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая старая обида всё ещё влияет на то, как ты реагируешь на меня?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как мне понять, что в тебе говорит старая рана, а не то, что происходит сейчас?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты хотел(а) бы, чтобы я знал(а) о твоих слабых местах?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "В какой момент рядом со мной тебе удалось быть смелее, чем обычно?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую свою черту ты сам(а) в себе не любишь и боишься, что её замечу я?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты делаешь, чтобы позаботиться о себе, когда старая боль накрывает?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:shadows:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Назвать старую рану",
+   "cadence": "когда задело",
+   "duration": "1 фраза",
+   "why": "«Это задевает меня из-за прошлого, не из-за тебя» помогает не перекладывать старую боль на партнёра."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:shadows:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Пауза перед защитой",
+   "cadence": "в напряжённый момент",
+   "duration": "3 вдоха",
+   "why": "Пара глубоких вдохов даёт шанс ответить, а не сработать на автомате."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:shadows:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Принять без исправления",
+   "cadence": "когда партнёр делится слабостью",
+   "duration": "весь разговор",
+   "why": "Слушать без советов и оценок — так появляется безопасность быть собой."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:shadows:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Забота о себе",
+   "cadence": "каждый день",
+   "duration": "15 минут",
+   "why": "Сон, прогулка, тишина — уязвимость меньше захлёстывает, когда ресурс есть."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:shadows:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Письмо себе",
+   "cadence": "раз в неделю",
+   "duration": "10 минут",
+   "why": "Записать, что сегодня задело и почему, — чтобы приносить партнёру уже понятые чувства."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:shadows:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Сказать, что поможет",
+   "cadence": "когда тяжело",
+   "duration": "1 фраза",
+   "why": "«Мне сейчас поможет, если ты просто обнимешь» — партнёру не нужно угадывать."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:shadows:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Триггер и история",
+   "minutes": 25,
+   "steps": [
+    "Каждый называет одну реакцию партнёра, которая сильно задевает.",
+    "Расскажите, что эта реакция напоминает из прошлого.",
+    "Партнёр слушает без оправданий.",
+    "Договоритесь о знаке: «сейчас задело старое»."
+   ],
+   "source": "EFT: работа с триггерами привязанности"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:shadows:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Письмо младшему себе",
+   "minutes": 20,
+   "steps": [
+    "Каждый пишет короткое письмо себе-ребёнку о том, чего тогда не хватало.",
+    "По желанию прочитайте друг другу.",
+    "Скажите, как партнёр может дать немного этого сейчас."
+   ],
+   "source": "Схема-терапия: потребности, которые не были закрыты"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое утро у нас для тебя идеальное?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что делает наш дом по-настоящему «нашим»?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое бытовое дело тебя раздражает сильнее всего — и как его поделить по-честному?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя «порядок» — и совпадает ли он с моим?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой домашний ритуал ты хотел(а) бы завести вместе?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда тебе нужно побыть одному(ой) дома — и как мне это понять?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая наша бытовая привычка незаметно копит раздражение?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам проводить выходные, чтобы отдыхали оба?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что из детства ты хотел(а) бы перенести в наш дом, а что — нет?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты относишься к гостям у нас: чаще, реже, только по договорённости?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты чувствуешь, будто тянешь быт один(одна)?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что можно сделать на этой неделе, чтобы дома стало уютнее?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Пятнадцать минут порядка",
+   "cadence": "каждый вечер",
+   "duration": "15 минут",
+   "why": "Короткая совместная уборка не даёт быту копиться и ссорить."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Список дел на неделю",
+   "cadence": "раз в неделю",
+   "duration": "10 минут",
+   "why": "Видно, кто что делает, — меньше ощущения, что тянешь всё один(одна)."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Общий ужин",
+   "cadence": "пару раз в неделю",
+   "duration": "45 минут",
+   "why": "Совместная еда без экранов — простой и сильный ритуал близости."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Тихий угол",
+   "cadence": "каждый день",
+   "duration": "по желанию",
+   "why": "У каждого должно быть место и время побыть одному — это не про отдаление."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Спасибо за быт",
+   "cadence": "каждый день",
+   "duration": "1 фраза",
+   "why": "Замеченная мелкая работа по дому снимает раздражение лучше любых графиков."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Утренний ритуал",
+   "cadence": "каждое утро",
+   "duration": "5 минут",
+   "why": "Кофе вместе или пожелание хорошего дня задаёт тон всем следующим часам."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:home:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Идеальная неделя быта",
+   "minutes": 20,
+   "steps": [
+    "Каждый описывает идеальную неделю дома: кто что делает, когда отдых.",
+    "Найдите совпадения.",
+    "Договоритесь о двух изменениях на эту неделю."
+   ],
+   "source": "Семейная терапия: согласование ролей"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:home:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Ритуалы связи",
+   "minutes": 15,
+   "steps": [
+    "Вспомните ритуалы своих семей: утро, ужин, выходные.",
+    "Выберите два, которые хотите сделать своими.",
+    "Решите, когда начнёте."
+   ],
+   "source": "Готтман: ритуалы связи"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "На что тебе приятнее всего тратить деньги?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя значит «финансовая безопасность»?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты относишься к общим и личным деньгам — что должно быть отдельно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "О какой большой покупке или поездке ты мечтаешь?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие разговоры о деньгах даются тебе тяжелее всего?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как деньги обсуждали в твоей семье — и что ты хочешь сделать иначе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая сумма покупки, по-твоему, требует обсуждения вдвоём?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "На что тебе жалко денег, а на что — никогда?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты стесняешься своих трат или доходов при мне?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам копить на общую цель, чтобы это не превращалось в контроль?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебя тревожит в нашем финансовом будущем?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой подарок без денег ты хотел(а) бы получить от меня?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:money:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Денежный разговор",
+   "cadence": "раз в месяц",
+   "duration": "30 минут",
+   "why": "Спокойно обсудить траты и планы по расписанию — лучше, чем спорить в момент покупки."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:money:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Порог согласования",
+   "cadence": "при покупках",
+   "duration": "—",
+   "why": "Договоритесь о сумме, выше которой решаете вместе, — и меньше сюрпризов."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:money:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Личные деньги",
+   "cadence": "каждый месяц",
+   "duration": "—",
+   "why": "Небольшая сумма, которую каждый тратит без отчёта, снимает ощущение контроля."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:money:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Общая цель",
+   "cadence": "каждый месяц",
+   "duration": "5 минут",
+   "why": "Откладывать на общую мечту вместе приятнее и мотивирует обоих."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:money:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Без упрёков за траты",
+   "cadence": "всегда",
+   "duration": "—",
+   "why": "Вместо «опять потратил(а)» — «давай посмотрим, как это вписывается в наш план»."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:money:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Вспомнить, зачем копим",
+   "cadence": "раз в месяц",
+   "duration": "5 минут",
+   "why": "Разговор о цели, а не о цифрах, снимает напряжение от экономии."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:money:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Деньги из детства",
+   "minutes": 25,
+   "steps": [
+    "Каждый рассказывает, как в семье говорили о деньгах.",
+    "Что вы взяли с собой, а что хотите оставить в прошлом.",
+    "Найдите одну общую ценность про деньги."
+   ],
+   "source": "Финансовая психология пары"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:money:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Три корзины",
+   "minutes": 20,
+   "steps": [
+    "Решите, какая часть дохода идёт на общее, личное каждого и на общую цель.",
+    "Договоритесь о пороге совместных решений.",
+    "Назначьте дату пересмотра через месяц."
+   ],
+   "source": "Практика семейного бюджета"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Где ты видишь нас через год — в одной картинке?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Куда ты хотел(а) бы поехать вместе следующим летом?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая твоя мечта пока кажется слишком смелой, чтобы о ней говорить?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя важно успеть в ближайшие пять лет?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты представляешь наш обычный день через десять лет?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли у нас планы, в которых мы на самом деле хотим разного?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую маленькую цель мы можем поставить на этот месяц?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты относишься к переездам, смене работы, большим переменам?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего ты боишься, когда думаешь о нашем будущем?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам поддерживать планы друг друга, если они не совпадают?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой праздник или традицию ты хотел(а) бы сделать «нашей»?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя будет знаком, что мы движемся в правильную сторону?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разговор о мечтах",
+   "cadence": "раз в месяц",
+   "duration": "30 минут",
+   "why": "Знать мечты друг друга — основа общего будущего, а не только расписания."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Маленькая цель месяца",
+   "cadence": "раз в месяц",
+   "duration": "10 минут",
+   "why": "Одна общая достижимая цель даёт ощущение движения вместе."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Календарь пары",
+   "cadence": "раз в неделю",
+   "duration": "10 минут",
+   "why": "Общие планы на неделю, где есть время и для вас двоих, и для каждого."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Поддержать чужую цель",
+   "cadence": "раз в неделю",
+   "duration": "1 действие",
+   "why": "Помочь партнёру с его планом, даже если он не ваш, — сильный знак партнёрства."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Итоги года вдвоём",
+   "cadence": "раз в год",
+   "duration": "вечер",
+   "why": "Вспомнить, что получилось, и загадать следующее — ритуал, который скрепляет."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Мечта на холодильнике",
+   "cadence": "постоянно",
+   "duration": "—",
+   "why": "Картинка общей цели перед глазами помогает не забывать, ради чего вы стараетесь."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:plans:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Мечты по очереди",
+   "minutes": 30,
+   "steps": [
+    "Каждый по 10 минут рассказывает о мечте, не обязательно реалистичной.",
+    "Слушающий задаёт вопросы: что в ней главное для тебя?",
+    "Найдите, что из этого можно поддержать уже сейчас."
+   ],
+   "source": "Готтман: мечты в конфликте"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:plans:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Письмо через пять лет",
+   "minutes": 20,
+   "steps": [
+    "Каждый пишет письмо паре из будущего: где вы, что получилось.",
+    "Прочитайте друг другу.",
+    "Выпишите совпадения — это ваш общий план."
+   ],
+   "source": "Нарративная практика"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Кого из моих друзей тебе приятнее всего видеть?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Сколько времени с друзьями тебе нужно, чтобы чувствовать себя собой?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам вести себя с родителями, чтобы никто не чувствовал себя между двух огней?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "С какой парой тебе нравится проводить время — и почему?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что тебе неловко за меня или со мной в компании?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь, чтобы я реагировал(а), если кто-то из близких тебя критикует?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что о нас можно рассказывать друзьям, а что — только наше?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую встречу с близкими ты хотел(а) бы устроить в этом месяце?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли человек в моём окружении, рядом с которым тебе некомфортно?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам делить праздники между семьями?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая поддержка от моих близких для тебя важна?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Кто из людей вокруг вдохновляет тебя своими отношениями?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:people:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Вечер со своими",
+   "cadence": "раз в неделю",
+   "duration": "по желанию",
+   "why": "Время с друзьями без партнёра поддерживает каждого и не угрожает паре."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:people:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Встреча с другой парой",
+   "cadence": "раз в месяц",
+   "duration": "вечер",
+   "why": "Пары с общими друзьями чувствуют больше поддержки и меньше изоляции."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:people:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Мы — команда при родне",
+   "cadence": "при встречах с семьёй",
+   "duration": "—",
+   "why": "Не обсуждать разногласия пары при родственниках и поддерживать друг друга."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:people:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Договориться заранее",
+   "cadence": "перед праздниками",
+   "duration": "15 минут",
+   "why": "Где, с кем и сколько — решённое заранее снимает самые частые ссоры."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:people:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Рассказать о друзьях",
+   "cadence": "раз в неделю",
+   "duration": "10 минут",
+   "why": "Знать, что происходит в жизни близких партнёра, — часть интереса к нему."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:people:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Граница для советчиков",
+   "cadence": "когда нужно",
+   "duration": "1 фраза",
+   "why": "«Спасибо, мы решим сами» — вежливо и без обид для близких."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:people:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Карта близких",
+   "minutes": 20,
+   "steps": [
+    "Каждый рисует круги близости: кто внутри, кто дальше.",
+    "Сравните.",
+    "Обсудите, где вам нужно больше времени вдвоём, а где — больше людей."
+   ],
+   "source": "Социальная поддержка и пара"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:people:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Договор о праздниках",
+   "minutes": 15,
+   "steps": [
+    "Выпишите праздники года.",
+    "Решите, где и с кем каждый.",
+    "Договоритесь, как поступать, если кто-то из родни обидится."
+   ],
+   "source": "Практика семейной терапии"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чему ты хочешь научиться в этом году?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как я могу поддержать тебя в том, что для тебя сейчас важно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Сколько свободы и личного времени тебе нужно, чтобы не терять себя?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Каким(ой) ты стал(а) рядом со мной — что в тебе изменилось?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что отношения мешают тебе расти? В чём?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое твоё увлечение я пока недооцениваю?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты хочешь попробовать один(одна), без меня, и как мне к этому относиться?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Каким своим достижением этого месяца ты гордишься?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:09",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего ты в себе боишься потерять, если мы будем всё делать вместе?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:10",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам радоваться успехам друг друга, а не соревноваться?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:11",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую новую привычку ты хотел(а) бы завести — вместе или отдельно?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:12",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что я делаю, что помогает тебе становиться лучше, — и что мешает?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Время на своё",
+   "cadence": "каждую неделю",
+   "duration": "2–3 часа",
+   "why": "Личные увлечения подпитывают каждого и делают пару интереснее."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Спросить о прогрессе",
+   "cadence": "раз в неделю",
+   "duration": "5 минут",
+   "why": "Интерес к делу партнёра — простая и сильная поддержка."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Отпраздновать успех",
+   "cadence": "когда есть повод",
+   "duration": "вечер",
+   "why": "Радоваться за партнёра активно и тепло — признак крепких пар."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:04",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Учиться новому вместе",
+   "cadence": "раз в месяц",
+   "duration": "по желанию",
+   "why": "Общее новое умение даёт и рост, и общие воспоминания."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:05",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Не соревноваться",
+   "cadence": "всегда",
+   "duration": "—",
+   "why": "Успех партнёра — общий выигрыш, а не повод для сравнения."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:06",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разговор о переменах",
+   "cadence": "раз в квартал",
+   "duration": "30 минут",
+   "why": "Обсудить, как каждый изменился и что ему сейчас нужно, — чтобы расти не в разные стороны."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:growth:01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Колесо жизни вдвоём",
+   "minutes": 30,
+   "steps": [
+    "Каждый оценивает от 1 до 10 разные сферы: работа, здоровье, друзья, отдых, пара.",
+    "Сравните.",
+    "Выберите по одной сфере, где каждый хочет роста, и как партнёр поможет."
+   ],
+   "source": "Коучинговая практика"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:growth:02",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Активно-конструктивный отклик",
+   "minutes": 15,
+   "steps": [
+    "Один рассказывает о недавнем успехе.",
+    "Второй отвечает с интересом: расспрашивает, радуется.",
+    "Поменяйтесь.",
+    "Обсудите, как часто вы так делаете в жизни."
+   ],
+   "source": "Гейбл: реакция на хорошие новости"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую мою черту ты бы назвал(а) самой привлекательной, если бы рассказывал(а) обо мне другу?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое наше свидание ты бы повторил(а) прямо завтра?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе нравится во мне сейчас, чего не было, когда мы познакомились?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что я на тебя смотрю с интересом?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой запах, звук или вкус напоминает тебе обо мне?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что я могу сделать на этой неделе, чтобы ты почувствовал(а) себя особенным(ой)?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты чувствуешь себя для меня привычным(ой), а не желанным(ой)?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Если бы мы встретились впервые сегодня, как бы ты ко мне подошёл(ла)?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая наша общая шутка до сих пор тебя смешит?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что делает тебя самым(ой) красивым(ой) в собственных глазах?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что в наших отношениях стало слишком предсказуемым — и хочется ли это менять?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой сюрприз от меня ты запомнил(а) больше всего?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда ты гордишься тем, что мы вместе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое занятие делает нас «командой мечты»?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего тебе не хватает, чтобы чувствовать притяжение так же сильно, как раньше?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:attraction:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь, чтобы я за тобой ухаживал(а) сейчас — через годы после начала?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое место дома для тебя самое уютное для близости и разговоров?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя важнее в близости: нежность, страсть, игра или спокойствие?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как тебе приятнее, чтобы я проявлял(а) инициативу?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая музыка или атмосфера тебя расслабляет?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Были ли моменты, когда ты соглашался(лась) на близость без настоящего желания?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь, чтобы я реагировал(а), если тебе сейчас не хочется?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что изменилось в твоих желаниях за время наших отношений?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой комплимент о твоём теле тебе приятнее всего слышать?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая мысль мешает тебе расслабиться рядом со мной?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Хотел(а) бы ты, чтобы мы чаще говорили о близости, или тебе комфортнее без слов?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя «хорошая близость» — не в физике, а в ощущениях после?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая наша спонтанная близость вспоминается с улыбкой?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли у тебя страх или стеснение, о котором мне стоит знать, чтобы быть бережнее?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как стресс и усталость влияют на твоё желание — и чем я могу помочь?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что из романтики (ужин, свечи, поездка) работает на тебя лучше всего?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:sex:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе хочется попробовать вместе — не обязательно в спальне — чтобы стать ближе?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое у тебя настроение сейчас — одним словом или цветом?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты обычно восстанавливаешься, когда сил совсем нет?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты хотел(а) бы услышать от меня, когда тебе страшно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что сегодня тебя рассмешило?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "О каком своём чувстве ты жалеешь, что не сказал(а) мне вовремя?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что я на тебя обиделся(лась), даже если молчу?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая моя реакция на твои эмоции тебе помогает, а какая — нет?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой момент недели был самым спокойным?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты скрываешь грусть, чтобы не нагружать меня?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам поддерживать друг друга, когда плохо обоим одновременно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебя сейчас радует в наших отношениях?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь, чтобы я праздновал(а) твои хорошие новости?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое чувство ко мне тебе сложнее всего признать?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что делает тебя раздражительным(ой) — и как мне лучше реагировать?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой ритуал поддержки мы могли бы завести — например, чай после трудного дня?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:emotions:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что мне нужна поддержка, если я не прошу?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую книгу, фильм или подкаст ты хотел(а) бы обсудить со мной?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Когда тебе кажется, что я тебя перебиваю или не дослушиваю?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как тебе удобнее говорить о проблемах — вживую, письменно или на прогулке?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "О чём ты мог(ла) бы говорить часами?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой разговор между нами ты боишься начинать?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе помогает не обижаться на мои слова, сказанные сгоряча?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам сообщать плохие новости друг другу?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой вопрос ты всегда хотел(а) мне задать?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Было ли, что ты сказал(а) мне «всё нормально», хотя было не так?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя значит «быть услышанным(ой)»?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую тему для разговора за ужином ты бы предложил(а) на этой неделе?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам говорить о раздражающих мелочах, не превращая их в претензии?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую мою привычку в разговоре тебе хочется попросить изменить?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что разговор лучше отложить?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой наш недавний разговор поднял тебе настроение?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:talk:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Сколько разговоров «о нас» тебе нужно — чаще, реже, как сейчас?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую нашу ссору ты сейчас вспоминаешь со смехом?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что я делаю после ссоры, что тебе помогает мириться?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что спор уходит не туда?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой знак примирения тебе особенно приятен — слова, объятия, чай?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли тема, которую мы обходим, потому что боимся поссориться?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты чувствуешь, когда я замолкаю в споре?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам договориться о «честных правилах» ссоры?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты сам(а) успокаиваешься, когда злишься?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие слова, сказанные мной в ссоре, ты до сих пор помнишь?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам ругаться при других людях — или лучше не ругаться вовсе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе важно услышать от меня, чтобы закрыть ссору?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая у нас самая короткая ссора — и что помогло?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Повторяется ли у нас один и тот же спор? О чём он на самом деле?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты можешь уступить, а что для тебя принципиально?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую фразу примирения нам стоит запомнить на будущее?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:conflicts:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам понять, что пора попросить помощи со стороны — у друга или специалиста?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой мой поступок недавно добавил тебе доверия?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты чувствуешь, когда я задерживаюсь и не пишу?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как тебе комфортнее: делиться паролями и телефонами или иметь личное пространство?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой секрет детства ты готов(а) мне рассказать?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты чувствуешь, когда я общаюсь с бывшими или симпатичными мне людьми?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что я говорю правду?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя «маленькая ложь» и допустима ли она между нами?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Кому из близких ты доверяешь больше всего — и почему?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Был ли момент, когда ты во мне засомневался(лась)?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам говорить о ревности, чтобы она не превращалась в контроль?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая наша договорённость работает лучше всего?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что мне делать, если ты тревожишься без видимой причины?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты боишься мне не простить?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам быть, если кто-то из нас нарушит договорённость?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что в нашей паре даёт тебе ощущение «мы — команда»?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:trust:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Насколько тебе важно знать, где я и с кем, — и как об этом договориться?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое решение ты недавно с радостью оставил(а) мне?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Где тебе хочется больше влияния в нашей жизни?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты реагируешь, когда я настаиваю на своём?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "В каком деле ты бы хотел(а) стать главным(ой) в нашей паре?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты соглашаешься, только чтобы избежать конфликта?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как у твоих родителей делилась власть в семье — и как ты хочешь у нас?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя «справедливо» в распределении обязанностей?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое наше совместное решение ты считаешь самым смелым?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чувствуешь ли ты иногда, что твоё мнение у нас весит меньше?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам поступать, если мы оба уверены в своей правоте?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "В чём ты хотел(а) бы, чтобы я брал(а) инициативу чаще?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты относишься к советам, о которых не просил(а)?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Где проходит граница между заботой и контролем для тебя?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие решения можно принимать без звонка партнёру, а какие — нет?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты ценишь в том, как я принимаю решения?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:power:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам менять договорённости, если они перестали работать?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что помогает тебе чувствовать себя в безопасности, когда тебе грустно?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая фраза из детства до сих пор звучит у тебя в голове?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты понимаешь, что тебя накрыло старое, а не нынешнее?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "За что ты сам(а) себя сегодня можешь похвалить?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего ты стыдишься, хотя понимаешь, что это не стыдно?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хотел(а) бы, чтобы я вёл(а) себя, когда тебе плохо от прошлого?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая твоя защита со временем стала мешать нам?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой момент рядом со мной помог тебе почувствовать себя принятым(ой)?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие отношения из прошлого научили тебя ждать подвоха?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты делаешь, когда чувствуешь себя «недостаточно хорошим(ей)»?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что в тебе изменилось к лучшему за время наших отношений?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам говорить о слабых местах друг друга бережно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли во мне что-то, что пугает тебя, но ты не говорил(а)?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты отличаешь свою интуицию от тревоги?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую свою черту ты научился(лась) любить благодаря мне?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:shadows:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Нужна ли тебе помощь специалиста с чем-то старым — и как я могу поддержать?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой запах или звук для тебя — запах дома?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь проводить вечера будних дней?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое бытовое дело тебе было бы приятно делать вместе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что бы ты поменял(а) в нашем доме в первую очередь?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Где в доме тебе не хватает своего пространства?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам планировать покупки для дома, чтобы не спорить?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь, чтобы мы встречали друг друга после работы?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое блюдо у нас должно стать «фирменным»?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты чувствуешь себя гостем в нашем доме?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам относиться к беспорядку партнёра?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой домашний вечер был самым уютным?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя идеальное воскресенье дома?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какие бытовые мелочи стали поводом для скрытой обиды?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам заботиться о доме, когда оба устали?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое растение, вещь или питомец сделали бы наш дом теплее?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:home:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам договориться о тишине, сне и личном времени дома?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая твоя самая удачная покупка за последний год?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты относишься к долгам и кредитам?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя роскошь, а что — необходимость?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "На что ты готов(а) копить вместе со мной?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что тебя раздражают мои траты, но ты молчишь?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам помогать родственникам деньгами — и где граница?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты чувствуешь, если один из нас зарабатывает больше?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое бесплатное удовольствие ты любишь больше всего?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что ты боишься потерять в деньгах сильнее всего?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам вести общий бюджет, чтобы обоим было удобно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой подарок самому(ой) себе ты бы хотел(а) сделать?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Сколько денег «на подушку» тебе нужно, чтобы спать спокойно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как деньги влияли на твоё ощущение ценности раньше?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам говорить о деньгах, чтобы это не было похоже на отчёт?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "На какой общий опыт ты бы с радостью потратился(лась)?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:money:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя важнее: тратить на впечатления или на вещи?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой следующий небольшой план ты хотел(а) бы с нами осуществить?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты видишь наш дом через пять лет?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя важнее в будущем: стабильность или приключения?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую новую традицию мы могли бы завести в этом году?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли решение о будущем, которое ты откладываешь, потому что боишься нашего разговора?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты представляешь нашу жизнь, если кто-то из нас сменит профессию?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя значит «мы прошли путь вместе»?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое место в мире ты хочешь показать мне?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Совпадают ли наши представления о детях, браке, переезде — честно?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам принимать решения о будущем, если мы не уверены?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что мы можем запланировать на ближайшие выходные?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой навык нам стоит освоить, чтобы будущее стало ближе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего ты не хочешь ни при каких условиях?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам поддерживать друг друга, если планы рухнут?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой момент из будущего ты уже представляешь с улыбкой?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:plans:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как часто нам стоит сверять планы?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "С кем из моих близких ты чувствуешь себя легко?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты относишься к моим старым друзьям?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Сколько гостей и встреч в месяц для тебя в самый раз?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую вечеринку ты хотел(а) бы устроить вместе?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Говорил(а) ли кто-то из близких что-то плохое о нас, что тебя задело?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь, чтобы я знакомил(а) тебя с новыми людьми?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что для тебя важнее: много друзей или несколько близких?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Кто из моих друзей тебе нравится больше всего — и почему?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Есть ли в моём окружении человек, к которому ты ревнуешь?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам защищать отношения от чужого мнения?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая традиция твоей семьи тебе особенно дорога?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам поступать, если родители не одобряют наши решения?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что тебе одиноко среди моих друзей?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам поддерживать дружбу, когда времени мало?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какая встреча с друзьями этого года была лучшей?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:people:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чьё мнение о нашей паре для тебя важно?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:13",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какую книгу или курс ты хочешь пройти в этом году?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что мешает тебе заниматься любимым делом больше?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:15",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как я могу помочь тебе найти время на себя?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:16",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое твоё маленькое достижение недели мы можем отпраздновать?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:17",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Бывает ли, что ты подстраиваешься под меня и теряешь себя?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:18",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой мой совет помог тебе больше всего?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:19",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как ты хочешь расти в работе — и что тебе нужно от меня?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:20",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какое хобби ты бы хотел(а) вернуть?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:21",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Чего ты не делаешь, потому что боишься моей реакции?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:22",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам поддерживать друг друга в здоровых привычках, не давя?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:23",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Какой страх ты недавно преодолел(а)?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:24",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что тебе важно сохранить своим, даже живя вместе?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:25",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Где тебе кажется, что мы тормозим друг друга?",
+   "depth": 3
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:26",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Как нам вместе отмечать перемены в каждом?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:27",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Кем ты себя видишь через три года?",
+   "depth": 1
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "QUESTION:growth:28",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "question": "Что новое ты хочешь узнать обо мне в этом году?",
+   "depth": 2
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:attraction:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Свидание-сюрприз по очереди",
+   "minutes": 30,
+   "steps": [
+    "Раз в две недели один из вас планирует свидание, не раскрывая деталей.",
+    "Учитывайте то, что партнёр любит, но добавьте одно новое.",
+    "После свидания каждый называет, что понравилось больше всего."
+   ],
+   "source": "Исследования новизны в паре (Арон)"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:sex:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Карта нежности",
+   "minutes": 20,
+   "steps": [
+    "Каждый рисует контур тела и отмечает, где прикосновения приятны, а где — нет.",
+    "Обменяйтесь картами без комментариев.",
+    "Скажите одно, что вас удивило."
+   ],
+   "source": "Сексологическая практика"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:emotions:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Эмоциональный дневник на неделю",
+   "minutes": 10,
+   "steps": [
+    "Каждый вечер оба пишут одну эмоцию дня и её причину.",
+    "В конце недели прочитайте друг другу.",
+    "Найдите, где вы друг друга поддержали и где можно было лучше."
+   ],
+   "source": "Практика эмоционального интеллекта"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:talk:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Вопрос без совета",
+   "minutes": 15,
+   "steps": [
+    "Один рассказывает о проблеме.",
+    "Второй задаёт только открытые вопросы и не даёт советов.",
+    "В конце рассказчик говорит, стало ли понятнее.",
+    "Поменяйтесь ролями."
+   ],
+   "source": "Мотивационное интервью, активное слушание"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:conflicts:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Мягкий старт на трёх примерах",
+   "minutes": 20,
+   "steps": [
+    "Вспомните три недавних спора.",
+    "Для каждого перепишите первую фразу: «я чувствую… когда… мне нужно…».",
+    "Прочитайте друг другу новые варианты."
+   ],
+   "source": "Готтман: мягкий старт"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:trust:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Обещания недели",
+   "minutes": 15,
+   "steps": [
+    "Каждый даёт одно небольшое обещание на неделю.",
+    "Запишите их.",
+    "В конце недели обсудите, получилось ли и что помешало, без упрёков."
+   ],
+   "source": "Поведенческая терапия пар"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:power:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Решение по шагам",
+   "minutes": 25,
+   "steps": [
+    "Возьмите вопрос, где вы расходитесь.",
+    "Каждый объясняет, почему для него это важно, а не что он хочет.",
+    "Найдите три варианта, учитывающих оба «почему».",
+    "Выберите один на пробу."
+   ],
+   "source": "Гарвардский метод переговоров"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:shadows:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Безопасное слово «старое»",
+   "minutes": 15,
+   "steps": [
+    "Договоритесь о слове, которое значит: «сейчас во мне говорит прошлое».",
+    "Обсудите, что делает партнёр, услышав его: пауза, объятие, вопрос.",
+    "Попробуйте его на этой неделе."
+   ],
+   "source": "EFT: циклы реакций"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:home:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Честный список дел",
+   "minutes": 30,
+   "steps": [
+    "Выпишите все домашние дела, включая невидимые: помнить, планировать, покупать.",
+    "Отметьте, кто делает каждое.",
+    "Перераспределите так, чтобы обоим было честно."
+   ],
+   "source": "Исследования распределения домашнего труда"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:money:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Финансовая мечта",
+   "minutes": 20,
+   "steps": [
+    "Каждый называет одну мечту, на которую нужны деньги.",
+    "Оцените стоимость и срок.",
+    "Решите, сколько откладывать в месяц и как отмечать прогресс."
+   ],
+   "source": "Практика целевых накоплений"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:plans:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Карта года",
+   "minutes": 30,
+   "steps": [
+    "Разделите лист на 12 месяцев.",
+    "Отметьте важные даты, поездки, цели каждого и общие.",
+    "Найдите месяцы, где слишком много, и разгрузите их."
+   ],
+   "source": "Практика планирования пары"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:people:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Командная позиция",
+   "minutes": 15,
+   "steps": [
+    "Выберите ситуацию с родственниками или друзьями, которая вас напрягает.",
+    "Договоритесь о фразах, которыми вы поддерживаете друг друга.",
+    "Решите, кто и как отвечает, если ситуация повторится."
+   ],
+   "source": "Структурная семейная терапия"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "EXERCISE:growth:03",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Поддержка мечты партнёра",
+   "minutes": 20,
+   "steps": [
+    "Каждый рассказывает о личной цели на полгода.",
+    "Партнёр спрашивает: «Чем я могу помочь?»",
+    "Договоритесь об одной конкретной поддержке и проверьте через месяц."
+   ],
+   "source": "Исследования поддержки целей в паре"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ }
+]

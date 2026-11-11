@@ -1,54 +1,90 @@
 {% extends "base.html" %}
 {% block title %}Мои данные — Duoverse{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6" x-data="{ lang: 'ru', email: '', linked: false, push: false, consent: { birth: true, psych: true, analytics: false }, del: false, typed: '' }">
+<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6" x-data="{ del: false, typed: '' }">
   <h1 class="text-3xl font-extrabold" data-split>Мои данные</h1>
-  <p class="mt-2 text-ink-2">Аккаунт не нужен: всё хранится на этом устройстве, а на сервере — только зашифрованный расчёт для ваших ссылок.</p>
+  <p class="mt-2 text-ink-2">{% if email %}Вход по почте без пароля. Данные рождения и ответы анкет хранятся зашифрованными.{% else %}Вы ещё не вошли: разборы пока привязаны только к этому браузеру.{% endif %}</p>
 
   <section class="sticker mt-8 grid gap-4 bg-sage-soft p-6 sm:grid-cols-3" data-reveal>
     <div><p class="font-display text-3xl font-extrabold" data-count="{{ stats.reports }}">{{ stats.reports }}</p><p class="text-sm text-ink-2">разборов</p></div>
     <div><p class="font-display text-3xl font-extrabold" data-count="{{ stats.people }}">{{ stats.people }}</p><p class="text-sm text-ink-2">профилей</p></div>
-    <div><p class="font-display text-3xl font-extrabold">0</p><p class="text-sm text-ink-2">паролей, которые нужно помнить</p></div>
+    <div><p class="font-display text-3xl font-extrabold">0</p><p class="text-sm text-ink-2">паролей — вход по коду из письма</p></div>
   </section>
 
   <section class="card mt-4 p-6" data-reveal>
     <div class="flex items-start gap-4">
       <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-b-soft text-b-ink">{% icon 'mail' %}</span>
-      <div class="flex-1">
-        <h2 class="font-extrabold">Открыть на другом устройстве</h2>
-        <p class="mt-1 text-sm text-ink-2">Необязательно. Пришлём ссылку — по ней разборы откроются на новом телефоне. Почта нужна только для этого и для чеков.</p>
-        <form class="mt-4 flex gap-2" x-show="!linked" @submit.prevent="if (/.+@.+\..+/.test(email)) fetch('{% url 'send_magic_link' %}', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }, body: new URLSearchParams({ email }) }).then((r) => r.ok ? (linked = true, toast('Ссылка отправлена', 'mail')) : toast('Сначала сделайте хотя бы один разбор', 'info'))">
-          <input class="field" type="email" x-model="email" placeholder="you@example.com" autocomplete="email" aria-label="Email">
-          <button class="btn btn-primary shrink-0">Прислать</button>
-        </form>
-        <p x-show="linked" x-cloak class="mt-4 flex items-center gap-2 rounded-2xl bg-synergy-soft px-4 py-3 text-sm font-semibold text-synergy-ink">{% icon 'check' 'size-4' %}Ссылка ушла на <span x-text="email"></span></p>
+      <div class="min-w-0 flex-1">
+        {% if email %}
+          <h2 class="font-extrabold">Аккаунт</h2>
+          <p class="mt-1 text-sm text-ink-2">Вы вошли как <b class="text-ink">{{ masked_email }}</b>. Чтобы открыть разборы на другом устройстве, войдите там по этой почте.</p>
+          <form method="post" action="{% url 'logout' %}" class="mt-4">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% icon 'log-out' 'size-4' %}Выйти на этом устройстве</button></form>
+        {% else %}
+          <h2 class="font-extrabold">Войти по почте</h2>
+          <p class="mt-1 text-sm text-ink-2">Сохраните разборы в аккаунт: они откроются с любого устройства, а партнёр сможет присоединиться к вашей паре. Пароль не нужен.</p>
+          <a href="{% url 'login' %}" class="btn btn-primary btn-sm mt-4">{% icon 'mail' 'size-4' %}Войти или создать аккаунт</a>
+        {% endif %}
       </div>
     </div>
   </section>
 
-  <section class="card mt-4 divide-y divide-line p-2" data-reveal>
+  {% if devices %}
+  <section class="card mt-4 p-2" data-reveal>
     <div class="flex flex-wrap items-center justify-between gap-3 p-4">
-      <h2 class="font-extrabold">Язык</h2>
-      <div class="inline-flex rounded-full bg-sand p-1 text-sm font-bold">
-        <button class="rounded-full px-4 py-2 transition" :class="lang === 'ru' && 'bg-paper shadow-soft'" @click="lang = 'ru'">Русский</button>
-        <button class="rounded-full px-4 py-2 transition" :class="lang === 'en' && 'bg-paper shadow-soft'" @click="lang = 'en'; toast('English — в следующей итерации', 'globe')">English</button>
+      <div><h2 class="font-extrabold">Устройства</h2><p class="text-sm text-ink-3">Где выполнен вход в ваш аккаунт</p></div>
+      {% if devices|length > 1 %}<form method="post" action="{% url 'logout_others' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">Выйти на всех остальных</button></form>{% endif %}
+    </div>
+    <ul class="divide-y divide-line">
+      {% for d in devices %}
+      <li class="flex items-center gap-3 p-4">
+        <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-sand">{% icon 'smartphone' 'size-5' %}</span>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-bold">{{ d.user_agent|device_label }}{% if d.id == this_device %} <span class="chip ml-1 h-5 bg-synergy-soft text-[0.65rem] text-synergy-ink">это устройство</span>{% endif %}</p>
+          <p class="mono text-xs text-ink-3">вход {{ d.created_at|date:"j E" }} · активность {{ d.last_seen_at|date:"j E" }}</p>
+        </div>
+        <form method="post" action="{% url 'device_revoke' d.id %}">{% csrf_token %}<button class="btn btn-ghost btn-sm" aria-label="Выйти на устройстве">{% if d.id == this_device %}Выйти{% else %}Отключить{% endif %}</button></form>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if email %}
+  <section class="card mt-4 p-6" data-reveal>
+    <div class="flex items-start gap-4">
+      <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-b-soft text-b-ink">{% icon 'bell' %}</span>
+      <div class="min-w-0 flex-1">
+        <h2 class="font-extrabold">Уведомления</h2>
+        {% if telegram_linked %}
+          <p class="mt-1 text-sm text-ink-2">Telegram подключён: напишем, когда партнёр ответит на вопрос дня или присоединится к паре, и вечером напомним о вопросе.</p>
+          <form method="post" action="{% url 'telegram_unlink' %}" class="mt-4">{% csrf_token %}<button class="btn btn-ghost btn-sm">Отключить Telegram</button></form>
+        {% else %}
+          <p class="mt-1 text-sm text-ink-2">Пока присылаем короткое письмо, когда партнёр ответил на вопрос дня или присоединился к паре.{% if telegram_bot %} В Telegram удобнее — и с вечерним напоминанием.{% endif %}</p>
+          {% if telegram_bot %}<a href="{% url 'telegram_link' %}" class="btn btn-primary btn-sm mt-4" target="_blank" rel="noopener">{% icon 'send' 'size-4' %}Подключить Telegram</a>{% endif %}
+        {% endif %}
       </div>
     </div>
-    <label class="flex cursor-pointer items-center justify-between gap-4 p-4">
-      <span><span class="block font-bold">Напоминание о вопросе дня</span><span class="text-sm text-ink-3">Уведомление в браузере, вечером</span></span>
-      <span class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition" :class="push ? 'bg-ink' : 'bg-sand-2'"><input type="checkbox" class="sr-only" x-model="push" @change="push && toast('Браузер спросит разрешение (демо)', 'bell')"><i class="ml-1 size-5 rounded-full bg-paper shadow transition duration-300 ease-[var(--ease-spring)]" :class="push && 'translate-x-5'"></i></span>
-    </label>
   </section>
+  {% endif %}
 
-  <section id="privacy" class="card mt-4 scroll-mt-24 divide-y divide-line p-2" data-reveal>
-    <div class="p-4"><h2 class="font-extrabold">Согласия и приватность</h2><p class="mt-1 text-sm text-ink-3">152-ФЗ и GDPR. Чувствительные поля шифруются.</p></div>
-    <template x-for="[k, t, d] in [['birth', 'Данные рождения', 'Нужны для астрологии, чисел и таро'], ['psych', 'Ответы анкет', 'Нужны для научного слоя; партнёр их не видит'], ['analytics', 'Анонимная аналитика', 'Помогает улучшать продукт, можно выключить']]" :key="k">
-      <label class="flex cursor-pointer items-center justify-between gap-4 p-4">
-        <span><span class="block font-bold" x-text="t"></span><span class="text-sm text-ink-3" x-text="d"></span></span>
-        <span class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition" :class="consent[k] ? 'bg-synergy' : 'bg-sand-2'"><input type="checkbox" class="sr-only" x-model="consent[k]" @change="!consent[k] && k !== 'analytics' && toast('Без этого согласия часть отчёта не посчитается', 'info')"><i class="ml-1 size-5 rounded-full bg-paper shadow transition duration-300 ease-[var(--ease-spring)]" :class="consent[k] && 'translate-x-5'"></i></span>
-      </label>
-    </template>
-    <div class="p-4"><a class="btn btn-ghost btn-sm" href="{% url 'export_data' %}" download>{% icon 'download' 'size-4' %}Скачать мои данные (JSON)</a></div>
+  {% if email %}
+  <section class="card mt-4 flex flex-wrap items-center gap-4 p-6" data-reveal>
+    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
+    <div class="min-w-0 flex-1"><h2 class="font-extrabold">Пара+</h2>
+      <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }}. Действует и для партнёра в связанной паре.{% else %}Все ваши разборы целиком, квизы и история ответов — {{ price_plus }} ₽ на 30 дней, без автосписаний.{% endif %}</p></div>
+    <form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn {% if plus_until %}btn-ghost{% else %}btn-primary{% endif %} btn-sm">{% if plus_until %}Продлить{% else %}Подключить{% endif %}</button></form>
+  </section>
+  {% endif %}
+
+  <section id="privacy" class="card mt-4 scroll-mt-24 p-6" data-reveal>
+    <h2 class="font-extrabold">Что мы храним и зачем</h2>
+    <ul class="mt-3 space-y-2 text-sm text-ink-2">
+      <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Даты, время и место рождения — для астрологии, чисел и таро. Хранятся зашифрованными.</li>
+      <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Ответы анкет — для научного слоя. Зашифрованы; партнёр видит только общий вывод, не ваши ответы.</li>
+      <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Почта — только для входа и чеков. Зашифрована, рассылок нет.</li>
+      <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'check' 'size-4' %}</span>Аналитики и рекламных трекеров нет. Cookies — только для входа.</li>
+    </ul>
+    <a class="btn btn-ghost btn-sm mt-4" href="{% url 'export_data' %}" download>{% icon 'download' 'size-4' %}Скачать мои данные (JSON)</a>
   </section>
 
   <section class="mt-6 rounded-[var(--radius-card)] border-2 border-risk/30 p-6" data-reveal>

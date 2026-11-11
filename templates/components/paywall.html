@@ -1,0 +1,10 @@
+{# Paywall: one clear offer for this pair. Context: pair (stored pair), price_deep #}
+<div class="relative mt-4 rounded-2xl border-2 border-ink bg-paper p-5 shadow-sticker">
+  <p class="flex items-center gap-2 font-extrabold">{% icon 'lock-open' 'size-5' %}Полный разбор вашей пары</p>
+  <p class="mt-1 text-sm text-ink-2">Все 13 сфер с историей, сценариями ссор и упражнениями, четыре слоя с картами и графиками, PDF. Открывается вам обоим.</p>
+  <form method="post" action="{% url 'checkout' 'deep' %}" class="mt-4 flex flex-wrap items-center gap-3">
+    {% csrf_token %}<input type="hidden" name="pair" value="{{ stored.pair_id }}">
+    <button class="btn btn-primary">Открыть за {{ price_deep }} ₽</button>
+    <span class="text-xs text-ink-3">разово · чек на почту · <a href="{% url 'pricing' %}" class="underline">все тарифы</a></span>
+  </form>
+</div>

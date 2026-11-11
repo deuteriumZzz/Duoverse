@@ -1,39 +1,61 @@
 """Application services over the ORM: owners, pairs, stored reports, signed links."""
 
 import hashlib
+import hmac
 import json
-from datetime import date, time
+import secrets
+from datetime import date, time, timedelta
 
 from django.conf import settings
 from django.core import signing
-from django.db import transaction
+from django.core.cache import cache
+from django.db import models, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 
 from apps.compatibility.application.build_report import PersonInput
 from apps.compatibility.domain.report import Report
 
-from .models import Owner, Pair, Person, StoredReport
+from .models import Device, Identity, Owner, Pair, Person, StoredReport
 
-SALT_OWNER, SALT_SHARE, SALT_INVITE, SALT_MAGIC = "dv.owner", "dv.share", "dv.invite", "dv.magic"
+SALT_DEVICE, SALT_SHARE, SALT_LOGIN = "dv.device", "dv.share", "dv.login"
 
 
-# ── device owner (ADR-0007) ───────────────────────────────────────────────
+# ── devices and accounts (ADR-0007, ADR-0010) ──────────────────────────────
+def get_device(request: HttpRequest) -> Device | None:
+    if not hasattr(request, "_dv_device"):
+        device = None
+        raw = request.COOKIES.get(settings.OWNER_COOKIE)
+        try:
+            did = signing.loads(raw, salt=SALT_DEVICE) if raw else None
+        except signing.BadSignature:
+            did = None
+        if did:
+            device = Device.objects.select_related("owner").filter(id=did).first()
+            if device and timezone.now() - device.last_seen_at > timedelta(hours=1):
+                Device.objects.filter(id=device.id).update(last_seen_at=timezone.now())
+        request._dv_device = device  # type: ignore[attr-defined]
+    return request._dv_device  # type: ignore[attr-defined]
+
+
 def get_owner(request: HttpRequest) -> Owner | None:
-    raw = request.COOKIES.get(settings.OWNER_COOKIE)
-    if not raw:
-        return None
-    try:
-        oid = signing.loads(raw, salt=SALT_OWNER)
-    except signing.BadSignature:
-        return None
-    return Owner.objects.filter(id=oid).first()
+    device = get_device(request)
+    return device.owner if device else None
 
 
-def remember_owner(response: HttpResponse, owner: Owner) -> HttpResponse:
+def remember_owner(request: HttpRequest, response: HttpResponse, owner: Owner) -> HttpResponse:
+    """Bind this browser to `owner`: reuse its device row when there is one, otherwise register a new device."""
+    device = get_device(request)
+    if device:
+        if device.owner_id != owner.id:
+            device.owner = owner
+            device.save(update_fields=["owner"])
+        return response
+    device = Device.objects.create(owner=owner, user_agent=request.META.get("HTTP_USER_AGENT", "")[:200])
+    request._dv_device = device  # type: ignore[attr-defined]
     response.set_cookie(
         settings.OWNER_COOKIE,
-        signing.dumps(str(owner.id), salt=SALT_OWNER),
+        signing.dumps(str(device.id), salt=SALT_DEVICE),
         max_age=settings.OWNER_COOKIE_AGE,
         httponly=True,
         samesite="Lax",
@@ -42,9 +64,141 @@ def remember_owner(response: HttpResponse, owner: Owner) -> HttpResponse:
     return response
 
 
-def forget_owner(response: HttpResponse) -> HttpResponse:
+def forget_device(request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    if device := get_device(request):
+        device.delete()
     response.delete_cookie(settings.OWNER_COOKIE)
     return response
+
+
+def email_hash(email: str) -> str:
+    """Keyed hash for lookup; keyed with the encryption key so rotating SECRET_KEY doesn't orphan accounts."""
+    key = (settings.FIELD_ENCRYPTION_KEY or settings.SECRET_KEY).encode()
+    return hmac.new(key, email.strip().lower().encode(), hashlib.sha256).hexdigest()
+
+
+LOGIN_CODE_TTL, LOGIN_MAX_TRIES, LOGIN_RESEND_AFTER = 15 * 60, 5, 45
+
+
+def issue_login_code(email: str) -> str | None:
+    """A 6-digit code for this email, or None while the previous one is too fresh to resend."""
+    h = email_hash(email)
+    if not cache.add(f"login-sent:{h}", 1, LOGIN_RESEND_AFTER):
+        return None
+    code = f"{secrets.randbelow(10**6):06d}"
+    digest = hashlib.sha256(code.encode()).hexdigest()
+    cache.set(f"login:{h}", {"email": email.strip(), "digest": digest, "tries": 0}, LOGIN_CODE_TTL)
+    return code
+
+
+def check_login_code(h: str, code: str) -> str | None:
+    """The email the code was sent to, or None. Five wrong tries burn the code."""
+    entry = cache.get(f"login:{h}")
+    if not entry or entry["tries"] >= LOGIN_MAX_TRIES:
+        return None
+    if hmac.compare_digest(entry["digest"], hashlib.sha256(code.strip().encode()).hexdigest()):
+        cache.delete(f"login:{h}")
+        return entry["email"]
+    cache.set(f"login:{h}", {**entry, "tries": entry["tries"] + 1}, LOGIN_CODE_TTL)
+    return None
+
+
+def login_link_token(email: str, code: str) -> str:
+    return signing.dumps({"h": email_hash(email), "c": code}, salt=SALT_LOGIN)
+
+
+def from_login_link(token: str) -> tuple[str, str] | None:
+    try:
+        data = signing.loads(token, salt=SALT_LOGIN, max_age=LOGIN_CODE_TTL)
+    except signing.BadSignature:
+        return None
+    return data["h"], data["c"]
+
+
+@transaction.atomic
+def sign_in(
+    current: Owner | None, email: str | None = None, provider: str | None = None, subject: str | None = None, trust_email: bool = True
+) -> Owner:
+    """The account behind an email code or a provider identity. What this device made anonymously moves into it.
+
+    A provider's email links to an existing email account only when the provider vouches for it (`trust_email`).
+    """
+    account = None
+    if provider and subject:
+        ident = Identity.objects.select_related("owner").filter(provider=provider, subject_hash=email_hash(f"{provider}:{subject}")).first()
+        account = ident.owner if ident else None
+    if account is None and email and (trust_email or not provider):
+        account = Owner.objects.select_for_update().filter(email_hash=email_hash(email)).first()
+    if account is None:
+        account = current if current and not current.is_account else Owner.objects.create()
+    if email and not account.email_hash and not Owner.objects.filter(email_hash=email_hash(email)).exists():
+        account.email, account.email_hash, account.email_verified_at = email.strip(), email_hash(email), timezone.now()
+        account.save(update_fields=["email", "email_hash", "email_verified_at"])
+    if provider and subject:
+        Identity.objects.get_or_create(provider=provider, subject_hash=email_hash(f"{provider}:{subject}"), defaults={"owner": account})
+    if current and current.id != account.id and not current.is_account:
+        Person.objects.filter(owner=current).update(owner=account)
+        Pair.objects.filter(owner=current).update(owner=account)
+        Pair.objects.filter(partner=current).exclude(owner=account).update(partner=account)
+        Device.objects.filter(owner=current).update(owner=account)
+        current.delete()
+    Pair.objects.filter(owner=account, partner=account).update(partner=None)  # merged into a pair they had joined
+    return account
+
+
+# ── access: the creator or the joined partner ─────────────────────────────
+def pairs_of(owner: Owner) -> models.QuerySet[Pair]:
+    return Pair.objects.filter(models.Q(owner=owner) | models.Q(partner=owner))
+
+
+CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # no 0/O, 1/I — easy to read aloud
+
+
+def side_of(owner: Owner, pair: Pair) -> str:
+    """«a» for the creator, «b» for the joined partner."""
+    return "a" if pair.owner_id == owner.id else "b"
+
+
+def daily_state(pair: Pair, side: str, day) -> dict:
+    """Today's answers as this side may see them: the partner's text stays hidden until both have answered."""
+    from .models import DailyAnswer
+
+    rows = {r.side: r for r in DailyAnswer.objects.filter(pair=pair, day=day)}
+    mine, theirs = rows.get(side), rows.get("b" if side == "a" else "a")
+    both = bool(mine and theirs)
+    past = DailyAnswer.objects.filter(pair=pair, day__lt=day).order_by("-day")
+    by_day: dict = {}
+    for r in past[:60]:
+        by_day.setdefault(r.day, {})[r.side] = r
+    history = [
+        {"day": d, "question": rs[side].question, "mine": rs[side].text, "theirs": rs["b" if side == "a" else "a"].text}
+        for d, rs in by_day.items()
+        if len(rs) == 2
+    ]
+    return {
+        "mine": mine.text if mine else "",
+        "theirs": theirs.text if both and theirs else "",
+        "partner_answered": bool(theirs),
+        "has_partner": bool(pair.partner_id),
+        "history": history,
+    }
+
+
+def invite_code(pair: Pair, fresh: bool = False) -> str:
+    if pair.invite_code and not fresh:
+        return pair.invite_code
+    while True:
+        code = "".join(secrets.choice(CODE_ALPHABET) for _ in range(6))
+        if not Pair.objects.filter(invite_code=code).exists():
+            break
+    pair.invite_code = code
+    pair.save(update_fields=["invite_code"])
+    return code
+
+
+def pair_by_code(raw: str) -> Pair | None:
+    code = "".join(ch for ch in raw.upper() if ch.isalnum())
+    return Pair.objects.select_related("owner", "a", "b").filter(invite_code=code).first() if len(code) == 6 else None
 
 
 # ── people and pairs ─────────────────────────────────────────────────────
@@ -115,27 +269,3 @@ def from_share_token(token: str) -> StoredReport | None:
     except signing.BadSignature:
         return None
     return StoredReport.objects.filter(id=rid, status=StoredReport.Status.READY).first()
-
-
-def invite_token(person: Person) -> str:
-    return signing.dumps(str(person.id), salt=SALT_INVITE)
-
-
-def from_invite_token(token: str) -> Person | None:
-    try:
-        pid = signing.loads(token, salt=SALT_INVITE, max_age=60 * 60 * 24 * 14)
-    except signing.BadSignature:
-        return None
-    return Person.objects.filter(id=pid).first()
-
-
-def magic_token(owner: Owner) -> str:
-    return signing.dumps(str(owner.id), salt=SALT_MAGIC)
-
-
-def from_magic_token(token: str) -> Owner | None:
-    try:
-        oid = signing.loads(token, salt=SALT_MAGIC, max_age=60 * 60 * 24)
-    except signing.BadSignature:
-        return None
-    return Owner.objects.filter(id=oid).first()

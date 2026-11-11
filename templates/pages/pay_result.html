@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Оплата — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-md px-4 py-16 text-center sm:px-6">
+  {% if ok %}
+    <span class="mx-auto grid size-14 place-items-center rounded-full bg-synergy-soft text-synergy-ink" data-burst-in>{% icon 'check' 'size-7' %}</span>
+    <h1 class="mt-6 text-3xl font-extrabold">Готово, открыто</h1>
+    <p class="mt-3 text-ink-2">{% if purchase.kind == "plus" %}«Пара+» активна до {{ purchase.valid_until|date:"j E Y" }}.{% else %}Полный разбор открыт вам обоим.{% endif %} Чек придёт на почту.</p>
+    <a href="{{ back }}" class="btn btn-primary mt-8">Открыть разбор</a>
+  {% elif pending %}
+    <h1 class="text-3xl font-extrabold">Ждём подтверждения</h1>
+    <p class="mt-3 text-ink-2">Банк ещё обрабатывает платёж. Обновите страницу через минуту — как только оплата пройдёт, всё откроется.</p>
+    <a href="" class="btn btn-primary mt-8">Обновить</a>
+  {% elif unavailable %}
+    <h1 class="text-3xl font-extrabold">Оплата скоро появится</h1>
+    <p class="mt-3 text-ink-2">Мы подключаем приём платежей. Загляните чуть позже.</p>
+  {% else %}
+    <h1 class="text-3xl font-extrabold">Оплата не прошла</h1>
+    <p class="mt-3 text-ink-2">Деньги не списаны. Можно попробовать ещё раз или другой картой.</p>
+    <a href="{% if back %}{{ back }}{% else %}{% url 'history' %}{% endif %}" class="btn btn-primary mt-8">Вернуться</a>
+  {% endif %}
+</div>
+{% endblock %}

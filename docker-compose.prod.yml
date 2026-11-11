@@ -28,6 +28,14 @@ services:
     command: celery -A config worker -l info --concurrency 2
     healthcheck: { disable: true }
     depends_on: [web]
+  scheduler:  # hourly housekeeping: anonymous data cleanup (and reminders, see docs/DEPLOY.md)
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment: { <<: *env, RUN_MIGRATIONS: "0" }
+    command: sh -c "while true; do python manage.py scheduled_jobs; sleep 3600; done"
+    healthcheck: { disable: true }
+    depends_on: [web]
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped

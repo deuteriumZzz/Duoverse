@@ -3,7 +3,8 @@
 {% block content %}
 <datalist id="cities">{% for c in cities %}<option value="{{ c }}">{% endfor %}</datalist>
 <div class="mx-auto max-w-2xl px-4 py-10 sm:px-6" x-data="{ del: false, typed: '' }">
-  <a href="{% url 'profiles' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}Профили</a>
+  <a href="{% url back|default:'profiles' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}{% if as_partner %}Мои разборы{% else %}Профили{% endif %}</a>
+  {% if as_partner %}<p class="mt-4 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">Это ваши данные в паре: их вводил(а) пригласивший, но поправить можете только вы. Разбор пересчитается для вас обоих.</p>{% endif %}
   <div class="side-a mt-5 flex items-center gap-4">
     <span class="grid size-16 place-items-center rounded-3xl t-fill font-display text-2xl font-extrabold text-white">{{ p.name|first }}</span>
     <div><h1 class="text-3xl font-extrabold">{{ p.name }}</h1><p class="text-ink-3">{% if p.answers %}анкеты пройдены{% else %}анкеты не пройдены{% endif %}</p></div>
@@ -23,6 +24,7 @@
     <button class="btn btn-primary w-full sm:w-auto">Сохранить и пересчитать</button>
   </form>
 
+  {% if not as_partner %}
   <section class="mt-8 rounded-[var(--radius-card)] border-2 border-risk/30 p-6">
     <h2 class="flex items-center gap-2 font-extrabold text-risk-ink">{% icon 'shield-exclamation-point' 'size-5' %}Удаление данных</h2>
     <p class="mt-2 text-sm text-ink-2">Удалим профиль, данные рождения, ответы анкет и все разборы с участием {{ p.name }}. Это нельзя отменить.</p>
@@ -33,5 +35,6 @@
       <button class="btn mt-3 bg-risk text-white" :disabled="typed !== 'УДАЛИТЬ'" :class="typed !== 'УДАЛИТЬ' && 'opacity-40'">Удалить навсегда</button>
     </form>
   </section>
+  {% endif %}
 </div>
 {% endblock %}
