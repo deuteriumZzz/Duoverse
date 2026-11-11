@@ -321,8 +321,243 @@
     },
   });
 
+  /* ── Birthplace: suggestions + our own world map (templates/components/place_field.html). Places come from
+     /places/* on our server (GeoNames), outlines from Natural Earth; d3 is loaded only when the map opens. ── */
+  const regionNames = (() => { try { return new Intl.DisplayNames([document.documentElement.lang || "ru"], { type: "region" }); } catch { return null; } })();
+  const scripts = {};
+  const loadScript = (src) => (scripts[src] ||= new Promise((ok, fail) => {
+    const el = document.createElement("script");
+    Object.assign(el, { src, onload: ok, onerror: fail });
+    document.head.append(el);
+  }));
+  let worldData = null;
+  const placesApi = async (path, params) => (await fetch(`/places/${path}/?${new URLSearchParams(params)}`)).json();
+
+  let detailData = null, countryLabels = null;
+  const DETAIL_K = 5;  // from this zoom the 1:10m coastlines, lakes and rivers take over
+
+  function worldMap(svgEl, { onPick, onCity, detailUrl, labelsUrl }) {
+    const W = svgEl.clientWidth || 800, H = svgEl.clientHeight || 500;
+    const svg = d3.select(svgEl).attr("viewBox", [0, 0, W, H]);
+    svg.selectAll("*").remove();
+    const base = W / (2 * Math.PI);
+    const proj = d3.geoMercator().scale(base).translate([W / 2, W / 2]);  // the whole Mercator square is W × W
+    const path = d3.geoPath(proj);
+    const land = topojson.feature(worldData, worldData.objects.countries);
+    const borders = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
+
+    // overview (1:50m): one group moved by the zoom transform; stays underneath as the fallback while panning
+    const g = svg.append("g").attr("class", "geo-overview");
+    g.append("path").datum(d3.geoGraticule().step([15, 15])()).attr("class", "geo-grid").attr("d", path);
+    g.append("path").datum(land).attr("class", "geo-coast").attr("d", path);
+    g.append("path").datum(land).attr("class", "geo-land").attr("d", path);
+    g.append("path").datum(borders).attr("class", "geo-border").attr("d", path);
+    // detail (1:10m): redrawn in screen space for the visible area once a gesture ends, stretched in between
+    const detail = svg.append("g").attr("class", "geo-detail").style("display", "none");
+    const dl = Object.fromEntries(["coast", "land", "lakes", "rivers", "border"].map((c) => [c, detail.append("path").attr("class", `geo-${c}`)]));
+    const names = svg.append("g").attr("class", "geo-countries");
+    const dots = svg.append("g").attr("class", "geo-cities");
+    const pin = svg.append("g").attr("class", "geo-pin").style("display", "none");
+    pin.append("ellipse").attr("class", "geo-pin-shadow").attr("rx", 7).attr("ry", 2.5);
+    const drop = pin.append("g").attr("class", "geo-pin-body");
+    drop.append("path").attr("d", "M0 0C-5-7-13-14-13-24a13 13 0 1 1 26 0C13-14 5-7 0 0Z");
+    drop.append("circle").attr("cy", -24).attr("r", 4.6);
+
+    const minK = Math.max(1, H / W);
+    let t = d3.zoomIdentity, cities = [], pinAt = null, drawnAt = null;
+    const screen = (lat, lon) => t.apply(proj([lon, lat]));
+    const level = () => Math.log2((W * t.k) / 256);  // ≈ web-map zoom level, what Natural Earth's MIN_LABEL is in
+    const overlaps = (a, list) => list.some((b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1]);
+    const inView = (b) => b[2] > 0 && b[0] < W && b[3] > 0 && b[1] < H;
+
+    const place = () => {
+      const taken = [], z = level();
+      names.selectAll("text").each(function (d) {  // country names first, while the view is wide
+        const [x, y] = screen(d.lat, d.lon), w = d.name.length * 7.2 + 12;
+        const box = [x - w / 2, y - 9, x + w / 2, y + 9];
+        const show = d.min <= z + 0.6 && z < 7.5 && inView(box) && !overlaps(box, taken);
+        this.setAttribute("x", x); this.setAttribute("y", y);
+        this.style.opacity = show ? 1 : 0;
+        if (show) taken.push(box);
+      });
+      dots.selectAll("g").attr("transform", (d) => `translate(${screen(d.lat, d.lon)})`).each(function (d) {
+        const text = this.lastChild;
+        if (!text.textContent) return;
+        const [x, y] = screen(d.lat, d.lon), w = text.textContent.length * 6.6 + 10;
+        const box = [x - 3, y - 8, x + w, y + 8];
+        const free = inView(box) && !overlaps(box, taken);  // biggest towns first; a smaller one's label yields
+        text.style.opacity = free ? 1 : 0;
+        if (free) taken.push(box);
+      });
+      if (pinAt) pin.attr("transform", `translate(${screen(...pinAt)})`);
+      if (drawnAt) {  // stretch the last detail drawing until it is redrawn
+        const f = t.k / drawnAt.k;
+        detail.attr("transform", `translate(${t.x - drawnAt.x * f},${t.y - drawnAt.y * f}) scale(${f})`);
+      }
+    };
+    const drawDetail = () => {
+      if (!detailData || t.k < DETAIL_K) { detail.style("display", "none"); g.classed("is-under", false); drawnAt = null; return; }
+      const pad = Math.max(W, H) * 0.6;  // drawn wider than the view so a pan does not run off the edge before the redraw
+      const p = d3.geoMercator().scale(base * t.k).translate([t.x + (t.k * W) / 2, t.y + (t.k * W) / 2]).clipExtent([[-pad, -pad], [W + pad, H + pad]]);
+      const dp = d3.geoPath(p), landD = dp(detailData.land);
+      dl.coast.attr("d", landD); dl.land.attr("d", landD);
+      dl.lakes.attr("d", dp(detailData.lakes));
+      dl.rivers.attr("d", dp(detailData.rivers));
+      dl.border.attr("d", dp(detailData.borders));
+      drawnAt = t;
+      detail.attr("transform", null).style("display", null);
+      g.classed("is-under", true);  // the coarse outline would stick out past the precise coast
+    };
+    const draw = () => {
+      const labels = t.k < 3 ? 12 : t.k < 12 ? 28 : 48;
+      const sel = dots.selectAll("g").data(cities, (d) => d.id);
+      sel.exit().remove();
+      const enter = sel.enter().append("g").on("click", (ev, d) => { ev.stopPropagation(); onCity(d); });
+      enter.append("circle").attr("class", "geo-ring");
+      enter.append("circle").attr("class", "geo-dot");
+      enter.append("text").attr("dx", 7).attr("dy", 3.8);
+      dots.selectAll("g").each(function (d, i) {
+        const big = (d.pop || 0) >= 1e6, mid = (d.pop || 0) >= 1e5;
+        const el = d3.select(this).attr("class", `geo-city ${big ? "is-big" : mid ? "is-mid" : ""}`);
+        el.select(".geo-dot").attr("r", big ? 3.2 : mid ? 2.6 : 2);
+        el.select(".geo-ring").attr("r", big ? 6.5 : 0);
+        el.select("text").text(i < labels ? d.name : "");
+      });
+      place();
+    };
+    let timer = 0, seq = 0;
+    const settle = () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const id = ++seq;
+        if (t.k >= DETAIL_K && !detailData) {
+          const d = await (await fetch(detailUrl)).json(), o = d.objects;
+          const lakes = topojson.feature(d, o.lakes);
+          lakes.features = lakes.features.filter((f) => d3.geoArea(f) < 2 * Math.PI);  // a reversed ring would flood the view
+          detailData = { land: topojson.feature(d, o.land), lakes, rivers: topojson.feature(d, o.rivers), borders: topojson.mesh(d, o.borders) };
+        }
+        if (id !== seq) return;
+        drawDetail();
+        const [w, n] = proj.invert(t.invert([0, 0])), [e, s] = proj.invert(t.invert([W, H]));
+        const data = await placesApi("box", { w: Math.max(w, -180), s: Math.max(s, -85), e: Math.min(e, 180), n: Math.min(n, 85), limit: t.k < 3 ? 30 : 160 });
+        if (id !== seq) return;  // a slower answer for an older view
+        cities = data.items;
+        draw();
+      }, 140);
+    };
+    const zoom = d3.zoom().scaleExtent([minK, 4000]).translateExtent([[0, 0], [W, W]]).clickDistance(5)
+      .on("zoom", (ev) => { t = ev.transform; g.attr("transform", t); place(); })
+      .on("end", settle);
+    svg.call(zoom);
+    svg.on("click", (ev) => {
+      const [lon, lat] = proj.invert(t.invert(d3.pointer(ev)));
+      if (Math.abs(lat) <= 85) onPick(+lat.toFixed(5), +lon.toFixed(5));
+    });
+    (async () => {  // country names: small, loaded once, placed with the cities
+      countryLabels ||= (await (await fetch(labelsUrl)).json()).features
+        .map((f) => ({ name: f.properties.name, min: f.properties.min, lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] }))
+        .sort((a, b) => a.min - b.min);
+      names.selectAll("text").data(countryLabels).join("text").attr("class", "geo-country").text((d) => d.name);
+      place();
+    })();
+    const target = (lat, lon, k) => { const [x, y] = proj([lon, lat]); return d3.zoomIdentity.translate(W / 2, H / 2).scale(k).translate(-x, -y); };
+    svg.call(zoom.transform, target(30, 40, minK * 1.15));
+    return {
+      flyTo(lat, lon, k = 48, ms = 1100) {  // k is for a desktop-wide map; a phone zooms in as far in kilometres
+        const kk = Math.max(k * Math.max(1, 640 / W), minK);
+        svg.transition().duration(calm() ? 0 : ms).ease(d3.easeCubicInOut).call(zoom.transform, target(lat, lon, kk));
+      },
+      zoomBy(f) { svg.transition().duration(calm() ? 0 : 350).call(zoom.scaleBy, f); },
+      setPin(lat, lon) {
+        pinAt = [lat, lon];
+        pin.style("display", null).attr("transform", `translate(${screen(lat, lon)})`);
+        drop.classed("drop", false); pin.node().getBBox(); drop.classed("drop", !calm());  // restart the drop animation
+      },
+    };
+  }
+
+  const placeField = (who) => {
+    let m = null;  // the d3 map lives outside Alpine's reactivity
+    return {
+      q: "", geo: null, items: [], open: false, active: 0,
+      map: false, mapQ: "", mapItems: [], mapActive: 0, mapSel: null, mapLoading: false,
+      init() {
+        const src = who && this.form ? this.form[who] : this.$el.dataset;
+        this.q = src.place || "";
+        if (src.tz) this.geo = { name: src.place, lat: +src.lat, lon: +src.lon, tz: src.tz, country: src.country || "" };
+      },
+      sync() {
+        if (who && this.form) Object.assign(this.form[who], { place: this.q, lat: this.geo?.lat ?? "", lon: this.geo?.lon ?? "", tz: this.geo?.tz ?? "", country: this.geo?.country ?? "" });
+      },
+      country(code) { try { return code ? regionNames?.of(code) || code : ""; } catch { return code; } },
+      offset(tz) {
+        try {
+          const part = new Intl.DateTimeFormat("ru", { timeZone: tz, timeZoneName: "shortOffset" }).formatToParts(new Date()).find((p) => p.type === "timeZoneName");
+          return (part?.value || "").replace("GMT", "UTC").replace(/^UTC$/, "UTC+0");
+        } catch { return ""; }
+      },
+      coordsText(p) {
+        const f = (v, pos, neg) => `${Math.abs(v).toFixed(2).replace(".", ",")}° ${v >= 0 ? pos : neg}`;
+        return p ? `${f(p.lat, "с. ш.", "ю. ш.")}, ${f(p.lon, "в. д.", "з. д.")}` : "";
+      },
+      async typed() {
+        this.geo = null;
+        this.sync();
+        const q = this.q.trim();
+        const items = q.length >= 2 ? (await placesApi("search", { q })).items : [];
+        if (q !== this.q.trim()) return;  // a newer keystroke won
+        this.items = items; this.active = 0; this.open = items.length > 0;
+      },
+      move(d) { if (this.items.length) { this.open = true; this.active = (this.active + d + this.items.length) % this.items.length; } },
+      choose(p) { this.geo = { ...p }; this.q = p.name; this.open = false; this.sync(); },
+      async openMap() {
+        this.map = true; this.mapSel = this.geo ? { ...this.geo } : null; this.mapQ = ""; this.mapItems = [];
+        this.mapLoading = !m;
+        const box = this.$refs.svg.closest(".place-modal");
+        if (!worldData) {
+          await Promise.all([loadScript(box.dataset.d3), loadScript(box.dataset.topo)]);
+          worldData = await (await fetch(box.dataset.world)).json();
+        }
+        await this.$nextTick();
+        m ||= worldMap(this.$refs.svg, {
+          onPick: (lat, lon) => this.pickPoint(lat, lon), onCity: (p) => this.mapChoose(p), detailUrl: box.dataset.detail, labelsUrl: box.dataset.labels,
+        });
+        this.mapLoading = false;
+        if (this.mapSel) { m.flyTo(this.mapSel.lat, this.mapSel.lon, 60, 900); m.setPin(this.mapSel.lat, this.mapSel.lon); }
+        this.$refs.mapSearch.focus();
+      },
+      closeMap() { this.map = false; },
+      async mapTyped() {
+        const q = this.mapQ.trim();
+        const items = q.length >= 2 ? (await placesApi("search", { q })).items : [];
+        if (q === this.mapQ.trim()) { this.mapItems = items; this.mapActive = 0; }
+      },
+      mapMove(d) { if (this.mapItems.length) this.mapActive = (this.mapActive + d + this.mapItems.length) % this.mapItems.length; },
+      mapChoose(p) {
+        this.mapSel = { ...p }; this.mapItems = []; this.mapQ = "";
+        m?.flyTo(p.lat, p.lon, 60); m?.setPin(p.lat, p.lon);
+      },
+      async pickPoint(lat, lon) {
+        m.setPin(lat, lon);
+        const { place, km } = await placesApi("near", { lat, lon });
+        if (!place) { this.mapSel = null; return; }
+        const close = km < 3;
+        this.mapSel = { ...place, lat, lon, name: close ? place.name : `${place.name} (≈${Math.round(km)} км)`, country: place.country };
+      },
+      zoomBy(f) { m?.zoomBy(f); },
+      confirmMap() {
+        if (!this.mapSel) return;
+        this.geo = { ...this.mapSel };
+        this.q = this.mapSel.name;
+        this.items = []; this.open = false; this.map = false;
+        this.sync();
+      },
+    };
+  };
+
   document.addEventListener("alpine:init", () => {
     Alpine.data("datePicker", datePicker);
+    Alpine.data("placeField", placeField);
     Alpine.store("toasts", {
       items: [],
       push(text, icon = "sparkles") {

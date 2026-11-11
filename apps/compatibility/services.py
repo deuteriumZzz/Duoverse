@@ -202,8 +202,11 @@ def pair_by_code(raw: str) -> Pair | None:
 
 
 # ── people and pairs ─────────────────────────────────────────────────────
-def birth_payload(day: date, at: time | None, place: str | None) -> dict:
-    return {"date": day.isoformat(), "time": at.strftime("%H:%M") if at else None, "place": place or None}
+def birth_payload(day: date, at: time | None, place: str | None, point: tuple[float, float, str] | None = None) -> dict:
+    out: dict[str, str | float | None] = {"date": day.isoformat(), "time": at.strftime("%H:%M") if at else None, "place": place or None}
+    if point:  # picked on the map or found in GeoNames: charts use these instead of the city list
+        out |= {"lat": point[0], "lon": point[1], "tz": point[2]}
+    return out
 
 
 def person_input(p: Person) -> PersonInput:
@@ -215,6 +218,7 @@ def person_input(p: Person) -> PersonInput:
         time.fromisoformat(b["time"]) if b.get("time") else None,
         b.get("place"),
         p.answers,
+        (b["lat"], b["lon"], b["tz"]) if b.get("tz") else None,
     )
 
 
@@ -222,17 +226,20 @@ def person_input(p: Person) -> PersonInput:
 def create_pair(owner: Owner, a: dict, b: dict, mode: str) -> Pair:
     now = timezone.now()
     pa = Person.objects.create(
-        owner=owner, name=a["name"] or "Я", birth=birth_payload(a["date"], a.get("time"), a.get("place")), consent_at=now
+        owner=owner, name=a["name"] or "Я", birth=birth_payload(a["date"], a.get("time"), a.get("place"), a.get("point")), consent_at=now
     )
     pb = Person.objects.create(
-        owner=owner, name=b["name"] or "Партнёр", birth=birth_payload(b["date"], b.get("time"), b.get("place")), consent_at=now
+        owner=owner,
+        name=b["name"] or "Партнёр",
+        birth=birth_payload(b["date"], b.get("time"), b.get("place"), b.get("point")),
+        consent_at=now,
     )
     return Pair.objects.create(owner=owner, a=pa, b=pb, mode=mode)
 
 
 def update_person(p: Person, data: dict) -> None:
     p.name = data["name"] or p.name
-    p.birth = birth_payload(data["date"], data.get("time"), data.get("place"))
+    p.birth = birth_payload(data["date"], data.get("time"), data.get("place"), data.get("point"))
     p.save(update_fields=["name", "birth"])
 
 

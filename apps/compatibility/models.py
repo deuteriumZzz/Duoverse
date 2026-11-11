@@ -171,3 +171,24 @@ class QuizAnswer(models.Model):
 
     def __str__(self) -> str:
         return f"{self.pair_id} {self.side} {self.quiz_key}"
+
+
+class GeoPlace(models.Model):
+    """GeoNames populated places (cities500, CC BY 4.0): a birthplace anywhere on Earth, loaded by `places_load`."""
+
+    id = models.PositiveIntegerField(primary_key=True)  # geonameid
+    name = models.CharField(max_length=200)  # Russian when GeoNames has it, otherwise the local name
+    name_en = models.CharField(max_length=200)
+    country = models.CharField(max_length=2)
+    lat = models.FloatField()
+    lon = models.FloatField()
+    tz = models.CharField(max_length=40)
+    population = models.PositiveIntegerField(default=0)
+    key = models.CharField(max_length=200, db_index=True)  # places.search_key(name)
+    key_en = models.CharField(max_length=200, db_index=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["lat", "lon"]), models.Index(fields=["-population"], name="geoplace_population")]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.country})"

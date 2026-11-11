@@ -493,3 +493,67 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
   .dp-t-in, .dp-t-out { transition: opacity .12s; }
   .dp-t-from { transform: none; }
 }
+
+/* Birthplace field and world map (components/place_field.html) */
+@layer components {
+  .place-map-btn { position: absolute; right: .4rem; top: 50%; translate: 0 -50%; display: inline-flex; align-items: center; gap: .4rem; height: 2.45rem; padding-inline: .8rem;
+    border-radius: .85rem; background: var(--color-sand); font-size: .8rem; font-weight: 800; color: var(--color-ink); transition: background .2s, transform .25s var(--ease-spring); }
+  .place-map-btn:hover { background: color-mix(in oklab, var(--color-sand) 70%, var(--color-ink) 8%); }
+  .place-map-btn:active { transform: scale(.94); }
+  .place-list { position: absolute; z-index: 45; left: 0; right: 0; top: calc(100% + .5rem); max-height: 20rem; overflow-y: auto; padding: .35rem; border-radius: 1.2rem;
+    background: var(--color-paper); border: 1px solid var(--color-line); transform-origin: top center;
+    box-shadow: 0 2px 6px -2px rgb(60 40 20 / .08), 0 24px 50px -22px rgb(60 40 20 / .3); }
+  .place-opt { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .75rem; border-radius: .85rem; cursor: pointer; font-size: .9rem; }
+  .place-opt.is-active { background: var(--color-sand); }
+
+  .place-modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 0; }
+  .place-panel { position: relative; display: flex; flex-direction: column; width: 100%; height: 100dvh; background: var(--color-paper); overflow: hidden; transform-origin: center 40%; }
+  @media (min-width: 640px) {
+    .place-modal { padding: 1.5rem; }
+    .place-panel { width: min(64rem, 100%); height: min(46rem, calc(100dvh - 3rem)); border-radius: 1.75rem; border: 1px solid var(--color-line);
+      box-shadow: 0 40px 90px -30px rgb(40 26 14 / .45); }
+  }
+  .place-sel { animation: place-in .45s var(--ease-spring); }
+  @keyframes place-in { from { opacity: 0; transform: translateY(8px); } }
+
+  .geo-map { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; user-select: none;
+    --sea: color-mix(in oklab, var(--color-b) 11%, var(--color-milk)); --sea-deep: color-mix(in oklab, var(--color-b) 19%, var(--color-milk));
+    --shore: color-mix(in oklab, var(--color-b) 32%, transparent);
+    background: radial-gradient(130% 100% at 50% 0%, var(--sea), var(--sea-deep)); }
+  .geo-map path { vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+  .geo-grid { fill: none; stroke: color-mix(in oklab, var(--color-b) 30%, transparent); stroke-width: 1; stroke-dasharray: 0.1 5; }
+  .geo-coast { fill: none; stroke: var(--shore); stroke-width: 6; opacity: .45; }
+  .geo-land { fill: color-mix(in oklab, var(--color-paper) 72%, var(--color-milk)); stroke: color-mix(in oklab, var(--color-ink) 26%, transparent); stroke-width: .75; }
+  .geo-lakes { fill: var(--sea); stroke: color-mix(in oklab, var(--color-b) 38%, transparent); stroke-width: .7; }
+  .geo-rivers { fill: none; stroke: color-mix(in oklab, var(--color-b) 42%, var(--color-paper)); stroke-width: 1.1; }
+  .geo-border { fill: none; stroke: color-mix(in oklab, var(--color-ink) 22%, transparent); stroke-width: .8; stroke-dasharray: 4 3; }
+  .geo-overview.is-under .geo-land, .geo-overview.is-under .geo-coast, .geo-overview.is-under .geo-border { display: none; }
+  .geo-country { font: 800 10.5px/1 var(--font-sans); letter-spacing: .16em; text-transform: uppercase; text-anchor: middle; dominant-baseline: middle;
+    fill: color-mix(in oklab, var(--color-ink) 42%, transparent); paint-order: stroke; stroke: color-mix(in oklab, var(--color-paper) 80%, transparent); stroke-width: 3px;
+    pointer-events: none; transition: opacity .3s; }
+  .geo-city { cursor: pointer; }
+  .geo-dot { fill: var(--color-ink-2); stroke: var(--color-paper); stroke-width: 1.5; transition: fill .15s; }
+  .geo-ring { fill: none; stroke: color-mix(in oklab, var(--color-ink) 45%, transparent); stroke-width: 1.2; }
+  .geo-city text { font: 600 11px/1 var(--font-sans); fill: var(--color-ink-2); paint-order: stroke; stroke: var(--color-paper); stroke-width: 3.2px; stroke-linejoin: round;
+    pointer-events: none; transition: opacity .25s; }
+  .geo-city.is-big text { font-weight: 800; font-size: 12.5px; fill: var(--color-ink); }
+  .geo-city.is-mid text { font-weight: 700; }
+  .geo-city:hover .geo-dot { fill: var(--t, var(--color-ink)); }
+  .geo-city:hover text { fill: var(--color-ink); }
+  .geo-pin { pointer-events: none; }
+  .geo-pin-body path { fill: var(--t, var(--color-ink)); stroke: var(--color-paper); stroke-width: 2; filter: drop-shadow(0 6px 8px rgb(40 26 14 / .3)); }
+  .geo-pin-body circle { fill: var(--color-paper); }
+  .geo-pin-shadow { fill: rgb(40 26 14 / .25); }
+  .geo-pin-body.drop { animation: pin-drop .6s var(--ease-spring); }
+  .geo-pin-body.drop + .geo-pin-shadow, .geo-pin:has(.drop) .geo-pin-shadow { animation: pin-shadow .6s ease-out; }
+  @keyframes pin-drop { 0% { transform: translateY(-46px) scale(.9); opacity: 0; } 55% { opacity: 1; } 100% { transform: none; } }
+  @keyframes pin-shadow { 0% { transform: scale(.3); opacity: 0; } 100% { transform: none; } }
+  .geo-zoom { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: .9rem; background: var(--color-paper); border: 1px solid var(--color-line);
+    box-shadow: var(--shadow-soft); transition: transform .25s var(--ease-spring), background .2s; }
+  .geo-zoom:hover { background: var(--color-sand); }
+  .geo-zoom:active { transform: scale(.9); }
+  .geo-hint { position: absolute; left: 50%; top: 1rem; translate: -50% 0; padding: .45rem .9rem; border-radius: 999px; background: color-mix(in oklab, var(--color-paper) 88%, transparent);
+    backdrop-filter: blur(8px); border: 1px solid var(--color-line); font-size: .8rem; font-weight: 700; color: var(--color-ink-2); pointer-events: none; white-space: nowrap; }
+  .geo-credit { position: absolute; left: .75rem; bottom: .55rem; font-size: .65rem; color: var(--color-ink-3); pointer-events: none; }
+}
+@media (prefers-reduced-motion: reduce) { .geo-pin-body.drop, .place-sel { animation: none; } }

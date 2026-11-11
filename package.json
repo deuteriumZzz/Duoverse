@@ -8,6 +8,7 @@
     "icons": ".venv/bin/python scripts/build_icons.py",
     "css": "tailwindcss -i static/src/app.css -o static/dist/app.css --minify",
     "build": "npm run icons && npm run css",
+    "geo": "sh scripts/build_geo.sh",
     "watch": "tailwindcss -i static/src/app.css -o static/dist/app.css --watch"
   },
   "repository": {
@@ -20,8 +21,12 @@
   "homepage": "https://github.com/deuteriumZzz/Duoverse#readme",
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.4",
+    "d3": "^7.9.0",
     "lucide-static": "^1.69.0",
-    "tailwindcss": "^4.3.4"
+    "mapshaper": "^0.6.102",
+    "tailwindcss": "^4.3.4",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
   },
   "dependencies": {
     "@alpinejs/collapse": "^3.17.5",

@@ -58,6 +58,10 @@ docker compose -f docker-compose.prod.yml exec web python manage.py createsuperu
 - `collectstatic` со сжатием, gunicorn с prod-настройками отвечает на `/healthz`, отдаёт отчёт и сжатую статику.
 - CI собирает образ и проверяет, что контейнер отвечает на `/healthz`.
 
+## Места рождения
+
+При первом старте контейнер скачивает справочник GeoNames `cities500.zip` (~14 МБ, около 237 тыс. населённых пунктов, CC BY 4.0) и загружает в таблицу `GeoPlace`; русские названия берутся из `apps/compatibility/data/places_ru.tsv.gz` в репозитории. Обновить вручную: `docker compose -f docker-compose.prod.yml exec web python manage.py places_load`. Без этой таблицы приложение работает, но знает только ~30 городов. Карта и поиск идут только через наш сервер. Контуры карты (Natural Earth 1:50 млн и 1:10 млн, общественное достояние) лежат в `static/vendor/geo/`; пересобрать их: скачать четыре архива Natural Earth и запустить `npm run geo -- <папка>` (см. `scripts/build_geo.sh`).
+
 ## Резервные копии
 
 Сервис `backup` раз в сутки кладёт снимок Postgres в `./backups/duoverse-ГГГГ-ММ-ДД.sql.gz` и хранит последние 14 дней (`BACKUP_KEEP_DAYS`). Неудачный снимок пишет в лог `BACKUP FAILED`: `docker compose -f docker-compose.prod.yml logs backup`.

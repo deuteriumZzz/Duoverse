@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ p.name }} — профиль{% endblock %}
 {% block content %}
-<datalist id="cities">{% for c in cities %}<option value="{{ c }}">{% endfor %}</datalist>
 <div class="mx-auto max-w-2xl px-4 py-10 sm:px-6" x-data="{ del: false, typed: '' }">
   <a href="{% url back|default:'profiles' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}{% if as_partner %}Мои разборы{% else %}Профили{% endif %}</a>
   {% if as_partner %}<p class="mt-4 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">Это ваши данные в паре: их вводил(а) пригласивший, но поправить можете только вы. Разбор пересчитается для вас обоих.</p>{% endif %}
@@ -16,7 +15,8 @@
       <div><label class="label" for="p_date">Дата рождения</label>{% include "components/date_field.html" with name="date" id="p_date" value=p.birth_date|date:'Y-m-d' required=True %}</div>
       <label class="block"><span class="label">Время рождения</span><input class="field" type="time" name="time" value="{{ p.birth_time|time:'H:i' }}"></label>
     </div>
-    <label class="block"><span class="label">Город рождения</span><input class="field" name="place" list="cities" value="{{ p.birth_place|default:'' }}" placeholder="Город"></label>
+    <div><label class="label" for="p_place">Город рождения</label>
+      {% include "components/place_field.html" with prefix="" id="p_place" place=p.birth_place lat=p.birth.lat lon=p.birth.lon tz=p.birth.tz %}</div>
     <div class="flex items-center justify-between rounded-2xl bg-sand/70 p-4">
       <div><p class="font-bold">Психологические анкеты</p><p class="text-sm text-ink-3">{% if p.answers %}пройдены{% else %}не пройдены{% endif %}</p></div>
       <a href="{% url 'person_quiz' p.id %}" class="btn btn-ghost btn-sm bg-paper">{% if p.answers %}Пройти заново{% else %}Пройти{% endif %}</a>

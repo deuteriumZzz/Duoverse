@@ -1,0 +1,83 @@
+{% comment %}Birthplace anywhere on Earth: suggestions while typing, or a point on our own map (GeoNames + Natural Earth,
+served by us). Posts {prefix}place, {prefix}lat, {prefix}lon, {prefix}tz.
+prefix ("a_", "b_" or ""), who (a|b: syncs the wizard's form[who]), id, place/lat/lon/tz/country (initial values){% endcomment %}
+{% load static ui %}
+<div class="relative" x-data="placeField('{{ who|default:'' }}')" data-place="{{ place|default:'' }}" data-lat="{{ lat|default:'' }}"
+  data-lon="{{ lon|default:'' }}" data-tz="{{ tz|default:'' }}" data-country="{{ country|default:'' }}" @click.outside="open = false">
+  <div class="relative">
+    <input class="field pl-11 pr-[7.5rem]"{% if id %} id="{{ id }}"{% endif %} name="{{ prefix }}place" x-model="q" @input.debounce.180ms="typed()"
+      @keydown.down.prevent="move(1)" @keydown.up.prevent="move(-1)" @keydown.enter="if (open && items[active]) { $event.preventDefault(); choose(items[active]) }"
+      @keydown.escape="open = false" @focus="if (items.length && !geo) open = true" placeholder="Город, посёлок, село" autocomplete="off"
+      role="combobox" aria-autocomplete="list" :aria-expanded="open" aria-controls="{{ prefix }}place-list">
+    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 transition" :class="geo ? 'text-[var(--t,var(--color-ink))]' : 'text-ink-3'">{% icon 'map-pin' 'size-4' %}</span>
+    <button type="button" class="place-map-btn" @click="openMap()">{% icon 'map' 'size-4' %}<span>На карте</span></button>
+  </div>
+  <input type="hidden" name="{{ prefix }}lat" :value="geo ? geo.lat : ''">
+  <input type="hidden" name="{{ prefix }}lon" :value="geo ? geo.lon : ''">
+  <input type="hidden" name="{{ prefix }}tz" :value="geo ? geo.tz : ''">
+
+  <ul id="{{ prefix }}place-list" x-show="open" x-cloak role="listbox" class="place-list"
+    x-transition:enter="dp-t-in" x-transition:enter-start="dp-t-from" x-transition:enter-end="dp-t-to" x-transition:leave="dp-t-out" x-transition:leave-start="dp-t-to" x-transition:leave-end="dp-t-from">
+    <template x-for="(p, i) in items" :key="p.id">
+      <li role="option" :aria-selected="i === active" class="place-opt" :class="i === active && 'is-active'" @mouseenter="active = i" @mousedown.prevent="choose(p)">
+        <span class="min-w-0"><span class="block truncate font-bold" x-text="p.name"></span><span class="block truncate text-xs text-ink-3" x-text="country(p.country) + (p.name_en && p.name_en !== p.name ? ' · ' + p.name_en : '')"></span></span>
+        <span class="mono shrink-0 text-[.7rem] text-ink-3" x-text="offset(p.tz)"></span>
+      </li>
+    </template>
+  </ul>
+  <p x-show="geo" x-cloak class="mono mt-1.5 flex flex-wrap items-center gap-x-2 text-xs text-synergy-ink">{% icon 'globe' 'size-3.5' %}
+    <span x-text="geo && [country(geo.country), coordsText(geo), offset(geo.tz)].filter(Boolean).join(' · ')"></span></p>
+  <p x-show="q && !geo && !open" x-cloak class="mt-1.5 text-xs text-ink-3">Выберите место из подсказок или отметьте на карте — так дома и Асцендент посчитаются точно.</p>
+
+  {# the map: teleported to <body> so no transformed parent clips it #}
+  <template x-teleport="body">
+    <div x-show="map" x-cloak class="place-modal side-{{ who|default:'a' }}" @keydown.escape.prevent.stop="closeMap()"
+      data-d3="{% static 'vendor/d3.min.js' %}" data-topo="{% static 'vendor/topojson-client.min.js' %}" data-world="{% static 'vendor/geo/countries-50m.json' %}" data-detail="{% static 'vendor/geo/detail-10m.json' %}" data-labels="{% static 'vendor/geo/labels.json' %}"
+      x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:leave="transition duration-200" x-transition:leave-end="opacity-0">
+      <div class="absolute inset-0 bg-ink/30 backdrop-blur-sm" @click="closeMap()"></div>
+      <section class="place-panel" role="dialog" aria-modal="true" aria-label="Место рождения на карте" x-trap.noscroll="map"
+        x-show="map" x-transition:enter="dp-t-in" x-transition:enter-start="dp-t-from" x-transition:enter-end="dp-t-to">
+        <header class="relative z-20 flex items-center gap-2 border-b border-line p-3 sm:p-4">
+          <div class="relative min-w-0 flex-1">
+            <input class="field h-11 pl-10" x-ref="mapSearch" x-model="mapQ" @input.debounce.180ms="mapTyped()" @keydown.down.prevent="mapMove(1)" @keydown.up.prevent="mapMove(-1)"
+              @keydown.enter.prevent="mapItems[mapActive] && mapChoose(mapItems[mapActive])" placeholder="Найти город на карте" autocomplete="off" aria-label="Поиск места">
+            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-3">{% icon 'search' 'size-4' %}</span>
+            <ul x-show="mapItems.length" x-cloak class="place-list" role="listbox">
+              <template x-for="(p, i) in mapItems" :key="p.id">
+                <li role="option" :aria-selected="i === mapActive" class="place-opt" :class="i === mapActive && 'is-active'" @mouseenter="mapActive = i" @mousedown.prevent="mapChoose(p)">
+                  <span class="min-w-0"><span class="block truncate font-bold" x-text="p.name"></span><span class="block truncate text-xs text-ink-3" x-text="country(p.country)"></span></span>
+                  <span class="mono shrink-0 text-[.7rem] text-ink-3" x-text="offset(p.tz)"></span>
+                </li>
+              </template>
+            </ul>
+          </div>
+          <button type="button" class="dp-nav shrink-0" @click="closeMap()" aria-label="Закрыть карту">{% icon 'x' 'size-5' %}</button>
+        </header>
+
+        <div class="relative min-h-0 flex-1 overflow-hidden">
+          <svg x-ref="svg" class="geo-map" role="img" aria-label="Карта мира: нажмите, чтобы поставить точку"></svg>
+          <div x-show="mapLoading" class="absolute inset-0 grid place-items-center"><span class="size-6 rounded-full border-2 border-ink/20 border-t-ink spin"></span></div>
+          <p x-show="!mapSel && !mapLoading" x-transition.opacity class="geo-hint">Нажмите на карту или найдите город</p>
+          <div class="absolute bottom-3 right-3 flex flex-col gap-1.5">
+            <button type="button" class="geo-zoom" @click="zoomBy(2)" aria-label="Приблизить">{% icon 'plus' 'size-4' %}</button>
+            <button type="button" class="geo-zoom" @click="zoomBy(0.5)" aria-label="Отдалить">{% icon 'minus' 'size-4' %}</button>
+          </div>
+          <p class="geo-credit">© GeoNames · Natural Earth</p>
+        </div>
+
+        <footer class="relative z-10 flex flex-wrap items-center gap-3 border-t border-line bg-paper p-3 sm:p-4">
+          <div class="min-w-0 flex-1">
+            <template x-if="mapSel">
+              <div class="place-sel">
+                <p class="truncate font-display text-lg font-extrabold" x-text="mapSel.name"></p>
+                <p class="mono truncate text-xs text-ink-3" x-text="[country(mapSel.country), coordsText(mapSel), offset(mapSel.tz)].filter(Boolean).join(' · ')"></p>
+              </div>
+            </template>
+            <p x-show="!mapSel" class="text-sm text-ink-3">Точка не выбрана</p>
+          </div>
+          <button type="button" class="btn btn-primary" :disabled="!mapSel" @click="confirmMap()">{% icon 'check' 'size-4' %}Выбрать</button>
+        </footer>
+      </section>
+    </div>
+  </template>
+</div>

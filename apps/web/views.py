@@ -18,9 +18,11 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
+from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from apps.compatibility import places
 from apps.compatibility import plan as habit_plan
 from apps.compatibility.access import has_plus, mark_paid, plus_for_pair, unlocked
 from apps.compatibility.domain.archetypes import DYNAMICS, ELEMENTS, MODES, ROLES, dynamic_for, pair_name
@@ -643,6 +645,45 @@ def _wizard_ctx() -> dict:
     return {"modes": WIZARD_MODES, "quizzes": WIZARD_QUIZZES, "cities": CITIES}
 
 
+def _place_from(request: HttpRequest, prefix: str) -> tuple[str | None, tuple[float, float, str] | None]:
+    """Birthplace from a form: the name and, if picked on the map or found by name, its coordinates and zone."""
+    text = request.POST.get(f"{prefix}place", "").strip()[:120] or None
+    point = places.coords(request.POST.get(f"{prefix}lat"), request.POST.get(f"{prefix}lon"), request.POST.get(f"{prefix}tz"))
+    if text and not point and (found := places.resolve(text)):
+        point = (found.lat, found.lon, found.tz)
+    return text, point
+
+
+@cache_control(public=True, max_age=86400)
+def place_search(request: HttpRequest) -> JsonResponse:
+    return JsonResponse({"items": [places.as_dict(p) for p in places.search(request.GET.get("q", "")[:60])]})
+
+
+def _floats(request: HttpRequest, *names: str) -> list[float] | None:
+    try:
+        vals = [float(request.GET.get(n, "")) for n in names]
+    except ValueError:
+        return None
+    return vals if all(-180 <= v <= 180 for v in vals) else None
+
+
+@cache_control(public=True, max_age=86400)
+def place_near(request: HttpRequest) -> JsonResponse:
+    pt = _floats(request, "lat", "lon")
+    found = places.nearest(*pt) if pt and abs(pt[0]) <= 90 else None
+    return JsonResponse({"place": places.as_dict(found[0]), "km": round(found[1], 1)} if found else {"place": None})
+
+
+@cache_control(public=True, max_age=86400)
+def place_box(request: HttpRequest) -> JsonResponse:
+    box = _floats(request, "w", "s", "e", "n")
+    if not box:
+        return JsonResponse({"items": []})
+    limit = min(int(request.GET.get("limit", "160")) if request.GET.get("limit", "").isdigit() else 160, 300)
+    w, s, e, n = box
+    return JsonResponse({"items": [places.as_dict(p) for p in places.in_box(w, s, e, n, limit=limit)]})
+
+
 def _own_pair(request: HttpRequest, pair_id: str | None) -> Pair | None:
     owner = get_owner(request)
     if not (owner and pair_id):
@@ -655,7 +696,8 @@ def _own_pair(request: HttpRequest, pair_id: str | None) -> Pair | None:
 
 def _person_prefill(p: Person) -> dict:
     b = p.birth or {}
-    return {"name": p.name, "date": b.get("date") or "", "time": b.get("time") or "", "place": b.get("place") or "", "noTime": False}
+    geo = {k: b[k] for k in ("lat", "lon", "tz") if b.get(k) is not None}
+    return {"name": p.name, "date": b.get("date") or "", "time": b.get("time") or "", "place": b.get("place") or "", "noTime": False, **geo}
 
 
 def _wizard_prefill(request: HttpRequest) -> dict | None:
@@ -683,7 +725,7 @@ def wizard(request: HttpRequest) -> HttpResponse:
             "name": request.POST.get(f"{prefix}_name", "").strip()[:80],
             "date": day,
             "time": _parse_time(request.POST.get(f"{prefix}_time")),
-            "place": request.POST.get(f"{prefix}_place", "").strip()[:80] or None,
+            **dict(zip(("place", "point"), _place_from(request, f"{prefix}_"), strict=True)),
         }
 
     pair = _own_pair(request, request.POST.get("pair"))
@@ -1280,7 +1322,7 @@ def profile_edit(request: HttpRequest, pid) -> HttpResponse:
         day = _parse_date(request.POST.get("date"))
         if day:
             person.name = request.POST.get("name", person.name).strip()[:80] or person.name
-            person.birth = birth_payload(day, _parse_time(request.POST.get("time")), request.POST.get("place", "").strip() or None)
+            person.birth = birth_payload(day, _parse_time(request.POST.get("time")), *_place_from(request, ""))
             person.save()
             for pair in Pair.objects.filter(models.Q(a=person) | models.Q(b=person)):
                 request_report(pair)

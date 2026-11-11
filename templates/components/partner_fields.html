@@ -19,13 +19,8 @@
         <input class="field disabled:opacity-40" type="time" name="{{ who }}_time" x-model="form.{{ who }}.time" :disabled="form.{{ who }}.noTime">
         <p x-show="form.{{ who }}.noTime" x-collapse class="mt-2 flex items-start gap-2 rounded-2xl bg-attention-soft p-3 text-xs leading-relaxed text-attention-ink">{% icon 'info' 'size-4' %}Ничего страшного: без времени не посчитаем дома и Асцендент, а Луну — приблизительно. Остальное — точно.</p>
       </div>
-      <label class="block"><span class="label">Город рождения</span>
-        <div class="relative">
-          <input class="field pl-11" name="{{ who }}_place" list="cities" x-model="form.{{ who }}.place" placeholder="Начните вводить город" autocomplete="off">
-          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3">{% icon 'map-pin' 'size-4' %}</span>
-        </div>
-        <span x-show="tz(form.{{ who }}.place)" x-cloak class="mono mt-1.5 flex items-center gap-1 text-xs text-synergy-ink">{% icon 'globe' 'size-3.5' %}<span x-text="tz(form.{{ who }}.place)"></span></span>
-      </label>
+      <div><label class="label" for="{{ who }}_place">Город рождения</label>
+        {% include "components/place_field.html" with prefix=who|add:"_" who=who id=who|add:"_place" %}</div>
     </div>
   </template>
 </div>

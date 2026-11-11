@@ -12,7 +12,17 @@ from typing import Protocol
 from apps.astrology.application.ports import EphemerisProvider, Geocoder
 from apps.astrology.domain import chart as astro_chart
 from apps.astrology.domain import interpret
-from apps.astrology.domain.chart import POINTS, SPHERE_CATEGORY, BirthData, Chart, balance, composite, sphere_effects, sphere_score
+from apps.astrology.domain.chart import (
+    POINTS,
+    SPHERE_CATEGORY,
+    BirthData,
+    Chart,
+    Place,
+    balance,
+    composite,
+    sphere_effects,
+    sphere_score,
+)
 from apps.compatibility.domain import engine
 from apps.compatibility.domain.archetypes import ELEMENTS, MODES, dynamic_for, mode_from_life_path, pair_name, pair_tagline, role_for
 from apps.compatibility.domain.report import (
@@ -121,6 +131,7 @@ class PersonInput:
     birth_time: time | None = None
     birth_place: str | None = None
     answers: dict[str, int] | None = None
+    birth_coords: tuple[float, float, str] | None = None  # lat, lon, IANA zone of a place picked on the map
 
 
 @dataclass
@@ -155,8 +166,13 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
     names = {f"a{k}": v for k, v in forms(a.name).items()} | {f"b{k}": v for k, v in forms(b.name).items()}  # {a}, {b_gen}, {a_ins}…
 
     # ── charts and universes ────────────────────────────────────────────────
+    def place_of(p: PersonInput) -> Place | None:
+        if p.birth_coords:
+            return Place(p.birth_place or "", *p.birth_coords)
+        return deps.geocoder.lookup(p.birth_place) if p.birth_place else None
+
     def chart_of(p: PersonInput) -> Chart:
-        place = deps.geocoder.lookup(p.birth_place) if p.birth_place else None
+        place = place_of(p)
         return deps.ephemeris.chart(BirthData(p.birth_date, p.birth_time if place else None, place))
 
     ca, cb = chart_of(a), chart_of(b)
@@ -466,7 +482,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
     )
 
     # ── universes, accuracy ────────────────────────────────────────────────
-    exact = {p.name: bool(p.birth_time and p.birth_place and deps.geocoder.lookup(p.birth_place)) for p in (a, b)}
+    exact = {p.name: bool(p.birth_time and place_of(p)) for p in (a, b)}
     accuracy, missing = 46, []
     for p in (a, b):
         if exact[p.name]:

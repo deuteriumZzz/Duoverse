@@ -2,7 +2,6 @@
 {% block title %}Новый разбор — Duoverse{% endblock %}
 {% block content %}
 {{ prefill|json_script:"wizard-prefill" }}
-<datalist id="cities">{% for c in cities %}<option value="{{ c }}">{% endfor %}</datalist>
 <div class="mx-auto max-w-2xl px-4 py-10 sm:px-6"
      x-data="wizard('{{ mode|default:'quick' }}', JSON.parse(document.getElementById('wizard-prefill').textContent))" x-init="$watch('step', () => window.scrollTo({ top: 0, behavior: 'smooth' }))">
 
@@ -99,7 +98,6 @@
 
 <script>
   function wizard(initial, prefill) {
-    const zones = { "Москва": "UTC+3 · Europe/Moscow", "Санкт-Петербург": "UTC+3 · Europe/Moscow", "Казань": "UTC+3 · Europe/Moscow", "Екатеринбург": "UTC+5 · Asia/Yekaterinburg", "Новосибирск": "UTC+7 · Asia/Novosibirsk", "Владивосток": "UTC+10 · Asia/Vladivostok", "Калининград": "UTC+2 · Europe/Kaliningrad", "Самара": "UTC+4 · Europe/Samara", "Минск": "UTC+3 · Europe/Minsk", "Алматы": "UTC+5 · Asia/Almaty", "Тбилиси": "UTC+4 · Asia/Tbilisi", "Ереван": "UTC+4 · Asia/Yerevan", "Берлин": "UTC+1 · Europe/Berlin", "Лондон": "UTC+0 · Europe/London", "Нью-Йорк": "UTC−5 · America/New_York", "Нижний Новгород": "UTC+3 · Europe/Moscow", "Ростов-на-Дону": "UTC+3 · Europe/Moscow", "Краснодар": "UTC+3 · Europe/Moscow" };
     const blank = () => ({ name: "", date: "", time: "", noTime: false, place: "" });
     return {
       mode: ["quick", "extended", "deep"].includes(initial) ? initial : "quick",
@@ -112,7 +110,6 @@
         if (this.step === 2) return this.validDate(this.form.b.date);
         return true;
       },
-      tz(place) { return zones[place] || ""; },
       accuracy() {
         let v = 46;
         if (this.mode !== "quick") v += ["a", "b"].filter((w) => !this.form[w].noTime && this.form[w].time).length * 14;
