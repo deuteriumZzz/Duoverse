@@ -70,7 +70,7 @@
   {% if email %}
   <section class="card mt-4 flex flex-wrap items-center gap-4 p-6" data-reveal>
     <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
-    <div class="min-w-0 flex-1"><h2 class="font-extrabold">Пара+</h2>
+    <div class="min-w-[12rem] flex-1"><h2 class="font-extrabold">Пара+</h2>
       <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }}. Действует и для партнёра в связанной паре.{% else %}Все ваши разборы целиком, квизы и история ответов — {{ price_plus }} ₽ на 30 дней, без автосписаний.{% endif %}</p></div>
     <form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn {% if plus_until %}btn-ghost{% else %}btn-primary{% endif %} btn-sm">{% if plus_until %}Продлить{% else %}Подключить{% endif %}</button></form>
   </section>
