@@ -94,6 +94,11 @@ YOOKASSA_VAT_CODE = env.int("YOOKASSA_VAT_CODE", default=1)  # 1 = без НДС
 PRICE_DEEP = env.int("PRICE_DEEP", default=490)
 PRICE_PLUS = env.int("PRICE_PLUS", default=249)
 PRIVACY_EMAIL = env("PRIVACY_EMAIL", default="privacy@duoverse.app")  # requests about personal data (152-ФЗ ст. 14)
+# Server errors (500) are emailed here by Django; form values are masked (apps/core/errors.py).
+ADMINS = [("Duoverse", e) for e in env.list("ERROR_EMAILS", default=[])]
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+DEFAULT_EXCEPTION_REPORTER_FILTER = "apps.core.errors.PrivateReporterFilter"
+DEV_SCREENS = env.bool("DEV_SCREENS", default=DEBUG)  # «Состояния интерфейса» and demo scenario switching
 PLUS_DAYS = 30  # local time for the evening «question of the day» reminder
 LLM_MODEL = env("LLM_MODEL", default="claude-opus-5-5")
 LLM_EFFORT = env("LLM_EFFORT", default="medium")

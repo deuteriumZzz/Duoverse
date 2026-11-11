@@ -297,7 +297,12 @@ def _scenario(request: HttpRequest) -> str:
     return request.session.get("scenario", "ideal")
 
 
+DEV_ONLY = {"states"}  # prototype screens, not for users
+
+
 def page(request: HttpRequest, name: str) -> HttpResponse:
+    if name in DEV_ONLY and not settings.DEV_SCREENS:
+        raise Http404
     return render(request, PAGES[name])
 
 
@@ -319,6 +324,8 @@ def legal(request: HttpRequest, doc: str) -> HttpResponse:
 
 
 def set_scenario(request: HttpRequest, key: str) -> HttpResponse:
+    if not settings.DEV_SCREENS:
+        raise Http404
     if key in {s.key for s in report_provider().scenarios()}:
         request.session["scenario"] = key
     back = request.GET.get("next", "/")

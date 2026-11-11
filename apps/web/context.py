@@ -28,6 +28,7 @@ def prototype(request):
     return {
         "tabbar": tabbar,
         "debug": settings.DEBUG,
+        "dev_screens": settings.DEV_SCREENS,
         "dev": settings.DEBUG and request.session.get("dev", False),
         "scenarios": report_provider().scenarios(),
         "scenario": request.session.get("scenario", "ideal"),

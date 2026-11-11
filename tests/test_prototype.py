@@ -152,3 +152,18 @@ def test_report_numerology_is_computed_not_fixture(client):
 @pytest.mark.django_db
 def test_healthz(client):
     assert client.get("/healthz").content == b"ok"
+
+
+def test_dev_screens_are_hidden_in_production(client, settings):
+    settings.DEV_SCREENS = False
+    assert client.get("/states/").status_code == 404
+    assert client.get("/demo/scenario/complex/").status_code == 404
+    assert "Состояния интерфейса" not in client.get("/").content.decode()
+
+
+def test_error_emails_mask_what_people_typed(rf):
+    from django.views.debug import ExceptionReporter
+
+    request = rf.post("/new/", {"birth_date": "1994-03-12", "name": "Аня"})
+    text = ExceptionReporter(request, ValueError, ValueError("x"), None).get_traceback_text()
+    assert "1994-03-12" not in text and "Аня" not in text

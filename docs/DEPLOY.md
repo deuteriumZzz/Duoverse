@@ -60,16 +60,25 @@ docker compose -f docker-compose.prod.yml exec web python manage.py createsuperu
 
 ## Резервные копии
 
-Всё ценное — в Postgres. Снимок:
+Сервис `backup` раз в сутки кладёт снимок Postgres в `./backups/duoverse-ГГГГ-ММ-ДД.sql.gz` и хранит последние 14 дней (`BACKUP_KEEP_DAYS`). Неудачный снимок пишет в лог `BACKUP FAILED`: `docker compose -f docker-compose.prod.yml logs backup`.
+
+Копии на том же сервере не спасут, если пропадёт сервер: раз в сутки забирайте `./backups` в другое место в России (например, объектное хранилище Selectel или Yandex Cloud через `rclone`).
+
+Восстановление:
 
 ```bash
-docker compose -f docker-compose.prod.yml exec db pg_dump -U duoverse duoverse | gzip > backup-$(date +%F).sql.gz
+gunzip -c backups/duoverse-2026-11-11.sql.gz | docker compose -f docker-compose.prod.yml exec -T db psql -U duoverse duoverse
 ```
 
 Без `FIELD_ENCRYPTION_KEY` бэкап бесполезен: храните ключ вне сервера (менеджер паролей).
 
+## Ошибки и доступность
+
+- Ошибки 500 приходят письмом на `ERROR_EMAILS` (через тот же `EMAIL_URL`). Введённые пользователем значения в письме скрыты.
+- «Сайт упал» сервер сам о себе не сообщит: заведите внешнюю проверку `https://<домен>/healthz` раз в минуту (например, UptimeRobot или Яндекс Мониторинг) с уведомлением в Telegram.
+
 ## Перед публичным запуском
 
 - **Лицензия Swiss Ephemeris** (`pyswisseph`): AGPL или коммерческая лицензия Astrodienst. Для закрытого коммерческого сервиса нужна коммерческая.
-- Политика конфиденциальности и согласие на обработку данных (152-ФЗ / GDPR): тексты в `/disclaimer/` — черновик, их должен посмотреть юрист.
+- Политика, согласие и оферта (`/privacy/`, `/consent/`, `/terms/`) собираются из `docs/legal/` — это черновики, их должен посмотреть юрист. Чек-лист — `docs/legal/README.md`.
 - Почта для ссылок входа: настройте SPF/DKIM у домена, иначе письма уйдут в спам.

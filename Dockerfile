@@ -16,7 +16,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
 WORKDIR /app
 RUN pip install --no-cache-dir uv
 COPY pyproject.toml ./
-RUN uv pip install --system --no-cache -r pyproject.toml
+# pyswisseph ships no Linux wheel: a compiler only for the install, then it goes
+RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ libc6-dev \
+ && uv pip install --system --no-cache -r pyproject.toml \
+ && apt-get purge -y gcc g++ libc6-dev && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 COPY . .
 COPY --from=assets /app/static/dist static/dist
 # collectstatic needs no real secrets; the build-time values never reach the running container
