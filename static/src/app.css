@@ -81,9 +81,13 @@
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 3rem; padding-inline: 1.375rem; border-radius: 999px; font-weight: 700; font-size: .95rem; white-space: nowrap; transition: transform .35s var(--ease-spring), box-shadow .25s, background-color .2s, color .2s; user-select: none; }
   .btn:active { transform: scale(.96); }
   /* a flat key in the sticker style: lifts onto a yellow edge on hover, presses down on click */
-  .btn-primary { background: var(--color-ink); color: var(--color-milk); box-shadow: 0 0 0 0 var(--color-pair); }
-  .btn-primary:hover, .btn-primary:focus-visible { transform: translateY(-3px); box-shadow: 0 3px 0 0 var(--color-pair); }
-  .btn-primary:active { transform: translateY(0); box-shadow: 0 0 0 0 var(--color-pair); transition-duration: .08s; }
+  .btn-primary { background: var(--color-ink); color: var(--color-milk); }
+  .btn-light { background: var(--color-milk); color: var(--color-ink); }
+  .btn-primary, .btn-light { box-shadow: 0 0 0 0 var(--color-pair); }
+  .btn-primary:hover, .btn-primary:focus-visible, .btn-light:hover, .btn-light:focus-visible { transform: translateY(-3px); box-shadow: 0 3px 0 0 var(--color-pair); }
+  .btn-primary:active, .btn-light:active { transform: translateY(0); box-shadow: 0 0 0 0 var(--color-pair); transition-duration: .08s; }
+  .btn-light svg:last-child { transition: translate .35s var(--ease-spring); }
+  .btn-light:hover svg:last-child { translate: 4px 0; }
   .btn-ghost { background: transparent; color: var(--color-ink); border: 1.5px solid var(--color-line); }
   .btn-ghost:hover { background: var(--color-paper); border-color: var(--color-ink-3); }
   .btn-soft { background: var(--color-sand); color: var(--color-ink); }

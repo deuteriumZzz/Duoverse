@@ -2,7 +2,7 @@
 {% block content %}
 
 {# ─────────── HERO ─────────── #}
-<section class="relative overflow-hidden">
+<section class="relative overflow-x-clip">
   <div class="pointer-events-none absolute -left-32 top-40 size-96 rounded-full bg-a-soft/80 blob" data-follow="-40" aria-hidden="true"></div>
   <div class="pointer-events-none absolute -right-24 top-10 size-[26rem] rounded-full bg-b-soft/80 blob" style="animation-delay:-6s" data-follow="55" aria-hidden="true"></div>
 
@@ -274,7 +274,7 @@
     <div class="mx-auto h-16 w-24" data-burst-in="900" aria-hidden="true">{% mark "h-full w-full" merge=True light=True %}</div>
     <h2 class="mx-auto mt-8 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Узнайте, как устроена ваша пара</h2>
     <p class="mx-auto mt-4 max-w-md text-milk/70">Первый результат — за 30 секунд. Без регистрации.</p>
-    <a href="{% url 'start' %}" class="btn mt-8 bg-milk text-ink">Попробовать бесплатно {% icon 'arrow-right' 'size-4' %}</a>
+    <a href="{% url 'start' %}" class="btn btn-light mt-8">Попробовать бесплатно {% icon 'arrow-right' 'size-4' %}</a>
   </div>
 </section>
 {% endblock %}
