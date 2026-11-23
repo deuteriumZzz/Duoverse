@@ -2,7 +2,7 @@
 
 from functools import cache
 
-from apps.astrology.infrastructure.ephemeris import CityGeocoder, SwissEphemeris
+from apps.astrology.infrastructure.ephemeris import CityGeocoder, SkyfieldEphemeris
 from apps.compatibility.infrastructure.engine_report_provider import EngineReportProvider
 
 
@@ -20,4 +20,4 @@ def _stitcher():
 
 @cache
 def report_provider() -> EngineReportProvider:
-    return EngineReportProvider(ephemeris=SwissEphemeris(), geocoder=CityGeocoder(), knowledge=_knowledge, stitcher=_stitcher)
+    return EngineReportProvider(ephemeris=SkyfieldEphemeris(), geocoder=CityGeocoder(), knowledge=_knowledge, stitcher=_stitcher)

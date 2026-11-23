@@ -16,13 +16,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
 WORKDIR /app
 RUN pip install --no-cache-dir uv
 COPY pyproject.toml ./
-# pyswisseph ships no Linux wheel: a compiler only for the install, then it goes
-RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ libc6-dev \
- && uv pip install --system --no-cache -r pyproject.toml \
- && apt-get purge -y gcc g++ libc6-dev && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN uv pip install --system --no-cache -r pyproject.toml
 COPY . .
 COPY --from=assets /app/static/dist static/dist
 # collectstatic needs no real secrets; the build-time values never reach the running container
+# the NASA JPL ephemeris (public domain) goes into the image, so charts never wait for a download
+RUN python -c "from skyfield.api import Loader; Loader('/app/data', verbose=False)('de421.bsp')"
 RUN DJANGO_SECRET_KEY=build DJANGO_ALLOWED_HOSTS=build FIELD_ENCRYPTION_KEY=build python manage.py collectstatic --noinput \
  && useradd --create-home --uid 1000 app && chown -R app /app
 USER app

@@ -83,6 +83,5 @@ gunzip -c backups/duoverse-2026-11-11.sql.gz | docker compose -f docker-compose.
 
 ## Перед публичным запуском
 
-- **Лицензия Swiss Ephemeris** (`pyswisseph`): AGPL или коммерческая лицензия Astrodienst. Для закрытого коммерческого сервиса нужна коммерческая.
 - Политика, согласие и оферта (`/privacy/`, `/consent/`, `/terms/`) собираются из `docs/legal/` — это черновики, их должен посмотреть юрист. Чек-лист — `docs/legal/README.md`.
 - Почта для ссылок входа: настройте SPF/DKIM у домена, иначе письма уйдут в спам.

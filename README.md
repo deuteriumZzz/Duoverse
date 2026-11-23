@@ -87,7 +87,7 @@
 
 **Для разработчика**
 
-- Каждое число в отчёте посчитано: Swiss Ephemeris, пифагорейская нумерология с мастер-числами, редукция арканов, психометрические шкалы, движок весов. Отчёт — снимок, привязанный к версии алгоритма.
+- Каждое число в отчёте посчитано: эфемериды NASA JPL через Skyfield, пифагорейская нумерология с мастер-числами, редукция арканов, психометрические шкалы, движок весов. Отчёт — снимок, привязанный к версии алгоритма.
 - Тексты — из базы знаний с модерацией (`draft → reviewed → published`). ИИ (Claude) только сшивает проверенные блоки, а пост-валидатор отклоняет ответ с выдуманными планетами и аспектами. Без ключа API отчёт собирается из блоков без ИИ.
 - Чистая архитектура: расчёты — чистые функции в `domain/`, сборка — в `application/`, Django — только снаружи.
 - Ни одного стороннего запроса со страниц: шрифты, карта, справочник мест и библиотеки лежат на нашем сервере. Имена партнёров не уходят в Claude — вместо них метки, которые подставляются обратно у нас.
@@ -180,7 +180,7 @@ flowchart LR
 | `templates/components/` | компоненты интерфейса, один компонент — один файл |
 | `static/src/app.css` | дизайн-токены и motion-система |
 
-**Стек:** Django 5.2 · htmx 2 · Alpine.js 3 · Tailwind CSS 4 · d3 7 · pydantic 2 · Celery + Redis · PostgreSQL · pyswisseph · Anthropic SDK · ЮKassa · WhiteNoise · gunicorn · Docker · GitHub Actions (ruff, mypy, pytest, сборка образа).
+**Стек:** Django 5.2 · htmx 2 · Alpine.js 3 · Tailwind CSS 4 · d3 7 · pydantic 2 · Celery + Redis · PostgreSQL · Skyfield · Anthropic SDK · ЮKassa · WhiteNoise · gunicorn · Docker · GitHub Actions (ruff, mypy, pytest, сборка образа).
 
 ## ✦ Документация
 
@@ -203,6 +203,6 @@ flowchart LR
 
 ## ✦ Лицензии
 
-Астрономические расчёты используют [Swiss Ephemeris](https://www.astro.com/swisseph/) через `pyswisseph`: AGPL или коммерческая лицензия Astrodienst. Места — [GeoNames](https://www.geonames.org/) (CC BY 4.0), контуры карты — [Natural Earth](https://www.naturalearthdata.com/) (общественное достояние), отрисовка — [d3](https://d3js.org/) (ISC). Лицензию самого проекта выбирает владелец репозитория.
+Астрономические расчёты — [Skyfield](https://rhodesmill.org/skyfield/) (MIT) по эфемеридам NASA JPL DE421 (общественное достояние): без лицензионных отчислений. Места — [GeoNames](https://www.geonames.org/) (CC BY 4.0), контуры карты — [Natural Earth](https://www.naturalearthdata.com/) (общественное достояние), отрисовка — [d3](https://d3js.org/) (ISC). Лицензию самого проекта выбирает владелец репозитория.
 
 <p align="center"><sub>Астрология, числа и таро — символический слой для размышления, не наука. Психология опирается на исследования. Duoverse не ставит диагнозов и не принимает решений за вас.</sub></p>

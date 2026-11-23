@@ -10,3 +10,4 @@ staticfiles/
 .serena/
 .claude/
 backups/
+data/*.bsp
