@@ -195,4 +195,5 @@
     <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Ответить {% icon 'arrow-right' 'size-4' %}</span>
   </a>
 </section>
+{% if locked and unlock_items %}{% include "components/unlock_preview.html" with where="overview" cls="mt-10" %}{% endif %}
 {% endblock %}

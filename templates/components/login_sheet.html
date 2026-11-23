@@ -1,5 +1,3 @@
-{# Sign-in as a panel over the current page. Open with $dispatch('login-open', { why: 'save'|'invite'|'join'|'pay', next: '/path/' });
-   ?save=1 in the address opens it on load (after the wizard). The card itself is components/login_card.html, swapped by htmx. #}
 <div x-data="{
     open: false,
     show(d) {

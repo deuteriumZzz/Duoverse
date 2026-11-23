@@ -32,6 +32,7 @@
       </a>
       <nav class="ml-6 hidden items-center gap-1 text-sm font-semibold text-ink-2 md:flex" aria-label="Основное меню">
         {% url 'report' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'report' or nav == 'report_tab' or nav == 'share' %}bg-sand text-ink{% endif %}">Отчёт</a>
+        {% url 'sign_compatibility' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'sign_compatibility' %}bg-sand text-ink{% endif %}">По знакам</a>
         {% url 'daily' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'daily' %}bg-sand text-ink{% endif %}">Сегодня</a>
         {% url 'pair_invite' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav|slice:':4' == 'pair' %}bg-sand text-ink{% endif %}">Вдвоём</a>
         {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
@@ -88,6 +89,7 @@
       <div class="text-sm"><p class="eyebrow mb-3">Продукт</p>
         <ul class="space-y-2 font-semibold text-ink-2">
           <li><a class="hover:text-ink" href="{% url 'start' %}">Быстрый старт</a></li>
+          <li><a class="hover:text-ink" href="{% url 'sign_compatibility' %}">Совместимость знаков</a></li>
           <li><a class="hover:text-ink" href="{% url 'report' %}">Пример отчёта</a></li>
           <li><a class="hover:text-ink" href="{% url 'daily' %}">Вопрос дня</a></li>
           <li><a class="hover:text-ink" href="{% url 'pricing' %}">Тарифы</a></li>

@@ -166,7 +166,8 @@ def test_report_text_comes_from_knowledge_blocks():
 
 def test_demo_razbor_shows_cross_layer_factors_and_depth(client):
     html = client.get("/report/razbor/").content.decode()
-    assert "Точность разбора" in html and "Из чего это складывается у вас" in html and "18+" in html
+    assert "Точность разбора" in html and "Из чего складывается эта сфера" in html and "18+" in html
+    assert "В плюсе" in html and "Зона внимания" in html and "Что говорят исследования" in html
     astro = client.get("/report/astrology/").content.decode()
     assert "<svg" in astro and "Наложение домов".lower() in astro.lower()
 
@@ -225,3 +226,13 @@ def test_quick_check_dates_carry_into_the_wizard(client):
     client.post("/start/result/", {"date_a": "1991-05-20", "date_b": "1993-12-01"})
     page = client.get("/new/?mode=extended").content.decode()
     assert "1991-05-20" in page and "1993-12-01" in page
+
+
+def test_sign_page_ranks_all_twelve_with_texts(client):
+    assert "Выберите знак" in client.get("/signs/").content.decode()
+    html = client.get("/signs/", {"sign": 0}).content.decode()  # Овен
+    assert html.count("<details") >= 12 and "В плюсе" in html and "Огонь и огонь" in html
+    assert "Легко находите общий язык" in html and "Нужны договорённости" in html
+    assert "tabular-nums" not in html  # no scores on the page
+    assert "символический ориентир" in html
+    assert client.get("/signs/", {"sign": "99"}).status_code == 200  # nonsense is just «nothing chosen»

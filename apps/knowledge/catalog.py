@@ -8,6 +8,7 @@ and to give every astrological contact a reviewed text instead of the generated 
 from dataclasses import dataclass, field
 
 from apps.astrology.domain.chart import HOUSE_AREA, POINTS, SIGNS
+from apps.astrology.domain.signs import SUNPAIR_RELATIONS
 from apps.compatibility.domain.archetypes import DYNAMICS, ROLES
 
 SPHERES = {
@@ -151,6 +152,28 @@ def groups() -> list[Group]:
     return out
 
 
+TRAIT_KEYS, LEVELS3 = ["O", "C", "E", "A", "N"], ["low", "mid", "high"]
+ATTACHMENT_KEYS = ["anxious", "avoidant", "fearful", "secure"]  # sorted: pair keys are "<a>+<b>" in this order
+HORSEMEN_KEYS = ["criticism", "contempt", "defensiveness", "stonewalling"]
+FINDINGS = ["ratio", "bids", "capitalization", "novelty", "gratitude", "perception", "support", "commitment"]
+
+
+def psychology_keys() -> list[str]:
+    """The scientific layer: every text cites published research in data["sources"] (apps/psychology/sources.py)."""
+    keys = [f"PSY:trait:{t}:{lv}" for t in TRAIT_KEYS for lv in LEVELS3]
+    keys += [f"PSY:traitpair:{t}:{x}-{y}" for t in TRAIT_KEYS for i, x in enumerate(LEVELS3) for y in LEVELS3[i:]]
+    keys += [f"PSY:attach:{s}" for s in ATTACHMENT_KEYS]
+    keys += [f"PSY:attachpair:{x}+{y}" for i, x in enumerate(ATTACHMENT_KEYS) for y in ATTACHMENT_KEYS[i:]]
+    keys += [f"PSY:{kind}:{h}" for kind in ("horseman", "antidote") for h in HORSEMEN_KEYS] + [
+        f"PSY:horseman:{h}:high" for h in HORSEMEN_KEYS
+    ]
+    keys += [f"PSY:repair:{lv}" for lv in LEVELS3] + [f"PSY:finding:{f}" for f in FINDINGS] + [f"PSY:sphere:{s}" for s in SPHERES]
+    from apps.psychology.domain.patterns import PATTERNS
+
+    keys += [f"PSY:pattern:{p.key}" for p in PATTERNS]
+    return keys
+
+
 def expected_keys() -> list[str]:
     """Every key reports and the daily layer can use, including the hand-written core."""
     keys = [f"CAT:{c}:{t}" for c in CATS for t in TONES]
@@ -159,4 +182,8 @@ def expected_keys() -> list[str]:
     keys += [f"SPHERE:{s}" for s in SPHERES] + [f"ROLE:{r}" for r in ROLES] + [f"SUMMARY:{d}" for d in DYNAMICS]
     keys += [k for g in groups() for k in g.keys]
     keys += [f"QUIZ:{i:02d}" for i in range(1, QUIZZES + 1)]
+    keys += psychology_keys()
+    keys += [f"SUNPAIR:{relation}" for relation in SUNPAIR_RELATIONS.values()]
+    elements = sorted(["air", "earth", "fire", "water"])
+    keys += [f"SUNELEM:{x}+{y}" for i, x in enumerate(elements) for y in elements[i:]]  # «По знакам»: elements of both signs
     return keys

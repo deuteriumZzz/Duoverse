@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Совместимость знаков — Duoverse{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pb-20 pt-12 sm:px-6 md:pt-16">
+  <p class="chapter"><b>✦</b>быстрый ориентир</p>
+  <h1 class="mt-3 max-w-3xl text-3xl font-extrabold sm:text-5xl" data-split>С какими знаками вам <span class="accent">легче найти общий язык?</span></h1>
+  <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink-2">Выберите свой солнечный знак — покажем, с какими знаками связь складывается легче, где притягивают противоположности, а где помогает договариваться.</p>
+
+  <form method="get" class="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:p-6" x-data="{
+      open: false,
+      selected: '{{ selected_sign.idx|default_if_none:'' }}',
+      label: '{{ selected_sign.glyph|default:'' }} {{ selected_sign.name|default:'' }}'.trim(),
+      active: {{ selected_sign.idx|default:'0' }},
+      toggle() { this.open = !this.open; if (this.open) { this.active = this.selected === '' ? 0 : Number(this.selected); this.focusActive(); } },
+      focusActive() { this.$nextTick(() => this.$refs.options.querySelectorAll('[role=option]')[this.active]?.focus()); },
+      move(delta) { const options = this.$refs.options.querySelectorAll('[role=option]'); this.active = (this.active + delta + options.length) % options.length; this.focusActive(); },
+      choose(index, label) { this.selected = String(index); this.label = label; this.active = Number(index); this.open = false; this.$nextTick(() => this.$refs.trigger.focus()); },
+    }" @click.outside="open = false" @keydown.escape.stop="open = false; $refs.trigger.focus()">
+    <div class="relative min-w-0 flex-1">
+      <label class="label" id="sun-sign-label">Ваш солнечный знак</label>
+      <input type="hidden" name="sign" :value="selected" required>
+      <button x-ref="trigger" type="button" id="sun-sign" class="field flex items-center justify-between gap-3 text-left"
+        role="combobox" aria-haspopup="listbox" aria-controls="sun-sign-options" :aria-expanded="open" aria-labelledby="sun-sign-label sun-sign-value"
+        @click="toggle()" @keydown.arrow-down.prevent="open ? move(1) : toggle()" @keydown.arrow-up.prevent="open ? move(-1) : toggle()" @keydown.enter.prevent="toggle()">
+        <span class="flex min-w-0 items-center gap-2 truncate" :class="selected ? 'text-ink' : 'text-ink-3'">
+          <span class="grid size-8 shrink-0 place-items-center rounded-xl bg-pair-soft text-lg text-pair" x-show="selected" x-text="label.slice(0, 1)" aria-hidden="true"></span>
+          <span id="sun-sign-value" class="truncate" x-text="label || 'Выберите знак'"></span>
+        </span>
+        <span class="shrink-0 text-ink-3 transition-transform" :class="open && 'rotate-180'" aria-hidden="true">{% icon 'chevron-down' 'size-4' %}</span>
+      </button>
+      <ul x-ref="options" id="sun-sign-options" x-show="open" x-cloak role="listbox" aria-labelledby="sun-sign-label"
+        class="absolute left-0 right-0 top-[calc(100%+.5rem)] z-40 max-h-72 overflow-y-auto rounded-2xl border border-line bg-paper p-2 shadow-[0_18px_50px_rgba(32,25,19,.16)]"
+        x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="translate-y-1 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
+        @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)" @keydown.home.prevent="active = 0; focusActive()" @keydown.end.prevent="active = $refs.options.querySelectorAll('[role=option]').length - 1; focusActive()">
+        {% for sign in sign_options %}
+        <li role="option" tabindex="-1" :aria-selected="selected === '{{ sign.idx }}'"
+          class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-2 outline-none transition-colors hover:bg-sand focus:bg-pair-soft focus:text-ink"
+          :class="selected === '{{ sign.idx }}' && 'bg-pair-soft text-ink'"
+          @click="choose('{{ sign.idx }}', '{{ sign.glyph }} {{ sign.name }}')" @keydown.enter.prevent="choose('{{ sign.idx }}', '{{ sign.glyph }} {{ sign.name }}')">
+          <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-sand text-xl">{{ sign.glyph }}</span>
+          <span class="flex-1">{{ sign.name }}</span>
+          <span x-show="selected === '{{ sign.idx }}'" class="text-pair" aria-hidden="true">{% icon 'check' 'size-4' %}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <button class="btn btn-primary disabled:cursor-not-allowed disabled:opacity-50" type="submit" :disabled="!selected">Показать совпадения {% icon 'arrow-right' 'size-4' %}</button>
+  </form>
+
+  {% if selected_sign %}
+  <section class="mt-12" aria-labelledby="matches-title">
+    <p class="eyebrow">{{ selected_sign.glyph }} {{ selected_sign.name }}</p>
+    <h2 id="matches-title" class="mt-2 text-2xl font-extrabold sm:text-3xl">Как {{ selected_sign.name }} сочетается с другими знаками</h2>
+    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">Здесь нет «лучших» и «худших» знаков: астрология описывает характер связи, а не приговор. Это ориентир только по Солнцу — одной из многих точек карты.</p>
+
+    {% for g in sections %}
+    <section class="mt-10" aria-labelledby="group-{{ g.key }}">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="grid size-10 place-items-center rounded-2xl {% if g.key == 'easy' %}bg-synergy-soft text-synergy-ink{% elif g.key == 'opposites' %}bg-pair-soft text-[#7a5a00]{% else %}bg-b-soft text-b-ink{% endif %}">
+          {% if g.key == 'easy' %}{% icon 'heart-handshake' 'size-5' %}{% elif g.key == 'opposites' %}{% icon 'orbit' 'size-5' %}{% else %}{% icon 'messages-square' 'size-5' %}{% endif %}</span>
+        <div class="min-w-0 flex-1"><h3 id="group-{{ g.key }}" class="text-xl font-extrabold">{{ g.title }} <span class="mono text-sm font-semibold text-ink-3">· {{ g.signs|length }}</span></h3>
+          <p class="mt-0.5 text-sm text-ink-2">{{ g.about }}</p></div>
+      </div>
+      <ul class="mt-4 grid gap-4 md:grid-cols-2">
+        {% for m in g.signs %}
+        <li>
+          <details class="card group h-full overflow-hidden" {% if forloop.parentloop.first and forloop.first %}open{% endif %}>
+            <summary class="flex cursor-pointer list-none items-start gap-3 p-5">
+              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-sand text-2xl">{{ m.glyph }}</span>
+              <span class="min-w-0 flex-1">
+                <span class="block font-display text-lg font-extrabold">{{ m.name }}{% if m.idx == selected_sign.idx %} <span class="chip ml-1 h-5 bg-sand align-middle text-[0.65rem]">ваш знак</span>{% endif %}</span>
+                <span class="mt-0.5 block text-sm font-semibold text-ink-3">{{ m.label }} · {{ m.element_name }}</span>
+                <span class="mt-2 block text-sm leading-relaxed text-ink-2">{{ m.why|capfirst }}.</span>
+              </span>
+              <span class="mt-1 shrink-0 text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
+            </summary>
+            <div class="space-y-3 border-t border-line p-5 pt-4">
+              {% if m.elements %}<p class="text-sm leading-relaxed text-ink-2">{{ m.elements }}</p>{% endif %}
+              {% if m.plus %}<section class="rounded-2xl bg-synergy-soft p-4"><h4 class="font-bold text-synergy-ink">В плюсе</h4><p class="mt-1.5 text-sm leading-relaxed text-ink-2">{{ m.plus }}</p></section>{% endif %}
+              {% if m.minus %}<section class="rounded-2xl bg-attention-soft p-4"><h4 class="font-bold text-attention-ink">Где может быть непросто</h4><p class="mt-1.5 text-sm leading-relaxed text-ink-2">{{ m.minus }}</p></section>{% endif %}
+              {% if m.advice %}<section class="rounded-2xl bg-b-soft p-4"><h4 class="font-bold text-b-ink">Что поможет</h4><p class="mt-1.5 text-sm leading-relaxed text-ink-2">{{ m.advice }}</p></section>{% endif %}
+            </div>
+          </details>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endfor %}
+
+    <p class="mt-8 rounded-2xl border border-line bg-sand/70 p-4 text-sm leading-relaxed text-ink-2">
+      {% icon 'info' 'mr-1 inline size-4 text-ink-3' %}
+      Это символический ориентир только по солнечному знаку, а не вероятность успеха отношений. В вашей паре участвуют Луна, Венера, Марс, дома и ещё десятки связей — и психология каждого.
+    </p>
+  </section>
+
+  <section class="sticker mt-10 grid gap-5 bg-pair-soft p-6 sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
+    <div>
+      <p class="chapter"><b>↗</b>персональный разбор</p>
+      <h2 class="mt-2 text-2xl font-extrabold">Солнце — лишь одна точка из многих</h2>
+      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">Введите данные рождения обоих — разбор учтёт аспекты, положения планет и другие доступные факторы. Время и место рождения добавят детали, которых не видно по одному солнечному знаку.</p>
+    </div>
+    <a href="{% url 'wizard' %}?mode=deep" class="btn btn-primary">Полный разбор {% icon 'arrow-right' 'size-4' %}</a>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

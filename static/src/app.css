@@ -582,3 +582,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
   @media (min-width: 640px) { .sheet-panel { width: min(30rem, 100%); border-radius: 1.75rem; padding: 1.75rem; } }
 }
 @media (prefers-reduced-motion: reduce) { .pair-plus .pulse { animation: none; } }
+
+/* Disclosures (psychology details, sources): our own chevron, no browser triangle */
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary .lucide-chevron-down, details[open] > summary svg:last-child { transform: rotate(180deg); }

@@ -20,8 +20,8 @@ def test_free_report_shows_summary_and_locks_the_depth():
     stored = make_pair(client)
     razbor = client.get(f"/r/{stored.id}/razbor/").content.decode()
     assert razbor.count("Полный разбор вашей пары") == len(stored.snapshot["spheres"]) - 1  # first sphere stays open
-    assert "Полный разбор вашей пары" in client.get(f"/r/{stored.id}/astrology/").content.decode()
-    assert "Полный разбор вашей пары" in client.get(f"/r/{stored.id}/pdf/").content.decode()
+    assert "Что откроется для" in client.get(f"/r/{stored.id}/astrology/").content.decode()  # what this pair gets, by name
+    assert "Что откроется для" in client.get(f"/r/{stored.id}/pdf/").content.decode()
     assert "Полный разбор вашей пары" not in client.get("/report/razbor/").content.decode()  # the demo stays a showcase
 
 

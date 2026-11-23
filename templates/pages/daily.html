@@ -88,6 +88,94 @@
   </section>
   {% endif %}
 
+  {# «Неделя пары»: seven steps from the report, marked by each partner (apps/compatibility/week.py) #}
+  <section id="week" class="card mt-5 scroll-mt-24 overflow-hidden p-6 sm:p-8 fade-up" style="--i:1"
+    {% if week %}x-data="{
+      w: {{ week|safe_json }}, open: false,
+      get day() { return this.w.days[this.w.today - 1] },
+      async mark(n, el) {
+        try {
+          const s = await postForm('{% url 'week_done' %}', { rid: '{{ stored.id }}', day: n });
+          this.w = s;
+          if (s.days[n - 1].mine) { burst(el, 18); toast(s.days[n - 1].both ? 'Шаг пройден вдвоём!' : 'Отмечено — ждём партнёра', 'sparkles') }
+        } catch (e) { toast('Этот шаг пока закрыт', 'lock') }
+      },
+    }"{% endif %}>
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div><p class="eyebrow">Неделя пары</p><h2 class="mt-1 text-xl font-extrabold sm:text-2xl">7 шагов из вашего разбора</h2>
+        <p class="mt-1 text-sm text-ink-2">Короткие разговоры и упражнения для ваших самых чувствительных сфер. Отмечайте каждый сам — шаг засчитан, когда отметили оба.</p></div>
+      {% if week %}<p class="chip h-7 bg-synergy-soft text-synergy-ink"><span x-text="w.done"></span>&nbsp;из 7 вдвоём</p>{% endif %}
+    </div>
+
+    {% if week %}
+    <ol class="mt-5 grid grid-cols-7 gap-1.5" aria-label="Дни недели пары">
+      <template x-for="d in w.days" :key="d.n">
+        <li class="flex flex-col items-center gap-1">
+          <span class="grid size-9 place-items-center rounded-full border-2 text-xs font-extrabold transition"
+            :class="d.both ? 'border-synergy bg-synergy text-white' : d.mine || d.partner ? 'border-synergy bg-synergy-soft text-synergy-ink' : d.n === w.today ? 'border-ink bg-pair' : 'border-line text-ink-3'"
+            :title="d.title" x-text="d.both ? '✓' : d.n"></span>
+          <span class="text-[0.6rem] font-bold text-ink-3" x-text="d.locked ? '🔒' : (d.n === w.today ? 'сегодня' : '')"></span>
+        </li>
+      </template>
+    </ol>
+
+    <article class="mt-5 rounded-3xl bg-sand/70 p-5 sm:p-6">
+      <p class="mono text-xs text-ink-3"><span x-text="'День ' + day.n + ' · ' + day.kind_title + ' · ' + day.sphere_title"></span> · <span x-text="day.minutes + ' мин'"></span></p>
+      <h3 class="mt-2 font-display text-xl font-extrabold leading-snug" x-text="day.title"></h3>
+      <template x-if="!day.locked">
+        <div>
+          <p class="mt-2 text-sm leading-relaxed text-ink-2" x-text="day.text"></p>
+          <ol class="mt-3 space-y-1.5 text-sm" x-show="day.steps.length"><template x-for="(s, i) in day.steps"><li class="flex gap-2"><span class="mono text-ink-3" x-text="(i + 1) + '.'"></span><span x-text="s"></span></li></template></ol>
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button class="btn btn-sm" :class="day.mine ? 'bg-synergy text-white' : 'btn-primary'" @click="mark(day.n, $el)" :aria-pressed="day.mine">
+              <span x-show="!day.mine">Отметить</span><span x-show="day.mine" x-cloak class="inline-flex items-center gap-1.5">{% icon 'check' 'size-4' %}Сделано</span></button>
+            {% if partner_av %}<span class="inline-flex items-center gap-1.5 rounded-full py-1 pl-1 pr-3 text-xs font-bold" :class="day.partner ? 'bg-synergy-soft text-synergy-ink' : 'bg-paper text-ink-3'">{% avatar partner_av 22 %}<span x-text="day.partner ? '{{ partner_name|escapejs }} — сделано' : '{{ partner_name|escapejs }} — ещё нет'"></span></span>{% endif %}
+          </div>
+        </div>
+      </template>
+      <template x-if="day.locked">
+        <div class="mt-3 flex flex-wrap items-center gap-3 rounded-2xl bg-paper p-4">
+          <span class="text-sm text-ink-2">Первый день — бесплатно. Остальные шаги недели открываются вместе с полным разбором.</span>
+          <a href="{{ rbase }}razbor/" class="btn btn-primary btn-sm">{% icon 'lock-open' 'size-4' %}Открыть за {{ price_deep|default:"490" }} ₽</a>
+        </div>
+      </template>
+    </article>
+
+    <details class="group mt-4">
+      <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-ink-3 hover:text-ink">{% icon 'chevron-down' 'size-4 transition group-open:rotate-180' %}Все шаги недели</summary>
+      <ul class="mt-3 divide-y divide-line">
+        <template x-for="d in w.days" :key="d.n">
+          <li class="flex items-center gap-3 py-2.5 text-sm">
+            <span class="mono w-12 shrink-0 text-ink-3" x-text="'День ' + d.n"></span>
+            <span class="min-w-0 flex-1"><span class="block truncate font-semibold" x-text="d.title"></span><span class="block text-xs text-ink-3" x-text="d.kind_title + ' · ' + d.sphere_title"></span></span>
+            <span class="shrink-0 text-xs font-bold" :class="d.both ? 'text-synergy-ink' : 'text-ink-3'" x-text="d.both ? 'вдвоём ✓' : d.mine ? 'вы ✓' : d.partner ? 'партнёр ✓' : d.locked ? 'в полном разборе' : ''"></span>
+          </li>
+        </template>
+      </ul>
+    </details>
+
+    {% else %}
+    <ol class="mt-5 space-y-2">
+      {% for d in week_preview %}
+      <li class="flex items-center gap-3 rounded-2xl {% if forloop.first %}bg-pair-soft{% else %}bg-sand/60{% endif %} p-3 text-sm">
+        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-paper font-extrabold">{{ d.n }}</span>
+        <span class="min-w-0 flex-1"><span class="block truncate font-semibold">{{ d.title }}</span><span class="block text-xs text-ink-3">{{ d.kind_title }} · {{ d.sphere_title }} · {{ d.minutes }} мин</span></span>
+        {% if not forloop.first and not week_open %}<span class="shrink-0 text-ink-3" title="В полном разборе">{% icon 'lock' 'size-4' %}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+    {% if stored %}
+    <form method="post" action="{% url 'week_start' %}" class="mt-5">{% csrf_token %}<input type="hidden" name="rid" value="{{ stored.id }}">
+      <button class="btn btn-primary">{% icon 'sparkles' 'size-4' %}Начать неделю пары</button>
+      <span class="ml-2 text-xs text-ink-3">{% if week_open %}все 7 шагов открыты{% else %}первый день бесплатно{% endif %} · партнёр получит уведомление</span>
+    </form>
+    {% else %}
+    <a href="{% url 'wizard' %}" class="btn btn-primary mt-5">{% icon 'sparkles' 'size-4' %}Сделать свой разбор и начать</a>
+    <p class="mt-2 text-xs text-ink-3">Это пример. Ваша неделя соберётся из вашего разбора.</p>
+    {% endif %}
+    {% endif %}
+  </section>
+
   {# the pair's weekly plan from the «Вместе» tab, with today's check-offs #}
   <section class="card mt-5 p-6 sm:p-8 fade-up" style="--i:1"
            x-data="{

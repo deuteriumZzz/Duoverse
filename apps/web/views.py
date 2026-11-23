@@ -24,6 +24,7 @@ from django.views.decorators.http import require_POST
 
 from apps.compatibility import places
 from apps.compatibility import plan as habit_plan
+from apps.compatibility import week as pair_week
 from apps.compatibility.access import has_plus, mark_paid, plus_for_pair, unlocked
 from apps.compatibility.domain.archetypes import DYNAMICS, ELEMENTS, MODES, ROLES, dynamic_for, pair_name
 from apps.compatibility.domain.report import Report, ReportUnavailable
@@ -142,36 +143,40 @@ PLANS = [
         "free": True,
         "cta": "Начать",
         "small": "без карты · вход по почте за минуту",
-        "features": ["Итог: тип пары, балл и точность", "Приглашение партнёра", "Вопрос дня на двоих", "План привычек на неделю"],
+        "features": [
+            "Итог: тип вашей пары и где вы сильны",
+            "Первая сфера целиком и первый день «Недели пары»",
+            "Вопрос дня на двоих и план привычек",
+            "Приглашение партнёра",
+        ],
     },
     {
         "name": "Глубокий разбор",
-        "note": "Всё про одну пару",
+        "note": "Понять, почему вы спорите об одном и том же, — и что с этим делать",
         "price": "490 ₽",
         "per": "разово",
         "featured": True,
         "cta": "Выбрать разбор",
         "small": "разово за пару · открывается вам обоим · чек на почту",
         "features": [
-            "Все 4 вселенные и индекс согласия",
-            "Научный слой: Big Five, привязанность, Готтман",
-            "«Почему так» у каждого вывода",
-            "Открывается вам обоим",
-            "План микропривычек",
-            "PDF-версия",
+            "Все 13 сфер: что у вас работает и где зона внимания",
+            "Ваши сценарии в спорах и близости — со ссылками на исследования",
+            "«Неделя пары»: 7 шагов из вашего разбора, отмечаете вдвоём",
+            "Все 4 слоя с картами и графиками — откуда каждый вывод",
+            "Открывается вам обоим · PDF",
         ],
     },
     {
         "name": "Пара+",
-        "note": "Для тех, кто хочет каждый день",
+        "note": "Чтобы забота друг о друге стала привычкой",
         "price": "249 ₽",
         "per": "в месяц",
         "cta": "Подключить",
         "kind": "plus",
         "small": "на 30 дней · без автосписаний",
         "features": [
-            "Полные разборы всех ваших пар",
-            "Квизы для пары каждую неделю",
+            "Всё из полного разбора — для всех ваших пар",
+            "Квиз недели: где вы совпадаете",
             "История ответов на вопросы дня",
             "Действует и для партнёра",
         ],
@@ -180,7 +185,8 @@ PLANS = [
 COMPARE = [
     ("Балл пары и категории", (True, True, True)),
     ("Четыре вселенные", ("2 из 4", True, True)),
-    ("Научный слой", (False, True, True)),
+    ("Научный слой и сценарии вашей пары", (False, True, True)),
+    ("«Неделя пары»", ("1-й день", True, True)),
     ("«Почему так»", ("частично", True, True)),
     ("Партнёр по приглашению", (True, True, True)),
     ("PDF", (False, True, True)),
@@ -456,6 +462,39 @@ def _demo(request: HttpRequest, template: str, **ctx) -> HttpResponse:
     return _render_report(request, report, template, reverse("report"), **ctx)
 
 
+def sign_compatibility(request: HttpRequest) -> HttpResponse:
+    """Sun signs as a symbolic first look: kinds of connection with explanations, never a score or a «worst» sign."""
+    from apps.astrology.domain.chart import ELEMENT_RU, SIGN_ELEMENT, SIGN_GLYPH, SIGNS
+    from apps.astrology.domain.signs import groups
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    options = [{"idx": idx, "name": name, "glyph": SIGN_GLYPH[idx]} for idx, name in enumerate(SIGNS)]
+    raw = request.GET.get("sign", "")
+    selected = options[int(raw)] if raw.isdigit() and int(raw) < len(options) else None
+    sections = []
+    if selected:
+        kb = KnowledgeRepository()
+        me = int(raw)
+        for g in groups(me):
+            cards = []
+            for m in g["signs"]:
+                details = kb.data(m["knowledge_key"])
+                pair = "+".join(sorted((SIGN_ELEMENT[me], SIGN_ELEMENT[m["idx"]])))
+                cards.append(
+                    {
+                        **m,
+                        "glyph": SIGN_GLYPH[m["idx"]],
+                        "element_name": ELEMENT_RU[m["element"]].capitalize(),
+                        "elements": kb.text(f"SUNELEM:{pair}"),
+                        "plus": details.get("plus", ""),
+                        "minus": details.get("minus", ""),
+                        "advice": details.get("advice", ""),
+                    }
+                )
+            sections.append({**g, "signs": cards})
+    return render(request, "pages/sign_compatibility.html", {"sign_options": options, "selected_sign": selected, "sections": sections})
+
+
 def landing(request: HttpRequest) -> HttpResponse:
     r = report_provider().get_report("ideal")
     return render(
@@ -542,6 +581,50 @@ def question_of_day(report: Report, seed: str, today: date) -> str:
     return pool[(n // 7) % len(pool)]["question"]
 
 
+def _week_days(report: Report, seed: str) -> list[dict]:
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    scenario = next((s.title for s in report.psychology.scenarios if s.tone != "synergy"), "")
+    return pair_week.build([(s.key, s.title, s.score) for s in report.spheres], scenario, KnowledgeRepository().series, seed)
+
+
+def _week_ctx(pair: Pair | None, report: Report, side: str) -> dict:
+    """«Неделя пары» for «Сегодня»: the running week, or a preview of the seven steps before it starts."""
+    open_all = bool(pair) and unlocked(pair)  # type: ignore[arg-type]
+    if pair and (w := pair.plan.get("week")):
+        return {"week": pair_week.state(w, timezone.localdate(), side, open_all), "week_open": open_all}
+    return {"week": None, "week_preview": _week_days(report, str(pair.id) if pair else "demo"), "week_open": open_all}
+
+
+@require_POST
+def week_start(request: HttpRequest) -> HttpResponse:
+    stored = _owned_report(request, request.POST.get("rid", ""))
+    pair = stored.pair
+    if not pair.plan.get("week"):
+        days = _week_days(report_of(stored), str(pair.id))
+        pair.plan = {**pair.plan, "week": {"rid": str(stored.id), "started": timezone.localdate().isoformat(), "days": days, "done": {}}}
+        pair.save(update_fields=["plan"])
+        notify_partner(pair, side_of(get_owner(request), pair), "week")  # type: ignore[arg-type]
+    return redirect(reverse("daily") + "#week")
+
+
+@require_POST
+def week_done(request: HttpRequest) -> HttpResponse:
+    stored = _owned_report(request, request.POST.get("rid", ""))
+    pair, side = stored.pair, side_of(get_owner(request), stored.pair)  # type: ignore[arg-type]
+    w = pair.plan.get("week")
+    n = int(request.POST.get("day", "0")) if request.POST.get("day", "").isdigit() else 0
+    if not w:
+        raise Http404
+    st = pair_week.state(w, timezone.localdate(), side, unlocked(pair))
+    day = next((d for d in st["days"] if d["n"] == n), None)
+    if day is None or day["locked"] or day["future"]:
+        return JsonResponse({"error": "closed"}, status=403)
+    pair.plan = {**pair.plan, "week": pair_week.toggle(w, n, side)}
+    pair.save(update_fields=["plan"])
+    return JsonResponse(pair_week.state(pair.plan["week"], timezone.localdate(), side, unlocked(pair)))
+
+
 def daily(request: HttpRequest) -> HttpResponse:
     owner = get_owner(request)
     pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None  # anonymous: demo until signed in
@@ -556,14 +639,17 @@ def daily(request: HttpRequest) -> HttpResponse:
             "daily_question": question_of_day(report, str(pair.id), today),
             "answers": daily_state(pair, side, today),
             "plus": plus_for_pair(pair),
+            "price_deep": settings.PRICE_DEEP,
             "me_name": pair.a.name if side == "a" else pair.b.name,
             "partner_name": pair.b.name if side == "a" else pair.a.name,
             **_pair_people(request, pair),
         }
         extra["partner_av"] = extra["av_b"] if side == "a" else extra["av_a"]  # empty until the partner joins
+        extra |= _week_ctx(pair, report, side)
         return _render_report(request, report, "pages/daily.html", reverse("stored_report", args=[stored.id]), extra)
     demo = report_provider().get_report(_scenario(request))
-    return _render_report(request, demo, "pages/daily.html", reverse("report"), {"daily_question": question_of_day(demo, "demo", today)})
+    demo_ctx = {"daily_question": question_of_day(demo, "demo", today), **_week_ctx(None, demo, "a")}
+    return _render_report(request, demo, "pages/daily.html", reverse("report"), demo_ctx)
 
 
 @require_POST
@@ -790,6 +876,51 @@ def _owned_report(request: HttpRequest, rid) -> StoredReport:
     return stored
 
 
+def _unlock_items(report: Report) -> list[tuple[str, str, str]]:
+    """What the full report adds for this very pair, from its own results: (icon, title, detail)."""
+    items = []
+    spheres = sorted(report.spheres, key=lambda s: s.score)
+    if spheres:
+        weak = " и ".join(f"«{s.title}»" for s in spheres[:2])
+        items.append(
+            (
+                "book-open",
+                f"Все {len(spheres)} сфер целиком",
+                f"Сильнее всего у вас — «{spheres[-1].title}», зона внимания — {weak}: почему так и что с этим делать.",
+            )
+        )
+    scen = report.psychology.scenarios
+    if scen:
+        more = f" и ещё {len(scen) - 1}" if len(scen) > 1 else ""
+        items.append(
+            (
+                "users",
+                f"«{scen[0].title}»{more}",
+                "Ваши повторяющиеся сценарии в спорах и близости — и как из них выходить, со ссылками на исследования.",
+            )
+        )
+    elif not report.psychology.available:
+        items.append(("brain", "Научный слой", "После анкет обоих: привязанность, черты характера и стиль конфликтов каждого."))
+    links = len(report.astrology.all_aspects or report.astrology.aspects)
+    if links:
+        items.append(
+            (
+                "orbit",
+                f"{links} связей между вашими картами",
+                "Синастрия, наложение домов и композит — с графиками и объяснением каждой связи.",
+            )
+        )
+    items.append(
+        (
+            "calendar-days",
+            "Неделя пары: 7 шагов",
+            "Разговоры и упражнения для ваших слабых сфер — вы отмечаете их вдвоём во вкладке «Сегодня».",
+        )
+    )
+    items.append(("file-down", "PDF и доступ партнёру", "Одна покупка — разбор открывается вам обоим."))
+    return items
+
+
 def _stored(request: HttpRequest, rid, template: str, **ctx) -> HttpResponse:
     owner = get_owner(request)
     if owner and not owner.is_account:
@@ -808,6 +939,7 @@ def _stored(request: HttpRequest, rid, template: str, **ctx) -> HttpResponse:
         "stored": stored,
         "locked": locked,
         "price_deep": settings.PRICE_DEEP,
+        "unlock_items": _unlock_items(report_of(stored)) if locked else [],
         "quiz_url": reverse("person_quiz", args=[pair.a_id]),
         "invite_url": reverse("invite", args=[stored.id]),
         "share_url": request.build_absolute_uri(reverse("public_share", args=[share_token(stored)])),

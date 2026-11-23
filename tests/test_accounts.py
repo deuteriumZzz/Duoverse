@@ -297,3 +297,40 @@ def test_cabinet_avatar_invite_and_shared_tracker_with_marks_per_person():
 def test_visitors_without_an_account_get_a_sign_in_button():
     page = Client().get("/").content.decode()
     assert 'aria-label="Профиль"' not in page and "Войти" in page
+
+
+def test_pair_week_is_built_from_the_report_and_marked_by_both():
+    from apps.compatibility.access import mark_paid
+    from apps.compatibility.models import Purchase
+
+    anya = Client()
+    stored = make_pair(anya, email="anya@example.com")
+    page = anya.get("/daily/").content.decode()
+    assert "Неделя пары" in page and "Начать неделю пары" in page
+    anya.post("/week/start/", {"rid": stored.id})
+    pair = Pair.objects.get(id=stored.pair_id)
+    week = pair.plan["week"]
+    assert len(week["days"]) == 7 and week["days"][0]["kind"] == "talk" and week["days"][-1]["kind"] == "reflect"
+    weakest = min(stored.snapshot["spheres"], key=lambda s: s["score"])["key"]
+    assert week["days"][0]["sphere"] == weakest  # the week starts where the pair is most sensitive
+
+    s = anya.post("/week/done/", {"rid": stored.id, "day": 1}).json()
+    assert s["days"][0]["mine"] and not s["days"][0]["both"]
+    assert anya.post("/week/done/", {"rid": stored.id, "day": 2}).status_code == 403  # locked and not today yet
+
+    code = re.search(r"/join/([A-Z0-9]{6})/", anya.get("/account/").content.decode()).group(1)
+    misha = Client()
+    sign_in(misha, "misha@example.com")
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
+    both = misha.post("/week/done/", {"rid": stored.id, "day": 1}).json()
+    assert both["days"][0]["both"] and both["done"] == 1
+
+    mark_paid(Purchase.objects.create(owner_id=pair.owner_id, pair=pair, kind="deep", amount=490))
+    assert not anya.post("/week/done/", {"rid": stored.id, "day": 1}).json()["days"][1]["locked"]  # unlocked after the purchase
+
+
+def test_full_report_preview_names_what_this_pair_gets():
+    anya = Client()
+    stored = make_pair(anya, email="anya@example.com")
+    razbor = anya.get(f"/r/{stored.id}/razbor/").content.decode()
+    assert "Что откроется для" in razbor and "сфер целиком" in razbor and "Неделя пары: 7 шагов" in razbor

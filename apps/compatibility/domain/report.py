@@ -155,12 +155,23 @@ class AstrologySection(BaseModel):
     insights: list[Insight]
 
 
+class Citation(BaseModel):
+    """A published source behind a scientific text (apps/psychology/sources.py)."""
+
+    short: str
+    full: str
+    url: str = ""
+
+
 class OceanTrait(BaseModel):
     key: str
     title: str
     a: int
     b: int
-    note: str
+    note: str  # what the combination means for the pair
+    a_text: str = ""  # each partner on this trait
+    b_text: str = ""
+    sources: list[str] = []  # short citations shown under the trait
 
 
 class GottmanItem(BaseModel):
@@ -168,6 +179,27 @@ class GottmanItem(BaseModel):
     title: str
     level: Level
     note: str
+    antidote: str = ""
+
+
+class PairScenario(BaseModel):
+    """A recognisable way this pair acts, read from several scales at once (apps/psychology/domain/patterns.py)."""
+
+    key: str
+    title: str
+    text: str
+    tone: Tone
+    sphere: str
+    sources: list[str] = []
+    both: bool = False  # fits each partner: told once, marked «у вас обоих»
+
+
+class Finding(BaseModel):
+    """A research result every couple should know, with its source."""
+
+    title: str
+    text: str
+    sources: list[str] = []
 
 
 class PsychologySection(BaseModel):
@@ -176,8 +208,15 @@ class PsychologySection(BaseModel):
     attachment_a: str | None = None
     attachment_b: str | None = None
     attachment_note: str | None = None
+    attachment_a_text: str = ""
+    attachment_b_text: str = ""
+    attachment_sources: list[str] = []
     gottman: list[GottmanItem] = []
     repair_index: int | None = None
+    repair_note: str = ""
+    findings: list[Finding] = []
+    scenarios: list[PairScenario] = []
+    bibliography: list[Citation] = []  # every source cited in this section, for the «Источники» list
     mbti_a: str | None = None
     mbti_b: str | None = None
     insights: list[Insight] = []
@@ -265,9 +304,15 @@ class Sphere(BaseModel):
     actions: list[str]
     question: str
     factors: list[SphereFactor] = []
+    strengths: list[SphereFactor] = []
+    challenges: list[SphereFactor] = []
+    context_factors: list[SphereFactor] = []
     script: str | None = None  # typical escalation for tense spheres
     exercise: str = ""
     adult: bool = False  # 18+ chapter
+    science: str = ""  # what relationship research says about this sphere
+    science_sources: list[str] = []
+    scenarios: list[PairScenario] = []  # this pair's recognisable scenarios that play out in this sphere
 
 
 class Report(BaseModel):

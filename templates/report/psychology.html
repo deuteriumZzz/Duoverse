@@ -14,6 +14,23 @@
 </section>
 {% else %}
 
+{% if p.scenarios %}
+<section class="mb-10" data-reveal>
+  {% include "components/layer_badge.html" with layer="scientific" %}
+  <h2 class="mt-3 text-2xl font-extrabold">Как вы обычно взаимодействуете</h2>
+  <p class="mt-1 max-w-2xl text-ink-2">Узнаваемые сценарии, которые складываются из ваших ответов сразу по нескольким шкалам. Сначала то, на что стоит обратить внимание, потом — ваши сильные стороны.</p>
+  <div class="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {% for sc in p.scenarios|slice:":6" %}{% include "components/scenario_card.html" with sc=sc i=forloop.counter %}{% endfor %}
+  </div>
+  {% if p.scenarios|length > 6 %}
+  <details class="group mt-4">
+    <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-ink-3 hover:text-ink">{% icon 'chevron-down' 'size-4 transition group-open:rotate-180' %}Показать все · ещё {{ p.scenarios|length|add:"-6" }}</summary>
+    <div class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{% for sc in p.scenarios|slice:"6:" %}{% include "components/scenario_card.html" with sc=sc %}{% endfor %}</div>
+  </details>
+  {% endif %}
+</section>
+{% endif %}
+
 <section class="card p-6 sm:p-8" data-reveal>
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>{% include "components/layer_badge.html" with layer="scientific" %}<h2 class="mt-3 text-2xl font-extrabold">Большая пятёрка (Big Five)</h2></div>
@@ -27,7 +44,19 @@
         <div class="side-a flex items-center gap-3"><div class="bar flex-1" style="--v: {{ t.a }}; --i: {{ forloop.counter }}"><i></i></div><span class="mono w-7 text-right text-sm">{{ t.a }}</span></div>
         <div class="side-b flex items-center gap-3"><div class="bar flex-1" style="--v: {{ t.b }}; --i: {{ forloop.counter|add:1 }}"><i></i></div><span class="mono w-7 text-right text-sm">{{ t.b }}</span></div>
       </div>
-      <p class="text-sm leading-relaxed text-ink-2 md:pl-4">{{ t.note }}</p>
+      <div class="md:pl-4">
+        <p class="text-sm leading-relaxed text-ink-2">{{ t.note }}</p>
+        {% if t.sources %}<p class="mono mt-1.5 text-[0.68rem] text-ink-3">{% icon 'book-open' 'size-3 inline -mt-0.5' %} {{ t.sources|join:" · " }}</p>{% endif %}
+      </div>
+      {% if t.a_text or t.b_text %}
+      <details class="psy-more group md:col-span-3">
+        <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-ink-3 hover:text-ink">{% icon 'chevron-down' 'size-4 transition group-open:rotate-180' %}О каждом из вас</summary>
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+          <p class="side-a t-bg rounded-2xl p-4 text-sm leading-relaxed text-ink-2"><b class="t-ink">{{ a.name }} · {{ t.a }}</b><br>{{ t.a_text }}</p>
+          <p class="side-b t-bg rounded-2xl p-4 text-sm leading-relaxed text-ink-2"><b class="t-ink">{{ b.name }} · {{ t.b }}</b><br>{{ t.b_text }}</p>
+        </div>
+      </details>
+      {% endif %}
     </div>
     {% endfor %}
   </div>
@@ -42,7 +71,16 @@
       <div class="side-b t-bg rounded-3xl p-4"><p class="text-xs font-bold text-ink-3">{{ b.name }}</p><p class="mt-1 font-display font-extrabold leading-tight">{{ p.attachment_b }}</p></div>
     </div>
     <p class="mt-4 text-sm leading-relaxed text-ink-2">{{ p.attachment_note }}</p>
-    <p class="mono mt-4 text-[0.68rem] text-ink-3">источники: Bowlby (1969), Ainsworth (1978), Hazan &amp; Shaver (1987)</p>
+    {% if p.attachment_a_text %}
+    <details class="psy-more group mt-3">
+      <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-ink-3 hover:text-ink">{% icon 'chevron-down' 'size-4 transition group-open:rotate-180' %}Как это проявляется у каждого</summary>
+      <div class="mt-3 space-y-3 text-sm leading-relaxed text-ink-2">
+        <p class="side-a t-bg rounded-2xl p-4"><b class="t-ink">{{ a.name }}</b><br>{{ p.attachment_a_text }}</p>
+        <p class="side-b t-bg rounded-2xl p-4"><b class="t-ink">{{ b.name }}</b><br>{{ p.attachment_b_text }}</p>
+      </div>
+    </details>
+    {% endif %}
+    {% if p.attachment_sources %}<p class="mono mt-4 text-[0.68rem] text-ink-3">{% icon 'book-open' 'size-3 inline -mt-0.5' %} {{ p.attachment_sources|join:" · " }}</p>{% endif %}
   </article>
   <article class="card p-6 sm:p-8" data-reveal style="--i:1">
     <div class="flex items-start justify-between gap-4">
@@ -56,11 +94,30 @@
           <span class="flex gap-1" aria-label="уровень {{ g.level|label }}">{% for lv in "lmh" %}<i class="size-2 rounded-full {% if lv == 'l' or lv == 'm' and g.level != 'low' or g.level == 'high' %}t-fill{% else %}bg-sand-2{% endif %}"></i>{% endfor %}</span></div>
         <p class="mono mt-0.5 text-xs t-ink">{{ g.level|label }}</p>
         <p class="mt-2 text-xs leading-relaxed text-ink-2">{{ g.note }}</p>
+        {% if g.antidote %}<p class="mt-2 rounded-2xl bg-paper/80 p-3 text-xs leading-relaxed text-ink-2"><b class="text-synergy-ink">Что помогает.</b> {{ g.antidote }}</p>{% endif %}
       </li>
       {% endfor %}
     </ul>
+    {% if p.repair_note %}<p class="mt-4 rounded-2xl bg-synergy-soft p-4 text-sm leading-relaxed text-ink-2"><b class="text-synergy-ink">Индекс восстановления {{ p.repair_index }}/100.</b> {{ p.repair_note }}</p>{% endif %}
   </article>
 </section>
+
+{% if p.findings %}
+<section class="mt-10" data-reveal>
+  {% include "components/layer_badge.html" with layer="scientific" %}
+  <h2 class="mt-3 text-2xl font-extrabold">Что помогает парам — по исследованиям</h2>
+  <p class="mt-1 max-w-2xl text-ink-2">Не про вас лично, а то, что десятилетия наблюдений за парами говорят каждой паре. Многое из этого уже есть в ваших привычках.</p>
+  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% for f in p.findings %}
+    <article class="card flex flex-col p-5" data-reveal style="--i: {{ forloop.counter }}">
+      <p class="font-display font-extrabold leading-tight">{{ f.title }}</p>
+      <p class="mt-2 flex-1 text-sm leading-relaxed text-ink-2">{{ f.text }}</p>
+      {% if f.sources %}<p class="mono mt-3 text-[0.68rem] text-ink-3">{{ f.sources|join:" · " }}</p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
 {% if p.mbti_a %}
 <section class="card mt-5 flex flex-wrap items-center gap-4 p-5" data-reveal>
@@ -71,6 +128,20 @@
 {% endif %}
 
 <section class="mt-10 grid gap-4 md:grid-cols-2">{% for ins in p.insights %}{% include "components/insight.html" with ins=ins i=forloop.counter %}{% endfor %}</section>
+
+{% if p.bibliography %}
+<details id="sources" class="card mt-10 scroll-mt-24 p-6" data-reveal>
+  <summary class="flex cursor-pointer list-none items-center justify-between gap-3">
+    <span><span class="flex items-center gap-2 font-extrabold">{% icon 'book-open' 'size-5' %}Источники · {{ p.bibliography|length }}</span>
+      <span class="mt-1 block text-sm text-ink-3">Каждый научный вывод выше опирается на опубликованные исследования. Тексты написаны нами по их результатам.</span></span>
+    {% icon 'chevron-down' 'size-5 shrink-0 text-ink-3' %}
+  </summary>
+  <ol class="mt-5 space-y-3 text-sm leading-relaxed text-ink-2">
+    {% for c in p.bibliography %}<li class="flex gap-3"><span class="mono w-6 shrink-0 text-right text-ink-3">{{ forloop.counter }}.</span><span>{{ c.full }}{% if c.url %} <a class="mono break-all text-xs text-b-ink underline" href="{{ c.url }}" target="_blank" rel="noopener">{{ c.url|cut:"https://" }}</a>{% endif %}</span></li>{% endfor %}
+  </ol>
+  <p class="mt-5 text-xs text-ink-3">Это не диагностика и не замена работы с психологом. Опросники — короткие исследовательские версии (Mini-IPIP, шкалы привязанности по модели ECR).</p>
+</details>
+{% endif %}
 {% endif %}
 {% endwith %}
 {% endblock %}

@@ -1,5 +1,6 @@
 {% extends "report/_layout.html" %}
 {% block report %}
+{% if locked and unlock_items %}{% include "components/unlock_preview.html" with where="razbor" cls="mb-8" %}{% endif %}
 <div class="grid gap-8 lg:grid-cols-[14rem_1fr]" x-data="{ read: [], toggle(k) { this.read.includes(k) ? this.read = this.read.filter(x => x !== k) : this.read.push(k); try { localStorage.setItem('read-{{ r.id }}', JSON.stringify(this.read)) } catch (e) {} } }"
      x-init="(() => { try { read = JSON.parse(localStorage.getItem('read-{{ r.id }}') || '[]') } catch (e) {} })()">
 
@@ -85,22 +86,46 @@
             </div>
             {% if s.factors %}
             <div class="border-t border-line p-5 sm:p-6">
-              <p class="eyebrow">Из чего это складывается у вас</p>
-              <ul class="mt-3 space-y-3">
-                {% for f in s.factors %}
-                <li class="tone-{{ f.tone }} rounded-2xl border border-line p-4">
-                  <div class="flex items-start gap-3">
-                    <span class="mt-0.5 shrink-0">{% glyph f.universe|universe_glyph 'size-6' %}</span>
-                    <div class="min-w-0 flex-1">
-                      <p class="text-sm font-bold leading-snug">{{ f.title }}</p>
-                      <div class="mt-2 flex flex-wrap gap-1.5">{% include "components/tone_badge.html" with tone=f.tone %}{% include "components/layer_badge.html" with layer=f.layer %}</div>
-                    </div>
-                  </div>
-                  <p class="mt-3 text-sm leading-relaxed text-ink-2">{{ f.text }}</p>
-                  <a href="{{ rbase }}{{ universe_tab|get_item:f.universe }}/{% if f.ref %}#{{ f.ref }}{% endif %}" class="mono mt-3 block text-xs leading-relaxed text-ink-3 hover:text-ink">{% if f.tech %}{{ f.tech }} · {% endif %}<span class="whitespace-nowrap font-bold">подробнее <span class="inline-block align-[-3px]">{% icon 'arrow-right' 'size-3.5' %}</span></span></a>
-                </li>
-                {% endfor %}
-              </ul>
+              <p class="eyebrow">Из чего складывается эта сфера</p>
+              {% if not s.strengths and not s.challenges and not s.context_factors %}
+              <ul class="mt-4 space-y-3">{% for f in s.factors %}{% include "components/sphere_factor.html" %}{% endfor %}</ul>
+              {% endif %}
+              {% if s.strengths %}
+              <section class="mt-4 rounded-2xl bg-synergy-soft/60 p-4 sm:p-5">
+                <h4 class="flex items-center gap-2 font-bold text-synergy-ink">{% icon 'trending-up' 'size-4' %}В плюсе</h4>
+                <ul class="mt-3 space-y-3">{% for f in s.strengths %}{% include "components/sphere_factor.html" %}{% endfor %}</ul>
+              </section>
+              {% endif %}
+              {% if s.challenges %}
+              <section class="mt-4 rounded-2xl bg-attention-soft/60 p-4 sm:p-5">
+                <h4 class="flex items-center gap-2 font-bold text-attention-ink">{% icon 'triangle-exclamation-point' 'size-4' %}Зона внимания</h4>
+                <ul class="mt-3 space-y-3">{% for f in s.challenges %}{% include "components/sphere_factor.html" %}{% endfor %}</ul>
+              </section>
+              {% endif %}
+              {% if s.context_factors %}
+              <details class="mt-4 rounded-2xl border border-line bg-paper/70 p-4 sm:p-5">
+                <summary class="cursor-pointer font-bold text-ink-2">Контекст и дополнительные факторы ({{ s.context_factors|length }})</summary>
+                <ul class="mt-3 space-y-3">{% for f in s.context_factors %}{% include "components/sphere_factor.html" %}{% endfor %}</ul>
+              </details>
+              {% endif %}
+            </div>
+            {% endif %}
+            {% if s.science or s.scenarios %}
+            <div class="border-t border-line p-5 sm:p-6">
+              {% for sc in s.scenarios %}
+              <div class="tone-{{ sc.tone }} mb-3 rounded-2xl t-bg p-4">
+                <p class="flex flex-wrap items-center gap-2 text-sm font-bold t-ink">{% icon 'users' 'size-4' %}Как это бывает у вас: {{ sc.title }}{% if sc.both %} <span class="chip h-5 bg-paper/70 text-[0.65rem]">у вас обоих</span>{% endif %}</p>
+                <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ sc.text }}</p>
+                {% if sc.sources %}<p class="mono mt-2 text-[0.68rem] text-ink-3">{{ sc.sources|join:" · " }}</p>{% endif %}
+              </div>
+              {% endfor %}
+              {% if s.science %}
+              <div class="rounded-2xl bg-sage-soft p-4">
+                <p class="flex items-center gap-2 text-sm font-bold text-[#2f6243]">{% icon 'flask-conical' 'size-4' %}Что говорят исследования</p>
+                <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ s.science }}</p>
+                {% if s.science_sources %}<p class="mono mt-2 text-[0.68rem] text-ink-3">{{ s.science_sources|join:" · " }}{% if universe_tab.psychology %} · <a class="underline hover:text-ink" href="{{ rbase }}{{ universe_tab.psychology }}/#sources">все источники</a>{% endif %}</p>{% endif %}
+              </div>
+              {% endif %}
             </div>
             {% endif %}
             {% if s.script or s.exercise %}

@@ -32,9 +32,11 @@ from apps.compatibility.domain.report import (
     AstrologySection,
     Category,
     ChartBalance,
+    Citation,
     CompositePos,
     Daily,
     Evidence,
+    Finding,
     GottmanItem,
     Habit,
     Insight,
@@ -44,6 +46,7 @@ from apps.compatibility.domain.report import (
     NumerologySection,
     OceanTrait,
     Overlay,
+    PairScenario,
     PairType,
     Partner,
     PlanetPos,
@@ -60,8 +63,11 @@ from apps.compatibility.domain.report import (
 from apps.compatibility.domain.report import Layer as EvidenceLayer
 from apps.core.domain.names import forms, gen
 from apps.core.domain.scoring import Factor, ScoreResult, clamp
+from apps.knowledge.catalog import FINDINGS
 from apps.numerology.domain import numerology as num
 from apps.psychology.domain import scoring as psy
+from apps.psychology.domain.patterns import match as match_patterns
+from apps.psychology.sources import cite
 from apps.tarot.domain import tarot
 
 CATEGORIES = {
@@ -107,6 +113,12 @@ TRAIT_NOTE = {
     "N": ("Похожая реакция на стресс — вы понимаете тревоги друг друга.", "Один острее переживает стресс, другой — стабилизатор."),
 }
 LEVELS: dict[str, int] = {"low": 0, "mid": 1, "high": 2}
+ATTACHMENT_KEY = {"Надёжный": "secure", "Тревожный": "anxious", "Избегающий": "avoidant", "Тревожно-избегающий": "fearful"}
+
+
+def _trait_level(value: int) -> str:
+    """0–100 → the three bands the knowledge base describes."""
+    return "low" if value < 35 else "mid" if value < 65 else "high"
 
 
 class Knowledge(Protocol):
@@ -375,41 +387,75 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         ][:4],
     )
 
+    cited: list[str] = []  # source keys behind the scientific texts, for the «Источники» list
+
+    def sci(key: str, **fmt: str) -> tuple[str, list[str]]:
+        """A research-based text and the short citations of its sources."""
+        keys = kb.data(key).get("sources", [])
+        cited.extend(k for k in keys if k not in cited)
+        return kb.text(key, "", **fmt), [c.short for c in cite(keys)]
+
+    scenarios: list[PairScenario] = []
     if psa and psb and psych:
-        styles = {psa.attachment.split(",")[0], psb.attachment.split(",")[0]}
-        att_key = (
-            "secure"
-            if psa.secure and psb.secure
-            else "pursue"
-            if styles == {"Тревожный", "Избегающий"}
-            else "mixed"
-            if (psa.secure or psb.secure)
-            else "insecure"
-        )
+        na, nb = person_names("name", a.name), person_names("name", b.name)
+        who = {"a": a.name, "b": b.name}
+        for pat, side in match_patterns(psa, psb):
+            if seen := next((sc for sc in scenarios if sc.key == pat.key), None):
+                seen.both = True
+                continue
+            xy = person_names("x", who[side]) | person_names("y", who["b" if side == "a" else "a"])
+            s_text, s_src = sci(f"PSY:pattern:{pat.key}", **xy)
+            if s_text:
+                title = kb.data(f"PSY:pattern:{pat.key}").get("title", "")
+                scenarios.append(PairScenario(key=pat.key, title=title, text=s_text, tone=pat.tone, sphere=pat.sphere, sources=s_src))  # type: ignore[arg-type]
+        ocean = []
+        for t in ("O", "C", "E", "A", "N"):
+            la, lb = _trait_level(psa.ocean[t]), _trait_level(psb.ocean[t])
+            x, y = sorted((la, lb), key=LEVELS.__getitem__)
+            pair_note, pair_src = sci(f"PSY:traitpair:{t}:{x}-{y}")
+            ocean.append(
+                OceanTrait(
+                    key=t,
+                    title=psy.TRAITS[t],
+                    a=psa.ocean[t],
+                    b=psb.ocean[t],
+                    note=pair_note or TRAIT_NOTE[t][abs(psa.ocean[t] - psb.ocean[t]) >= 25],
+                    a_text=sci(f"PSY:trait:{t}:{la}", **na)[0],
+                    b_text=sci(f"PSY:trait:{t}:{lb}", **nb)[0],
+                    sources=pair_src,
+                )
+            )
+        ka, kb_ = ATTACHMENT_KEY[psa.attachment.split(",")[0]], ATTACHMENT_KEY[psb.attachment.split(",")[0]]
+        att_note, att_src = sci("PSY:attachpair:" + "+".join(sorted((ka, kb_))))
         gottman = []
         for h, title in psy.HORSEMEN.items():
             worst: Level = max(psa.horsemen[h], psb.horsemen[h], key=lambda lv: LEVELS[lv])  # type: ignore[assignment,arg-type]
-            gottman.append(
-                GottmanItem(
-                    key=h,
-                    title=title,
-                    level=worst,
-                    note="Почти не встречается — хороший знак." if worst == "low" else kb.text(f"PSY:horseman:{h}"),
-                )
-            )
+            if worst == "low":
+                h_note, antidote = "Почти не встречается — хороший знак.", ""
+            else:
+                h_note = sci(f"PSY:horseman:{h}")[0] + (" " + sci(f"PSY:horseman:{h}:high")[0] if worst == "high" else "")
+                antidote = sci(f"PSY:antidote:{h}")[0]
+            gottman.append(GottmanItem(key=h, title=title, level=worst, note=h_note.strip(), antidote=antidote))
+        repair = round((psa.repair + psb.repair) / 2)
+        findings = []
+        for fk in FINDINGS:
+            f_text, f_src = sci(f"PSY:finding:{fk}")
+            if f_text:
+                findings.append(Finding(title=kb.data(f"PSY:finding:{fk}").get("title", ""), text=f_text, sources=f_src))
         psychology = PsychologySection(
             available=True,
-            ocean=[
-                OceanTrait(
-                    key=t, title=psy.TRAITS[t], a=psa.ocean[t], b=psb.ocean[t], note=TRAIT_NOTE[t][abs(psa.ocean[t] - psb.ocean[t]) >= 25]
-                )
-                for t in ("O", "C", "E", "A", "N")
-            ],
+            ocean=ocean,
             attachment_a=psa.attachment,
             attachment_b=psb.attachment,
-            attachment_note=kb.text(f"PSY:attachment:{att_key}"),
+            attachment_note=att_note,
+            attachment_a_text=sci(f"PSY:attach:{ka}", **na)[0],
+            attachment_b_text=sci(f"PSY:attach:{kb_}", **nb)[0],
+            attachment_sources=att_src,
             gottman=gottman,
-            repair_index=round((psa.repair + psb.repair) / 2),
+            repair_index=repair,
+            repair_note=sci(f"PSY:repair:{_trait_level(repair)}")[0],
+            findings=findings,
+            scenarios=scenarios,
             insights=[
                 Insight(title=f.source, text=f"{_cap(f.detail)}.", tone="synergy" if f.weight > 0 else "attention", evidence=[ev(f)])
                 for f in sorted(psych.factors, key=lambda f: f.weight)[:2]
@@ -638,10 +684,16 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
                 actions=[d["do"]],
                 question=d["question"],
                 factors=items,
+                strengths=[factor for factor in items if factor.tone == "synergy"],
+                challenges=[factor for factor in items if factor.tone in {"attention", "risk"}],
+                context_factors=[factor for factor in items if factor.tone == "neutral"],
                 script=interpret.conflict_script(min(tense, key=lambda h: h.effect), a.name, b.name)
                 if key in TENSE_SPHERES and tense
                 else None,
                 exercise=_exercise(kb.series(f"EXERCISE:{key}:"), d.get("exercise", "")),
+                science=(science := sci(f"PSY:sphere:{key}"))[0],
+                science_sources=science[1],
+                scenarios=[sc for sc in scenarios if sc.sphere == key][:2],
                 adult=bool(d.get("adult")),
             )
         )
@@ -699,7 +751,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         friction=[insight(c, "hard") for c in weak],
         risks=risks,
         astrology=astrology,
-        psychology=psychology,
+        psychology=psychology.model_copy(update={"bibliography": [Citation(short=c.short, full=c.full, url=c.url) for c in cite(cited)]}),
         numerology=numerology,
         tarot=tarot_section,
         habits=habits,
