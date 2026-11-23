@@ -83,23 +83,6 @@
     }
   }
 
-  /* ── magnetic buttons ── */
-  function magnetic(el) {
-    if (!finePointer || reduced || el.dataset.magOn) return;
-    el.dataset.magOn = "1";
-    el.addEventListener("pointermove", (e) => {
-      const r = el.getBoundingClientRect();
-      el.classList.add("pulling");
-      el.style.setProperty("--tx", `${(e.clientX - r.left - r.width / 2) * 0.22}px`);
-      el.style.setProperty("--ty", `${(e.clientY - r.top - r.height / 2) * 0.32}px`);
-    });
-    el.addEventListener("pointerleave", () => {
-      el.classList.remove("pulling");
-      el.style.setProperty("--tx", "0px");
-      el.style.setProperty("--ty", "0px");
-    });
-  }
-
   /* ── confetti-like burst from an element ── */
   function burst(el, n = 18) {
     if (reduced || !el) return;
@@ -158,15 +141,16 @@
   }
 
   function init(root) {
-    root.querySelectorAll("[data-split]").forEach(split);
-    root.querySelectorAll("[data-reveal], [data-observe], [data-split], .gauge, .bar, .marker, [data-count], [data-burst-in], [data-roll]").forEach((el) => {
+    // htmx:load hands over the swapped-in element itself, so it counts too, not only what is inside it
+    const all = (sel) => [...(root.matches?.(sel) ? [root] : []), ...root.querySelectorAll(sel)];
+    all("[data-split]").forEach(split);
+    all("[data-reveal], [data-observe], [data-split], .gauge, .bar, .marker, [data-count], [data-burst-in], [data-roll]").forEach((el) => {
       if (!el.classList.contains("in")) io.observe(el);
     });
-    root.querySelectorAll("[data-magnetic]").forEach(magnetic);
-    root.querySelectorAll("[data-follow]").forEach((el) => followers.add(el));
-    root.querySelectorAll("[data-story]").forEach(story);
-    root.querySelectorAll("[data-cat-card]").forEach(linkRadar);
-    root.querySelectorAll("[data-hover-link]").forEach((el) => {
+    all("[data-follow]").forEach((el) => followers.add(el));
+    all("[data-story]").forEach(story);
+    all("[data-cat-card]").forEach(linkRadar);
+    all("[data-hover-link]").forEach((el) => {
       const sel = `[data-hover-target="${el.dataset.hoverLink}"]`;
       el.addEventListener("pointerenter", () => document.querySelectorAll(sel).forEach((t) => t.classList.add("hot")));
       el.addEventListener("pointerleave", () => document.querySelectorAll(sel).forEach((t) => t.classList.remove("hot")));

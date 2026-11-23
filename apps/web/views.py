@@ -835,8 +835,6 @@ def wizard(request: HttpRequest) -> HttpResponse:
         pair = create_pair(owner, person("a", da), person("b", db), mode)
     request.session.pop("quick_dates", None)
     target = reverse("person_quiz", args=[pair.a.id]) if mode == "deep" else reverse("generating") + f"?r={request_report(pair).id}"
-    if not owner.is_account:  # data first, then «where do we save it?» over the running calculation (login sheet)
-        target += ("&" if "?" in target else "?") + "save=1"
     return remember_owner(request, redirect(target), owner)
 
 
@@ -856,8 +854,12 @@ def generating_status(request: HttpRequest) -> HttpResponse:
         owner = get_owner(request)
         if stored and stored.status == StoredReport.Status.PENDING:
             step = len(steps) - 1  # keep the last step spinning until the worker finishes
-        elif stored and not (owner and owner.is_account):  # ready, but it opens only once saved: the sign-in sheet is over this page
-            ctx = {"steps": steps, "step": len(steps), "progress": 100, "rid": rid, "save_needed": True}
+        elif stored and stored.status == StoredReport.Status.READY and not (owner and owner.is_account):
+            # ready, no profile yet: a glimpse of the result, then one step — save it, which creates the profile
+            if not owner or owner.id not in (stored.pair.owner_id, stored.pair.partner_id):
+                raise Http404
+            nxt = reverse("stored_report", args=[stored.id]) + "?reveal=1"
+            ctx = {"teaser": report_of(stored), "save_query": urlencode({"sheet": "1", "why": "save", "next": nxt})}
             return render(request, "partials/generation_steps.html", ctx)
         else:
             resp = HttpResponse(status=204)
@@ -1179,8 +1181,10 @@ def _next_url(request: HttpRequest) -> str:
     return nxt if url_has_allowed_host_and_scheme(nxt, {request.get_host()}, require_https=request.is_secure()) else reverse("account")
 
 
+LOGIN_TITLE = {"save": "Сохраните разбор — это и есть ваш профиль", "profile": "Вы ещё не вошли"}
 LOGIN_WHY = {
-    "save": "Почти готово. Куда сохранить ваш разбор? Пришлём код на почту: пароль не нужен, а разбор откроется с любого устройства.",
+    "save": "Разбор не потеряется, откроется с любого устройства, и партнёра можно будет позвать. Пароль не нужен — пришлём код на почту.",
+    "profile": "Без пароля — пришлём код. Имя возьмём из вашего разбора, аватар выберете потом. Пока вы не вошли, разборы хранятся только в этом браузере 7 дней.",
     "invite": "Чтобы пригласить партнёра, войдите по почте: так вы оба найдёте вашу пару с любого устройства.",
     "join": "Войдите по почте, чтобы присоединиться к паре. Пароль не нужен — пришлём код.",
     "pay": "Войдите по почте: туда придёт чек, а покупка откроется с любого устройства. Пароль не нужен.",
@@ -1204,7 +1208,7 @@ def login(request: HttpRequest) -> HttpResponse:
         "next": _next_url(request),
         "why": LOGIN_WHY.get(why, ""),
         "why_key": why if why in LOGIN_WHY else "",
-        "save": why == "save",
+        "title": LOGIN_TITLE.get(why, ""),
         "providers": oauth.enabled(),
         "telegram_bot": settings.TELEGRAM_BOT_NAME,
     }
@@ -1551,6 +1555,7 @@ def account(request: HttpRequest) -> HttpResponse:
         else None,
         "price_plus": settings.PRICE_PLUS,
         "privacy_email": settings.PRIVACY_EMAIL,
+        "login_query": urlencode({"sheet": "1", "why": "profile", "next": reverse("account")}),
         "this_device": device.id if device else None,
         "avatars": [(k, v[0]) for k, v in AVATARS.items()],
         "pairs": [

@@ -48,8 +48,12 @@ def make_pair(client: Client, mode: str = "extended", email: str = "anya@example
     )
     assert resp.status_code == 302
     location = resp["Location"]
-    if "save=1" in location:  # no account yet: the sign-in sheet opens over the calculation
-        location = sign_in(client, email, location.replace("&save=1", "").replace("?save=1", ""))
+    if location.startswith("/generating/"):  # without a profile the finished calculation shows a glimpse and the save card
+        rid = location.split("r=")[1]
+        if client.get(f"/generating/status/?step=99&r={rid}").status_code == 200:
+            sign_in(client, email, f"/r/{rid}/?reveal=1")
+    elif mode == "deep":
+        sign_in(client, email, location)  # inviting the partner after the quiz needs a profile
     if location.startswith("/login/"):
         from urllib.parse import parse_qs, urlparse
 
@@ -66,6 +70,9 @@ def test_wizard_creates_encrypted_people_and_a_ready_report():
     stored = make_pair(client)
     stored.refresh_from_db()
     assert stored.status == "ready" and stored.snapshot["total_score"] > 0
+    assert stored.pair.owner.name == "Аня"  # the profile is named from the report, not asked again
+    anon = Client().get("/account/").content.decode()
+    assert "why=profile" in anon and "Как вас называть" not in anon and "Стереть всё" not in anon  # no profile yet: only the sign-in card
     raw = Person.objects.raw("SELECT id, birth FROM compatibility_person LIMIT 1")[0].__dict__
     assert "1996" not in str(Person.objects.values_list("birth", flat=True).query) and raw  # birth stored encrypted
     for tab in TABS:

@@ -2,12 +2,10 @@
     open: false,
     show(d) {
       d = d || {};
-      const here = location.pathname + location.search.replace(/[?&]save=1/, '').replace(/^&/, '?');
       this.open = true;
-      this.$nextTick(() => htmx.ajax('GET', '{% url 'login' %}?' + new URLSearchParams({ sheet: 1, why: d.why || '', next: d.next || here }), { target: '#login-sheet-body', swap: 'innerHTML' }));
+      this.$nextTick(() => htmx.ajax('GET', '{% url 'login' %}?' + new URLSearchParams({ sheet: 1, why: d.why || '', next: d.next || location.pathname + location.search }), { target: '#login-sheet-body', swap: 'innerHTML' }));
     },
-  }" @login-open.window="show($event.detail)"
-  {% if request.GET.save == '1' %}x-init="setTimeout(() => show({ why: 'save' }), 600)"{% endif %}>
+  }" @login-open.window="show($event.detail)">
   <template x-teleport="body">
     <div x-show="open" x-cloak class="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6" @keydown.escape.window="open = false"
       x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:leave="transition duration-200" x-transition:leave-end="opacity-0">

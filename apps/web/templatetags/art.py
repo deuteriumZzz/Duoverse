@@ -47,6 +47,9 @@ GLYPHS = {
     f'<circle cx="16.5" cy="19" r="1.1" fill="var(--color-paper)"/><circle cx="20" cy="19" r="1.1" fill="var(--color-paper)"/><circle cx="23.5" cy="19" r="1.1" fill="var(--color-paper)"/>',
     "gem": f'<path d="M5.5 12.5 10.5 6h11l5 6.5L16 27z" fill="{PAIR}" {INK}/><path d="M5.5 12.5h21M10.5 6l3 6.5L16 27l2.5-14.5 3-6.5" fill="none" {INK}/>',
     "shield-check": f'<path d="M16 3.5 26 7.5v7c0 7.2-5 11.4-10 13.3C11 25.9 6 21.7 6 14.5v-7z" fill="{SAGE}" {INK}/><path d="m11.5 15.5 3 3 6-6.5" fill="none" {INK}/>',
+    "magnet": f'<path d="M6.5 4.5h7v11a2.5 2.5 0 0 0 5 0v-11h7v11a9.5 9.5 0 0 1-19 0z" fill="{A}" {INK}/>'
+    f'<path d="M7.4 5.4h5.2v3.7H7.4zM19.4 5.4h5.2v3.7h-5.2z" fill="{PAPER}"/><path d="M6.5 10h7M18.5 10h7" fill="none" {INK}/>',
+    "zap": f'<path d="M18.5 3.5 7 18h7.5l-2 10.5L25 13h-7.5z" fill="{B}" {INK}/>',
     "house": f'<path d="M8 13.5V26.5h16V13.5" fill="{LILAC}" {INK}/><path d="M4.5 15 16 5.5 27.5 15" fill="none" {INK}/>'
     f'<rect x="13.5" y="18.5" width="5" height="8" rx="1.2" fill="{PAPER}" {INK}/>',
 }

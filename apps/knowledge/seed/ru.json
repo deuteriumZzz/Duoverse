@@ -545,7 +545,7 @@
   "text": "",
   "data": {
    "title": "Притяжение и близость",
-   "icon": "flame",
+   "icon": "magnet",
    "cats": [
     "passion"
    ],
@@ -605,7 +605,7 @@
   "text": "",
   "data": {
    "title": "Конфликты и примирение",
-   "icon": "shield-check",
+   "icon": "zap",
    "cats": [
     "conflict"
    ],

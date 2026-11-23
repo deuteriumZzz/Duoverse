@@ -32,7 +32,6 @@
       </a>
       <nav class="ml-6 hidden items-center gap-1 text-sm font-semibold text-ink-2 md:flex" aria-label="Основное меню">
         {% url 'report' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'report' or nav == 'report_tab' or nav == 'share' %}bg-sand text-ink{% endif %}">Отчёт</a>
-        {% url 'sign_compatibility' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'sign_compatibility' %}bg-sand text-ink{% endif %}">По знакам</a>
         {% url 'daily' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'daily' %}bg-sand text-ink{% endif %}">Сегодня</a>
         {% url 'pair_invite' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav|slice:':4' == 'pair' %}bg-sand text-ink{% endif %}">Вдвоём</a>
         {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
@@ -42,8 +41,8 @@
           <button class="rounded-full bg-paper px-2.5 py-1 shadow-sm" aria-pressed="true">RU</button>
           <button class="rounded-full px-2.5 py-1 text-ink-3 hover:text-ink" @click="toast('English version — в следующей итерации прототипа', 'globe')">EN</button>
         </div>
-        <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm" data-magnetic>{% icon 'plus' 'size-4' %}<span class="hidden sm:inline">Новый разбор</span></a>
-        {% if me %}
+        <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}<span class="hidden sm:inline">Новый разбор</span></a>
+        {% if me.account %}
         <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
           <button class="me-btn" @click="open = !open" :aria-expanded="open" aria-haspopup="menu" aria-label="Профиль">{% avatar me.avatar 38 %}</button>
           <div x-show="open" x-cloak class="me-menu" role="menu" aria-label="Профиль"
@@ -61,8 +60,7 @@
             <a href="{% url 'account' %}#plan" class="me-item" role="menuitem">{% icon 'sparkles' 'size-4' %}Тариф и оплата</a>
             <a href="{% url 'account' %}#notify" class="me-item" role="menuitem">{% icon 'bell' 'size-4' %}Уведомления</a>
             <hr class="my-1 border-line">
-            {% if me.account %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="me-item w-full text-ink-3" role="menuitem">{% icon 'log-out' 'size-4' %}Выйти</button></form>
-            {% else %}<a href="{% url 'login' %}" class="me-item" role="menuitem" @click.prevent="open = false; $dispatch('login-open')">{% icon 'log-in' 'size-4' %}Войти или создать аккаунт</a>{% endif %}
+            <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="me-item w-full text-ink-3" role="menuitem">{% icon 'log-out' 'size-4' %}Выйти</button></form>
           </div>
         </div>
         {% else %}

@@ -80,8 +80,10 @@
 
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 3rem; padding-inline: 1.375rem; border-radius: 999px; font-weight: 700; font-size: .95rem; white-space: nowrap; transition: transform .35s var(--ease-spring), box-shadow .25s, background-color .2s, color .2s; user-select: none; }
   .btn:active { transform: scale(.96); }
-  .btn-primary { background: var(--color-ink); color: var(--color-milk); box-shadow: 0 8px 20px -8px rgb(30 26 22 / .5); }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -10px rgb(30 26 22 / .55); }
+  /* a flat key in the sticker style: lifts onto a yellow edge on hover, presses down on click */
+  .btn-primary { background: var(--color-ink); color: var(--color-milk); box-shadow: 0 0 0 0 var(--color-pair); }
+  .btn-primary:hover, .btn-primary:focus-visible { transform: translateY(-3px); box-shadow: 0 3px 0 0 var(--color-pair); }
+  .btn-primary:active { transform: translateY(0); box-shadow: 0 0 0 0 var(--color-pair); transition-duration: .08s; }
   .btn-ghost { background: transparent; color: var(--color-ink); border: 1.5px solid var(--color-line); }
   .btn-ghost:hover { background: var(--color-paper); border-color: var(--color-ink-3); }
   .btn-soft { background: var(--color-sand); color: var(--color-ink); }
@@ -142,6 +144,18 @@
   .flip-face { position: absolute; inset: 0; backface-visibility: hidden; }
   .flip-back { transform: rotateY(180deg); }
   .flipped .flip-inner { transform: rotateY(180deg); }
+
+  /* question of the day: drawing a card from the deck (templates/pages/daily.html) */
+  .deck { perspective: 1000px; }
+  .deck-card { rotate: var(--r); transition: rotate .7s var(--ease-spring), translate .55s var(--ease-out), transform .55s var(--ease-out), opacity .4s; }
+  .deck:hover .deck-card { rotate: calc(var(--r) * 2); }
+  .deck-top { z-index: 1; }
+  .deck-label { z-index: 2; transition: opacity .25s, translate .3s var(--ease-out); }
+  .deck.drawing .deck-card { rotate: var(--fan); }
+  .deck.drawing .deck-top { transform: translateY(-34%) rotateY(90deg) scale(1.08); }
+  .deck.drawing .deck-label { opacity: 0; translate: 0 10px; }
+  .card-edge { opacity: 0; transform: perspective(1200px) translateY(-6%) rotateY(-90deg) scale(.96); }
+  .card-face { opacity: 1; transform: perspective(1200px) translateY(0) rotateY(0) scale(1); }
 
   .skeleton { background: linear-gradient(90deg, var(--color-sand) 0%, var(--color-sand-2) 50%, var(--color-sand) 100%); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; border-radius: .75rem; }
 
@@ -235,15 +249,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
 .marker { background: linear-gradient(transparent 58%, var(--mk, var(--color-pair)) 58%, var(--mk, var(--color-pair)) 92%, transparent 92%) no-repeat 0 0 / 0% 100%;
   transition: background-size 1s var(--ease-out) .5s; }
 .in .marker, .marker.in { background-size: 100% 100%; }
-
-/* magnetic */
-[data-magnetic] { transition: translate .5s var(--ease-spring); translate: var(--tx, 0) var(--ty, 0); }
-[data-magnetic].pulling { transition: translate .12s linear; }
-
-/* primary button shine */
-.btn-primary { position: relative; overflow: hidden; isolation: isolate; }
-.btn-primary::after { content: ""; position: absolute; inset: 0; z-index: -1; translate: -120% 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .28) 50%, transparent 70%); transition: translate .8s var(--ease-out); }
-.btn-primary:hover::after { translate: 120% 0; }
 
 /* particle burst */
 .burst-dot { position: fixed; z-index: 95; pointer-events: none; width: var(--s, 8px); height: var(--s, 8px); border-radius: var(--r, 999px); background: var(--c);

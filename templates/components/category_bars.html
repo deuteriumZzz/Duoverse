@@ -1,0 +1,9 @@
+{# Category scores as bars: the quick check and the «разбор готов» glimpse. categories: [{icon, title, score, tone}] #}
+<ul class="space-y-3">
+  {% for c in categories %}
+  <li class="tone-{{ c.tone }}">
+    <div class="flex items-center gap-2 text-sm font-bold">{% glyph c.icon 'size-5' %}{{ c.title }}<span class="mono ml-auto">{{ c.score }}</span></div>
+    <div class="bar mt-1.5" style="--v: {{ c.score }}; --i: {{ forloop.counter }}"><i class="t-fill"></i></div>
+  </li>
+  {% endfor %}
+</ul>

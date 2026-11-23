@@ -2,7 +2,7 @@
 <div class="login-card">
   <div class="text-center fade-up">
     <div class="mx-auto {% if sheet %}h-10 w-14{% else %}h-14 w-20{% endif %}" aria-hidden="true">{% mark "h-full w-full" merge=True %}</div>
-    <h1 class="{% if sheet %}mt-4 text-2xl{% else %}mt-6 text-3xl{% endif %} font-extrabold"{% if sheet %} id="login-sheet-title"{% endif %}>{% if step == "code" %}Проверьте почту{% elif save %}Сохраните разбор{% else %}Вход в Duoverse{% endif %}</h1>
+    <h1 class="{% if sheet %}mt-4 text-2xl{% else %}mt-6 text-3xl{% endif %} font-extrabold"{% if sheet %} id="login-sheet-title"{% endif %}>{% if step == "code" %}Проверьте почту{% elif title %}{{ title }}{% else %}Вход в Duoverse{% endif %}</h1>
     {% if step == "code" %}
       <p class="mt-3 text-ink-2">Отправили код из 6 цифр на <b class="text-ink">{{ email }}</b>. Можно ввести его здесь или открыть ссылку из письма.</p>
     {% elif why %}

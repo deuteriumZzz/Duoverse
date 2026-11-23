@@ -143,6 +143,11 @@ def sign_in(
         Device.objects.filter(owner=current).update(owner=account)
         current.delete()
     Pair.objects.filter(owner=account, partner=account).update(partner=None)  # merged into a pair they had joined
+    if not account.name:  # the profile is named from the report they just made, not asked again
+        first = Pair.objects.filter(owner=account).select_related("a").order_by("created_at").first()
+        if first and first.a.name:
+            account.name = first.a.name[:60]
+            account.save(update_fields=["name"])
     return account
 
 
