@@ -31,20 +31,22 @@
     {% endif %}
   </div>
 
-  {% if state == "login" or state == "accept" %}
+  {% if state == "accept" %}
   <ul class="card mt-8 space-y-3 p-6 text-sm fade-up" style="--i:1">
     <li class="flex gap-3"><span class="text-synergy-ink">{% icon 'check' 'size-5' %}</span>Вы заполните свою анкету сами: {{ inviter.name }} не увидит ваших ответов, только общий разбор.</li>
-    <li class="flex gap-3"><span class="text-synergy-ink">{% icon 'check' 'size-5' %}</span>Вы увидите только эту пару — не другие разборы {{ inviter.name }}.</li>
+    <li class="flex gap-3"><span class="text-synergy-ink">{% icon 'check' 'size-5' %}</span>Вы увидите только эту пару — не другие разборы {{ inviter.name|gen }}.</li>
     <li class="flex gap-3"><span class="text-synergy-ink">{% icon 'check' 'size-5' %}</span>Отвязаться можно в любой момент в «Мои разборы».</li>
   </ul>
-  {% if state == "login" %}
-    <a href="{{ login_url }}" class="btn btn-primary mt-6 w-full" @click.prevent="$dispatch('login-open', { why: 'join', next: '{{ request.path|escapejs }}' })">{% icon 'mail' 'size-4' %}Войти по почте и присоединиться</a>
-  {% else %}
-    <form method="post" class="mt-6">{% csrf_token %}<input type="hidden" name="action" value="accept">
-      {% include "components/consent_check.html" %}
-      {% if consent_missing %}<p class="mt-2 text-sm font-bold text-risk" role="alert">Отметьте галочку, чтобы присоединиться.</p>{% endif %}
-      <button class="btn btn-primary mt-5 w-full">{% icon 'heart-handshake' 'size-4' %}Присоединиться к паре</button></form>
-  {% endif %}
+  <form method="post" class="mt-6">{% csrf_token %}<input type="hidden" name="action" value="accept">
+    {% include "components/consent_check.html" %}
+    {% if consent_missing %}<p class="mt-2 text-sm font-bold text-risk" role="alert">Отметьте галочку, чтобы присоединиться.</p>{% endif %}
+    <button class="btn btn-primary mt-5 w-full">{% icon 'heart-handshake' 'size-4' %}Присоединиться к паре</button>
+    {% if not signed_in %}<p class="mt-3 text-center text-xs text-ink-3">Дальше — вход по почте или через сервис, без пароля. Это один шаг.</p>{% endif %}
+  </form>
+  {% elif state == "signin" %}
+  <div class="mt-8" hx-get="{% url 'login' %}?{{ login_query }}" hx-trigger="load" hx-swap="innerHTML focus-scroll:false">
+    <div class="grid h-56 place-items-center"><span class="size-6 rounded-full border-2 border-ink/20 border-t-ink spin"></span></div>
+  </div>
   {% elif state == "own" %}
     <a href="{% url 'history' %}" class="btn btn-ghost mt-8 w-full">Мои разборы</a>
   {% endif %}

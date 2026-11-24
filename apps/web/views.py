@@ -1139,20 +1139,21 @@ def join(request: HttpRequest, code: str) -> HttpResponse:
         return render(request, "pages/join.html", {**ctx, "state": "own"})
     if pair.partner_id and (not owner or pair.partner_id != owner.id):
         return render(request, "pages/join.html", {**ctx, "state": "taken"}, status=410)
-    if not owner or not owner.is_account:
-        return render(
-            request,
-            "pages/join.html",
-            {**ctx, "state": "login", "login_url": reverse("login") + "?" + urlencode({"next": request.path, "why": "join"})},
-        )
-    if pair.partner_id != owner.id:
+    signed_in = bool(owner and owner.is_account)
+    if not owner or pair.partner_id != owner.id:
+        # one flow, like an app invite: agree and join; without a profile the sign-in card follows on the same page,
+        # and signing in finishes the join (_sign_in) — no coming back to this page to press «join» again
         consent_missing = request.method == "POST" and request.POST.get("consent") != "on"
         if request.method == "POST" and request.POST.get("action") == "accept" and not consent_missing:
-            pair.partner = owner
-            pair.save(update_fields=["partner"])
-            notify_partner(pair, "b", "joined")
+            if signed_in:
+                _join(pair, owner)  # type: ignore[arg-type]
+            else:
+                request.session["join_code"] = pair.invite_code  # the consent is given; the join waits for the profile
             return redirect("join", code=pair.invite_code)
-        return render(request, "pages/join.html", {**ctx, "state": "accept", "consent_missing": consent_missing})
+        if not signed_in and request.session.get("join_code") == pair.invite_code:
+            login_query = urlencode({"sheet": "1", "why": "join", "next": request.path})
+            return render(request, "pages/join.html", {**ctx, "state": "signin", "login_query": login_query})
+        return render(request, "pages/join.html", {**ctx, "state": "accept", "signed_in": signed_in, "consent_missing": consent_missing})
     if not pair.b.answers:  # the partner fills in their own questionnaire
         if request.method == "POST":
             if _save_answers(request, pair.b) is None:
@@ -1161,6 +1162,15 @@ def join(request: HttpRequest, code: str) -> HttpResponse:
         return render(request, "pages/quiz.html", {**_quiz_ctx(), "person": pair.b, "submit_url": request.path, "joining": True})
     stored = latest_ready(pair)
     return redirect(reverse("stored_report", args=[stored.id]) if stored else reverse("generating") + f"?r={request_report(pair).id}")
+
+
+def _join(pair: Pair, owner: Owner) -> None:
+    pair.partner = owner
+    pair.save(update_fields=["partner"])
+    if not owner.name and pair.b.name:  # the profile is named from the invite, not asked again
+        owner.name = pair.b.name[:60]
+        owner.save(update_fields=["name"])
+    notify_partner(pair, "b", "joined")
 
 
 @require_POST
@@ -1181,14 +1191,24 @@ def _next_url(request: HttpRequest) -> str:
     return nxt if url_has_allowed_host_and_scheme(nxt, {request.get_host()}, require_https=request.is_secure()) else reverse("account")
 
 
-LOGIN_TITLE = {"save": "Сохраните разбор — это и есть ваш профиль", "profile": "Вы ещё не вошли"}
+LOGIN_TITLE = {"save": "Сохраните разбор — это и есть ваш профиль", "profile": "Вы ещё не вошли", "join": "Последний шаг — вход"}
 LOGIN_WHY = {
     "save": "Разбор не потеряется, откроется с любого устройства, и партнёра можно будет позвать. Пароль не нужен — пришлём код на почту.",
     "profile": "Без пароля — пришлём код. Имя возьмём из вашего разбора, аватар выберете потом. Пока вы не вошли, разборы хранятся только в этом браузере 7 дней.",
     "invite": "Чтобы пригласить партнёра, войдите по почте: так вы оба найдёте вашу пару с любого устройства.",
-    "join": "Войдите по почте, чтобы присоединиться к паре. Пароль не нужен — пришлём код.",
+    "join": "После входа вы сразу окажетесь в паре — так вы оба найдёте её с любого устройства. Пароль не нужен.",
     "pay": "Войдите по почте: туда придёт чек, а покупка откроется с любого устройства. Пароль не нужен.",
 }
+
+
+def _sign_in(request: HttpRequest, *args, **kwargs) -> Owner:
+    """sign_in, then what the person was in the middle of: joining a pair they had already agreed to."""
+    account = sign_in(get_owner(request), *args, **kwargs)
+    code = request.session.pop("join_code", None)
+    pair = pair_by_code(code) if code else None
+    if pair and not pair.partner_id and pair.owner_id != account.id:
+        _join(pair, account)
+    return account
 
 
 def _in_sheet(request: HttpRequest) -> bool:
@@ -1254,7 +1274,7 @@ def login_link(request: HttpRequest, token: str) -> HttpResponse:
 
 
 def _finish_login(request: HttpRequest, email: str) -> HttpResponse:
-    account = sign_in(get_owner(request), email)
+    account = _sign_in(request, email)
     request.session.pop("login_hash", None)
     if _in_sheet(request):  # the sheet closes into the page the person was on (or where the action leads)
         done = HttpResponse(status=204)
@@ -1280,7 +1300,7 @@ def oauth_callback(request: HttpRequest, provider: str) -> HttpResponse:
         user = oauth.exchange(provider, request.GET.dict(), request.build_absolute_uri(request.path), pending["verifier"], pending["state"])
     except oauth.OAuthError:
         return render(request, "pages/login.html", {"step": "email", "provider_error": True, "providers": oauth.enabled()}, status=502)
-    account = sign_in(get_owner(request), user.email, user.provider, user.subject, trust_email=user.email_verified)
+    account = _sign_in(request, user.email, user.provider, user.subject, trust_email=user.email_verified)
     return remember_owner(request, redirect(pending["next"]), account)
 
 
@@ -1292,7 +1312,7 @@ def telegram_login(request: HttpRequest) -> HttpResponse:
         user = oauth.telegram_user(params)
     except (oauth.OAuthError, KeyError, ValueError):
         return render(request, "pages/login.html", {"step": "email", "provider_error": True, "providers": oauth.enabled()}, status=400)
-    account = sign_in(get_owner(request), None, user.provider, user.subject)
+    account = _sign_in(request, None, user.provider, user.subject)
     return remember_owner(request, redirect(_next_url(request)), account)
 
 

@@ -115,11 +115,15 @@ def test_quiz_answers_are_saved_and_unlock_psychology():
     invite_page = client.get(resp["Location"]).content.decode()
     code = re.search(r"/join/([A-Z0-9]{6})/", invite_page).group(1)
     partner = Client()  # another phone
-    assert "Войти по почте" in partner.get(f"/join/{code}/").content.decode()
-    sign_in(partner, "misha@example.com")
+    assert "Присоединиться к паре" in partner.get(f"/join/{code}/").content.decode()  # no profile yet: the invite itself is the start
     assert "Отметьте галочку" in partner.post(f"/join/{code}/", {"action": "accept"}).content.decode()  # 18+ and consent first
-    assert pair.partner_id is None
     assert partner.post(f"/join/{code}/", {"action": "accept", "consent": "on"}).status_code == 302
+    assert "why=join" in partner.get(f"/join/{code}/").content.decode()  # the sign-in card, right on the invite
+    pair.refresh_from_db()
+    assert pair.partner_id is None  # not before the profile exists
+    sign_in(partner, "misha@example.com", f"/join/{code}/")  # signing in finishes the join: no second «join» press
+    pair.refresh_from_db()
+    assert pair.partner_id and pair.partner.name == "Миша"  # named from the invite
     assert partner.post(f"/join/{code}/", {"answers": json.dumps(answers_for("misha"))}).status_code == 302
     status = client.get(f"/p/{pair.id}/status/")
     rid = status["Location"].split("r=")[1]
