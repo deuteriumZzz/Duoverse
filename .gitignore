@@ -11,3 +11,4 @@ staticfiles/
 .claude/
 backups/
 data/*.bsp
+data/chiron.txt

@@ -1,9 +1,10 @@
 """Ephemeris adapter (ADR-0004): Skyfield (MIT) over NASA JPL DE421 (public domain) — no licence fees or source
-obligations. Planets, true lunar node, mean Lilith, Placidus houses; Chiron is not computed."""
+obligations. Planets, true lunar node, mean Lilith, Placidus houses; Chiron from a JPL Horizons table when it is there."""
 
 import math
 from datetime import datetime, time
 from functools import lru_cache
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from apps.astrology.domain.chart import BirthData, Chart, Place
@@ -25,6 +26,20 @@ def _sky():
 
     loader = Loader(str(getattr(settings, "EPHEMERIS_DIR", "data")), verbose=False)
     return loader.timescale(builtin=True), loader("de421.bsp")
+
+
+@lru_cache(maxsize=1)
+def _chiron():
+    """Chiron by day from JPL Horizons (scripts/fetch_chiron.py writes data/chiron.txt): (JD TT, unwrapped longitude), or
+    None without the file — DE421 has no Chiron, so the chart then simply leaves it out."""
+    import numpy as np
+    from django.conf import settings
+
+    path = Path(getattr(settings, "EPHEMERIS_DIR", "data")) / "chiron.txt"
+    if not path.exists():
+        return None
+    jd, lon = np.loadtxt(path, unpack=True)
+    return jd, np.unwrap(lon, period=360)
 
 
 def _norm(x: float) -> float:
@@ -112,6 +127,11 @@ class SkyfieldEphemeris:
             h = (r[1] * v[2] - r[2] * v[1], r[2] * v[0] - r[0] * v[2], r[0] * v[1] - r[1] * v[0])
             nodes.append(_norm(math.degrees(math.atan2(h[0], -h[1]))))
         planets["Северный узел"], speeds["Северный узел"] = round(nodes[1], 3), round(_arc(nodes[0], nodes[2]) / (2 * _STEP), 4)
+        if (chiron := _chiron()) is not None and chiron[0][0] <= span.tt[0] and span.tt[-1] <= chiron[0][-1]:
+            import numpy as np
+
+            c = np.interp(span.tt, *chiron)  # daily table, Chiron moves under 0.15° a day: error below 0.001°
+            planets["Хирон"], speeds["Хирон"] = round(_norm(float(c[1])), 3), round(float(c[2] - c[0]) / (2 * _STEP), 4)
         lil = [mean_lilith(x) for x in (t.tt - _STEP, t.tt, t.tt + _STEP)]
         planets["Лилит"], speeds["Лилит"] = round(lil[1], 3), round(_arc(lil[0], lil[2]) / (2 * _STEP), 4)
         if not exact or birth.place is None:

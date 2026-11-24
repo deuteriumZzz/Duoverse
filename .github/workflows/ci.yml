@@ -18,6 +18,11 @@ jobs:
         with: { node-version: 22 }
       - uses: actions/cache@v4
         with: { path: data/de421.bsp, key: jpl-de421 }  # NASA ephemeris for the charts, ~17 MB, never changes
+      - uses: actions/cache@v4
+        id: chiron
+        with: { path: data/chiron.txt, key: jpl-horizons-chiron-1900-2053 }  # Chiron from JPL Horizons, ~1 MB
+      - if: steps.chiron.outputs.cache-hit != 'true'
+        run: python3 scripts/fetch_chiron.py data/chiron.txt
       - run: uv venv --python 3.12 && uv pip install -r pyproject.toml --group dev
       - run: npm ci && npm run build
       - run: uv run ruff check . && uv run ruff format --check .

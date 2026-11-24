@@ -249,6 +249,7 @@ class Arcana(BaseModel):
     name: str
     keyword: str
     portrait: str
+    text: str = ""  # fuller reading from the knowledge base: the person's arcana in love, or the pair's union
 
 
 class TarotSection(BaseModel):

@@ -283,3 +283,22 @@ def test_skyfield_matches_swiss_ephemeris_reference():
 def test_polar_birth_falls_back_to_equal_quadrants():
     c = eph.chart(BirthData(date(1990, 6, 21), time(12, 0), Place("Норильск", 69.35, 88.2, "Asia/Krasnoyarsk")))
     assert c.houses and len(c.houses) == 12 and c.houses[0] == c.asc and c.houses[9] == c.mc
+
+
+def test_chiron_comes_from_the_horizons_table_and_is_skipped_without_it(tmp_path, settings):
+    from apps.astrology.infrastructure import ephemeris
+
+    ephemeris._sky()  # DE421 stays where it is; only the Chiron table moves to tmp_path
+    settings.EPHEMERIS_DIR = str(tmp_path)
+    birth = BirthData(date(2000, 1, 1), None, None)  # noon UT, JD 2451545.0
+    try:
+        ephemeris._chiron.cache_clear()
+        assert "Хирон" not in eph.chart(birth).planets
+        rows = "# test\n2451544.5 251.5602909\n2451545.5 251.6745978\n2451546.5 251.7882564\n"  # JPL Horizons, 2000-01-01..03
+        (tmp_path / "chiron.txt").write_text(rows)
+        ephemeris._chiron.cache_clear()
+        c = eph.chart(birth)
+        assert abs(c.planets["Хирон"] - 251.617) < 0.01 and c.sign("Хирон") == "Стрелец" and c.speeds["Хирон"] > 0
+        assert "Хирон" not in eph.chart(BirthData(date(2001, 1, 1), None, None)).planets  # outside the table
+    finally:
+        ephemeris._chiron.cache_clear()

@@ -17,6 +17,9 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 COPY pyproject.toml ./
 RUN uv pip install --system --no-cache -r pyproject.toml
+# Chiron is not in DE421: a daily table from JPL Horizons (public domain, ~1 MB); its own layer, so code edits don't refetch it
+COPY scripts/fetch_chiron.py scripts/
+RUN python scripts/fetch_chiron.py /app/data/chiron.txt
 COPY . .
 COPY --from=assets /app/static/dist static/dist
 # collectstatic needs no real secrets; the build-time values never reach the running container
