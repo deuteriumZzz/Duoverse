@@ -93,6 +93,8 @@ YOOKASSA_SECRET_KEY = env("YOOKASSA_SECRET_KEY", default="")
 YOOKASSA_VAT_CODE = env.int("YOOKASSA_VAT_CODE", default=1)  # 1 = без НДС; set to your tax regime
 PRICE_DEEP = env.int("PRICE_DEEP", default=490)
 PRICE_PLUS = env.int("PRICE_PLUS", default=249)
+PRICE_PLUS_YEAR = env.int("PRICE_PLUS_YEAR", default=1490)
+PLUS_TRIAL_DAYS = 7  # «Пара+» as a gift when a partner first joins
 EPHEMERIS_DIR = env("EPHEMERIS_DIR", default=str(BASE_DIR / "data"))  # NASA JPL DE421, fetched on first use (~17 MB)
 PRIVACY_EMAIL = env("PRIVACY_EMAIL", default="privacy@duoverse.app")  # requests about personal data (152-ФЗ ст. 14)
 # Server errors (500) are emailed here by Django; form values are masked (apps/core/errors.py).

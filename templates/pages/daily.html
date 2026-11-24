@@ -181,6 +181,51 @@
     {% endif %}
   </section>
 
+  {% if pair %}
+  {# «Как мы»: a short weekly talk in the spirit of Gottman's «state of the union»; it counts when both marked it #}
+  <section id="talk" class="card mt-5 scroll-mt-24 p-6 sm:p-8 fade-up" style="--i:1">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div><p class="eyebrow">разговор недели</p><h2 class="mt-1 text-xl font-extrabold">«Как мы?» — 15 минут вдвоём</h2></div>
+      {% if talk_mine and talk_partner %}<span class="chip bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3.5' %}поговорили на этой неделе</span>{% endif %}
+    </div>
+    <ol class="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+      <li class="rounded-2xl bg-sand/70 p-3"><b>1.</b> Что на этой неделе у нас получилось хорошо?</li>
+      <li class="rounded-2xl bg-sand/70 p-3"><b>2.</b> Одна конкретная вещь, за которую спасибо партнёру.</li>
+      <li class="rounded-2xl bg-sand/70 p-3"><b>3.</b> Одна тема, которую хочется спокойно обсудить: по очереди, без советов.</li>
+      <li class="rounded-2xl bg-sand/70 p-3"><b>4.</b> Что сделаем на следующей неделе, чтобы было чуть лучше?</li>
+    </ol>
+    <form method="post" action="{% url 'talk_done' %}" class="mt-4 flex flex-wrap items-center gap-3">{% csrf_token %}
+      <button class="btn {% if talk_mine %}btn-ghost{% else %}btn-primary{% endif %} btn-sm">{% if talk_mine %}{% icon 'check' 'size-4' %}Вы отметили{% else %}Мы поговорили{% endif %}</button>
+      <span class="text-xs text-ink-3">{% if talk_partner %}у {{ partner_name|gen }} уже отмечено{% else %}засчитается, когда отметите оба{% endif %}</span>
+    </form>
+  </section>
+
+  {% if pair.partner_id %}
+  <a href="{% url 'intimacy' %}" class="card mt-5 flex items-center gap-4 p-5 transition hover:border-ink fade-up" style="--i:1">
+    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-a-soft">{% icon 'heart' 'size-5' %}</span>
+    <span class="min-w-0 flex-1"><span class="flex items-center gap-2 font-extrabold">Близость <span class="rounded-md border border-ink px-1 text-[0.6rem]">18+</span></span>
+      <span class="block text-sm text-ink-2">Отметьте желания — увидите только то, что совпало.</span></span>
+    {% icon 'arrow-right' 'size-4' %}
+  </a>
+  {% endif %}
+
+  {% if weather %}
+  {# «Погода пары»: this week's sky against both charts — symbolic, like all astrology here #}
+  <section class="card mt-5 p-6 sm:p-8 fade-up" style="--i:1">
+    <p class="eyebrow">погода пары · эта неделя</p>
+    <ul class="mt-3 space-y-3">
+      {% for w in weather %}
+      <li class="tone-{{ w.tone }} flex gap-3">
+        <span class="grid size-9 shrink-0 place-items-center rounded-xl t-bg t-ink font-display text-lg">{{ w.glyph }}</span>
+        <span class="text-sm"><b>{{ w.planet }} {{ w.glyph }} {{ w.point }} {{ w.who|gen }}</b> — {{ w.text }}.</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="mt-3 text-xs text-ink-3">Символический слой: повод для разговора, а не прогноз.</p>
+  </section>
+  {% endif %}
+  {% endif %}
+
   {# the pair's weekly plan from the «Вместе» tab, with today's check-offs #}
   <section class="card mt-5 p-6 sm:p-8 fade-up" style="--i:1"
            x-data="{

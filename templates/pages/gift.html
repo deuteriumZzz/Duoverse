@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Подарок — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-md px-4 py-14 sm:px-6">
+  <div class="text-center fade-up">
+    <span class="mx-auto grid size-16 place-items-center rounded-2xl bg-a-soft" data-burst-in>{% icon 'gift' 'size-8' %}</span>
+    {% if state == "gone" %}
+      <h1 class="mt-6 text-3xl font-extrabold">Подарок уже открыт</h1>
+      <p class="mt-3 text-ink-2">Этот код уже использовали или он неверный. Если подарок ваш — попросите того, кто дарил, проверить ссылку.</p>
+    {% elif state == "pick" %}
+      <h1 class="mt-6 text-3xl font-extrabold">Какую пару открыть?</h1>
+      <p class="mt-3 text-ink-2">Подарок откроет полный разбор выбранной пары — вам обоим.</p>
+    {% endif %}
+  </div>
+
+  {% if state == "signin" %}
+  <div class="mt-2" hx-get="{% url 'login' %}?{{ login_query }}" hx-trigger="load" hx-swap="innerHTML focus-scroll:false">
+    <div class="grid h-56 place-items-center"><span class="size-6 rounded-full border-2 border-ink/20 border-t-ink spin"></span></div>
+  </div>
+  {% elif state == "pick" %}
+    {% if pairs %}
+    <form method="post" class="mt-8 space-y-2">{% csrf_token %}
+      {% for p in pairs %}
+      <label class="card flex cursor-pointer items-center gap-3 p-4 has-[:checked]:border-ink">
+        <input type="radio" name="pair" value="{{ p.id }}" class="size-4 accent-[var(--color-ink)]" {% if forloop.first %}checked{% endif %}>
+        <span class="font-bold">{{ p.a.name }} и {{ p.b.name }}</span>
+        <span class="mono ml-auto text-xs text-ink-3">{{ p.created_at|date:"j E" }}</span>
+      </label>
+      {% endfor %}
+      <button class="btn btn-primary mt-4 w-full">{% icon 'lock-open' 'size-4' %}Открыть подарком</button>
+    </form>
+    {% else %}
+    <div class="card mt-8 p-6 text-center">
+      <p class="text-ink-2">Сначала сделайте разбор вашей пары — подарок дождётся: на странице разбора появится кнопка «Открыть подарком».</p>
+      <a href="{% url 'wizard' %}?mode=extended" class="btn btn-primary mt-5">{% icon 'sparkles' 'size-4' %}Сделать разбор</a>
+    </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

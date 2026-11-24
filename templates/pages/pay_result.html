@@ -5,8 +5,17 @@
   {% if ok %}
     <span class="mx-auto grid size-14 place-items-center rounded-full bg-synergy-soft text-synergy-ink" data-burst-in>{% icon 'check' 'size-7' %}</span>
     <h1 class="mt-6 text-3xl font-extrabold">Готово, открыто</h1>
-    <p class="mt-3 text-ink-2">{% if purchase.kind == "plus" %}«Пара+» активна до {{ purchase.valid_until|date:"j E Y" }}.{% else %}Полный разбор открыт вам обоим.{% endif %} Чек придёт на почту.</p>
+    {% if gift_url %}
+    <p class="mt-3 text-ink-2">Подарок готов. Отправьте ссылку паре — по ней они откроют свой разбор целиком. Чек придёт на почту.</p>
+    <div class="card mt-6 p-5 text-left" x-data="{ copied: false }">
+      <p class="label">Код подарка</p>
+      <p class="mono text-2xl font-extrabold tracking-[0.25em]">{{ purchase.gift_code }}</p>
+      <button type="button" class="btn btn-primary mt-4 w-full" @click="navigator.clipboard.writeText('{{ gift_url|escapejs }}'); copied = true">{% icon 'link' 'size-4' %}<span x-text="copied ? 'Ссылка скопирована' : 'Скопировать ссылку'"></span></button>
+    </div>
+    {% else %}
+    <p class="mt-3 text-ink-2">{% if purchase.valid_until %}«Пара+» активна до {{ purchase.valid_until|date:"j E Y" }}.{% else %}Полный разбор открыт вам обоим.{% endif %} Чек придёт на почту.</p>
     <a href="{{ back }}" class="btn btn-primary mt-8">Открыть разбор</a>
+    {% endif %}
   {% elif pending %}
     <h1 class="text-3xl font-extrabold">Ждём подтверждения</h1>
     <p class="mt-3 text-ink-2">Банк ещё обрабатывает платёж. Обновите страницу через минуту — как только оплата пройдёт, всё откроется.</p>

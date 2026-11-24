@@ -37,10 +37,6 @@
         {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
       </nav>
       <div class="ml-auto flex items-center gap-2">
-        <div class="hidden rounded-full bg-sand p-1 text-xs font-bold sm:flex" role="group" aria-label="Язык">
-          <button class="rounded-full bg-paper px-2.5 py-1 shadow-sm" aria-pressed="true">RU</button>
-          <button class="rounded-full px-2.5 py-1 text-ink-3 hover:text-ink" @click="toast('English version — в следующей итерации прототипа', 'globe')">EN</button>
-        </div>
         <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}<span class="hidden sm:inline">Новый разбор</span></a>
         {% if me.account %}
         <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">

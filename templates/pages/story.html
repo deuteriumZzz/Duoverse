@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}История пары — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+  <p class="eyebrow">{{ pair.a.name }} и {{ pair.b.name }}</p>
+  <h1 class="mt-1 text-3xl font-extrabold" data-split>История пары</h1>
+  {% if scores|length > 1 %}<p class="mono mt-3 text-sm text-ink-2">Балл пары: {{ scores|join:" → " }}</p>{% endif %}
+
+  {% if recheck %}
+  <section class="sticker mt-8 bg-pair-soft p-6" data-reveal>
+    <p class="chapter"><b>✦</b>прошло три месяца</p>
+    <h2 class="mt-2 text-xl font-extrabold">Посмотрите на пару заново</h2>
+    <p class="mt-1 text-sm text-ink-2">Пройдите анкету ещё раз — мы пересчитаем разбор и покажем, какие сферы изменились. Лучше, если пройдёте оба.</p>
+    <a href="{{ quiz_url }}" class="btn btn-primary mt-4">{% icon 'refresh-cw' 'size-4' %}Пройти анкету заново</a>
+  </section>
+  {% endif %}
+
+  {% if changes %}
+  <section class="card mt-6 p-6" data-reveal>
+    <h2 class="font-extrabold">Что изменилось с первого разбора</h2>
+    <ul class="mt-4 space-y-3">
+      {% for c in changes %}
+      <li class="flex items-center gap-3 text-sm">
+        <span class="grid size-8 shrink-0 place-items-center rounded-xl {% if c.delta > 0 %}bg-synergy-soft text-synergy-ink{% else %}bg-attention-soft text-attention-ink{% endif %}">{% if c.delta > 0 %}{% icon 'trending-up' 'size-4' %}{% else %}{% icon 'trending-down' 'size-4' %}{% endif %}</span>
+        <span class="font-bold">{{ c.title }}</span>
+        <span class="mono ml-auto text-ink-2">{{ c.from }} → {{ c.to }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <ol class="relative mt-8 space-y-4 border-l-2 border-line pl-6">
+    {% for e in events %}
+    <li class="relative" data-reveal style="--i: {{ forloop.counter }}">
+      <span class="absolute -left-[2.15rem] top-0.5 grid size-8 place-items-center rounded-full border-2 border-ink bg-paper">{% icon e.icon 'size-4' %}</span>
+      <p class="mono text-xs text-ink-3">{{ e.when|date:"j E Y" }}</p>
+      <p class="font-bold">{{ e.title }}</p>
+      {% if e.detail %}<p class="text-sm text-ink-2">{{ e.detail }}</p>{% endif %}
+    </li>
+    {% empty %}
+    <li class="text-ink-2">История начнётся с первого разбора.</li>
+    {% endfor %}
+  </ol>
+  {% if latest %}<a href="{% url 'stored_report' latest.id %}" class="btn btn-ghost mt-8">{% icon 'arrow-left' 'size-4' %}К разбору</a>{% endif %}
+</div>
+{% endblock %}

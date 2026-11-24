@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Близость 18+ — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+  <p class="eyebrow flex items-center gap-2"><span class="rounded-md border border-ink px-1.5 text-[0.65rem] font-extrabold">18+</span>только для вас двоих</p>
+  <h1 class="mt-1 text-3xl font-extrabold" data-split>Близость</h1>
+  <p class="mt-2 text-ink-2">Каждый отмечает желания сам. Вы увидите только совпадения: «нет» и то, что выбрал кто-то один, не показываем никогда.</p>
+
+  {% if state == "nopair" %}
+    <div class="card mt-8 p-6 text-center">
+      <p class="text-ink-2">Этот раздел открывается, когда партнёр присоединился к паре: он про вас двоих.</p>
+      <a href="{% url 'pair_invite' %}" class="btn btn-primary btn-sm mt-4">{% icon 'user-plus' 'size-4' %}Пригласить партнёра</a>
+    </div>
+  {% else %}
+    {% if result %}
+    <section class="sticker mt-8 bg-a-soft p-6" data-reveal>
+      <h2 class="font-extrabold">Вы оба хотите</h2>
+      {% if result.both %}<ul class="mt-3 flex flex-wrap gap-2">{% for t in result.both %}<li class="chip bg-paper">{% icon 'heart' 'size-3.5' %}{{ t }}</li>{% endfor %}</ul>
+      {% else %}<p class="mt-2 text-sm text-ink-2">Пока нет полных совпадений — посмотрите, что можно обсудить.</p>{% endif %}
+      {% if result.talk %}
+      <h3 class="mt-5 text-sm font-extrabold">Можно обсудить</h3>
+      <ul class="mt-2 flex flex-wrap gap-2">{% for t in result.talk %}<li class="chip bg-paper/70">{{ t }}</li>{% endfor %}</ul>
+      {% endif %}
+    </section>
+    {% elif mine %}
+    <p class="mt-8 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">Ваши ответы сохранены. Совпадения появятся, когда {{ partner_name }} тоже отметит свои.</p>
+    {% elif partner_done %}
+    <p class="mt-8 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">У {{ partner_name|gen }} ответы уже есть — отметьте ваши, и вы увидите совпадения.</p>
+    {% endif %}
+
+    <form method="post" class="mt-8 space-y-4">
+      {% csrf_token %}
+      {% for theme, items in themes.items %}
+      <fieldset class="card p-5">
+        <legend class="sr-only">{{ theme }}</legend>
+        <p class="eyebrow">{{ theme }}</p>
+        <ul class="mt-3 space-y-3">
+          {% for key, title in items %}
+          <li class="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span class="min-w-0 flex-1 text-sm font-semibold">{{ title }}</span>
+            <span class="flex gap-1" role="radiogroup" aria-label="{{ title }}">
+              {% for value, label in choices.items %}
+              <label class="cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-bold has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk">
+                <input type="radio" name="{{ key }}" value="{{ value }}" class="sr-only" {% if mine|get_item:key == value %}checked{% endif %}>{{ label }}
+              </label>
+              {% endfor %}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </fieldset>
+      {% endfor %}
+      <div class="flex flex-wrap items-center gap-3">
+        <button class="btn btn-primary">{% icon 'lock' 'size-4' %}Сохранить мои ответы</button>
+        {% if mine %}<button name="action" value="clear" class="btn btn-ghost btn-sm">Стереть мои ответы</button>{% endif %}
+      </div>
+      <p class="text-xs text-ink-3">Ответы хранятся зашифрованными, партнёр не видит их по отдельности. Изменить можно в любой момент.</p>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -89,12 +89,61 @@ def test_quiz_of_the_week_is_plus_and_opens_after_both_answer():
     misha = Client()
     sign_in(misha, "misha@example.com")
     misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
+    assert "Квизы — в «Паре+»" not in anya.get("/daily/quiz/").content.decode()  # the joining week of «Пара+» opens it
+    Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())  # the week is over
     assert "Квизы — в «Паре+»" in anya.get("/daily/quiz/").content.decode()
 
     mark_paid(Purchase.objects.create(owner=stored.pair.owner, kind="plus", amount=249))
     picks = {f"q{i}": "0" for i in range(6)}
-    anya.post("/daily/quiz/", picks)
+    guesses = {f"g{i}": "0" for i in range(6)}  # what each thinks the other picked
+    assert anya.post("/daily/quiz/", picks).status_code == 422  # with a partner, guessing is part of it
+    anya.post("/daily/quiz/", {**picks, **guesses})
     assert "Ваши ответы сохранены" in anya.get("/daily/quiz/").content.decode()
-    misha.post("/daily/quiz/", {**picks, "q5": "1"})  # Anya's «Пара+» covers Misha in the linked pair
+    misha.post("/daily/quiz/", {**picks, "q5": "1", **guesses})  # Anya's «Пара+» covers Misha in the linked pair
     page = anya.get("/daily/quiz/").content.decode()
     assert "83%" in page and "Разные ответы" in page
+    assert '5 <span class="text-ink-3">·</span> 6' in page  # Anya guessed 5 of Misha's 6, Misha guessed all of hers
+
+
+def test_year_of_plus_and_a_week_when_the_partner_joins(settings):
+    settings.DEBUG = True
+    anya = Client()
+    stored = make_pair(anya, email="anya@example.com")
+    code = re.search(r"/join/([A-Z0-9]{6})/", anya.get(f"/r/{stored.id}/invite/").content.decode()).group(1)
+    misha = Client()
+    sign_in(misha, "misha@example.com")
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
+    trial = Purchase.objects.get(kind="trial")  # the moment both see the value: a week of «Пара+» for the pair
+    assert trial.owner == stored.pair.owner and unlocked(stored.pair)
+    assert (trial.valid_until - timezone.now()).days in (6, 7)
+
+    year = anya.post("/pay/plus365/")["Location"]
+    anya.post(year, {"result": "ok"})
+    paid = Purchase.objects.get(kind="plus365")
+    assert paid.amount == 1490 and (paid.valid_until - trial.valid_until).days == 365  # stacks on the trial, no days lost
+
+    other = make_pair(anya, email="anya@example.com")
+    from apps.compatibility.access import grant_trial
+
+    assert grant_trial(other.pair) is False  # once per inviter, ever
+
+
+def test_gift_is_bought_once_and_opens_someone_elses_pair(settings):
+    settings.DEBUG = True
+    giver = Client()
+    make_pair(giver, email="giver@example.com")
+    pay = giver.post("/pay/gift/")["Location"]
+    done = giver.get(giver.post(pay, {"result": "ok"})["Location"]).content.decode()
+    gift = Purchase.objects.get(kind="gift")
+    assert gift.gift_code and gift.gift_code in done and f"/gift/{gift.gift_code}/" in done  # a code and a link to send
+
+    assert "why=gift" in Client().get(f"/gift/{gift.gift_code}/").content.decode()  # the recipient signs in first
+    them = Client()
+    stored = make_pair(them, email="them@example.com")
+    assert not unlocked(stored.pair)
+    page = them.get(f"/gift/{gift.gift_code}/").content.decode()
+    assert "Какую пару открыть" in page
+    assert "Открыть подарком" in them.get(f"/r/{stored.id}/razbor/").content.decode()  # the gift waits on the report too
+    them.post(f"/gift/{gift.gift_code}/", {"pair": stored.pair.id})
+    assert unlocked(stored.pair)
+    assert them.get(f"/gift/{gift.gift_code}/").status_code == 404  # used once

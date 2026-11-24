@@ -11,7 +11,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.validators import validate_email
-from django.db import models
+from django.db import models, transaction
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
@@ -22,15 +22,19 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from apps.compatibility import places
+from apps.astrology.domain.chart import BirthData
+from apps.astrology.domain.weather import weather as sky_weather
+from apps.astrology.infrastructure.ephemeris import SkyfieldEphemeris
+from apps.compatibility import intimacy as intimacy_wishes
+from apps.compatibility import places, story
 from apps.compatibility import plan as habit_plan
 from apps.compatibility import week as pair_week
-from apps.compatibility.access import has_plus, mark_paid, plus_for_pair, unlocked
+from apps.compatibility.access import grant_trial, mark_paid, open_gift, plus_for_pair, plus_until, redeem_gift, unlocked
 from apps.compatibility.domain.archetypes import DYNAMICS, ELEMENTS, MODES, ROLES, dynamic_for, pair_name
 from apps.compatibility.domain.report import Report, ReportUnavailable
 from apps.compatibility.infrastructure import oauth, yookassa
 from apps.compatibility.infrastructure.telegram import send_message
-from apps.compatibility.models import DailyAnswer, Device, Owner, Pair, Person, Purchase, QuizAnswer, StoredReport
+from apps.compatibility.models import DailyAnswer, Device, IntimacyAnswer, Owner, Pair, Person, Purchase, QuizAnswer, StoredReport
 from apps.compatibility.notify import notify_partner
 from apps.compatibility.services import (
     birth_payload,
@@ -173,7 +177,7 @@ PLANS = [
         "per": "в месяц",
         "cta": "Подключить",
         "kind": "plus",
-        "small": "на 30 дней · без автосписаний",
+        "small": "без автосписаний · 7 дней в подарок, когда партнёр присоединится",
         "features": [
             "Всё из полного разбора — для всех ваших пар",
             "Квиз недели: где вы совпадаете",
@@ -513,7 +517,8 @@ def landing(request: HttpRequest) -> HttpResponse:
 
 
 def pricing(request: HttpRequest) -> HttpResponse:
-    return render(request, "pages/pricing.html", {"plans": PLANS, "compare": COMPARE})
+    ctx = {"plans": PLANS, "compare": COMPARE, "price_plus_year": settings.PRICE_PLUS_YEAR, "price_deep": settings.PRICE_DEEP}
+    return render(request, "pages/pricing.html", ctx)
 
 
 def report(request: HttpRequest) -> HttpResponse:
@@ -625,6 +630,68 @@ def week_done(request: HttpRequest) -> HttpResponse:
     return JsonResponse(pair_week.state(pair.plan["week"], timezone.localdate(), side, unlocked(pair)))
 
 
+def _weather(pair: Pair) -> list[dict]:
+    """«Погода пары» on this week's sky; the same for everyone in a day, so it is cached per pair per day."""
+    key = f"weather:{pair.id}:{timezone.localdate().isoformat()}"
+    if (hit := cache.get(key)) is not None:
+        return hit
+    eph = SkyfieldEphemeris()
+    sky = eph.chart(BirthData(timezone.localdate())).planets
+    natal = [(p.name, eph.chart(BirthData(date.fromisoformat(p.birth["date"]))).planets) for p in (pair.a, pair.b)]
+    result = sky_weather(sky, natal)
+    cache.set(key, result, 6 * 3600)
+    return result
+
+
+def _talk_week() -> str:
+    y, w, _ = timezone.localdate().isocalendar()
+    return f"{y}-W{w:02d}"
+
+
+def intimacy(request: HttpRequest) -> HttpResponse:
+    """«Близость 18+»: private wishes, only matches are shown. A linked pair only — it is about the two of you."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).exclude(partner=None).order_by("-created_at").first() if owner and owner.is_account else None
+    if not pair:
+        return render(request, "pages/intimacy.html", {"state": "nopair"})
+    side = side_of(owner, pair)  # type: ignore[arg-type]
+    rows = {r.side: r.picks for r in IntimacyAnswer.objects.filter(pair=pair)}
+    if request.method == "POST":
+        if request.POST.get("action") == "clear":
+            IntimacyAnswer.objects.filter(pair=pair, side=side).delete()
+        else:
+            picks = intimacy_wishes.clean({k: request.POST.get(k, "") for k in intimacy_wishes.TITLES})
+            IntimacyAnswer.objects.update_or_create(pair=pair, side=side, defaults={"picks": picks})
+        return redirect("intimacy")
+    mine, theirs = rows.get(side) or {}, rows.get("b" if side == "a" else "a") or {}
+    ctx = {
+        "state": "ready",
+        "themes": intimacy_wishes.THEMES,
+        "choices": intimacy_wishes.CHOICES,
+        "mine": mine,
+        "partner_done": bool(theirs),
+        "partner_name": pair.b.name if side == "a" else pair.a.name,
+        "result": intimacy_wishes.matches(mine, theirs) if mine and theirs else None,
+    }
+    return render(request, "pages/intimacy.html", ctx)
+
+
+@require_POST
+def talk_done(request: HttpRequest) -> HttpResponse:
+    """«Как мы»: each partner marks this week's talk; it counts when both did."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None
+    if not pair:
+        raise Http404
+    side, week = side_of(owner, pair), _talk_week()  # type: ignore[arg-type]
+    talks = {k: list(v) for k, v in pair.plan.get("talk", {}).items()}
+    marks = talks.setdefault(week, [])
+    marks.remove(side) if side in marks else marks.append(side)
+    pair.plan = {**pair.plan, "talk": talks}
+    pair.save(update_fields=["plan"])
+    return redirect(reverse("daily") + "#talk")
+
+
 def daily(request: HttpRequest) -> HttpResponse:
     owner = get_owner(request)
     pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None  # anonymous: demo until signed in
@@ -646,6 +713,8 @@ def daily(request: HttpRequest) -> HttpResponse:
         }
         extra["partner_av"] = extra["av_b"] if side == "a" else extra["av_a"]  # empty until the partner joins
         extra |= _week_ctx(pair, report, side)
+        talk = pair.plan.get("talk", {}).get(_talk_week(), [])
+        extra |= {"weather": _weather(pair), "talk_mine": side in talk, "talk_partner": ("b" if side == "a" else "a") in talk}
         return _render_report(request, report, "pages/daily.html", reverse("stored_report", args=[stored.id]), extra)
     demo = report_provider().get_report(_scenario(request))
     demo_ctx = {"daily_question": question_of_day(demo, "demo", today), **_week_ctx(None, demo, "a")}
@@ -688,21 +757,36 @@ def quiz_week(request: HttpRequest) -> HttpResponse:
     if request.method == "POST" and ctx["plus"]:
         try:
             picks = [int(request.POST[f"q{i}"]) for i in range(len(quiz["items"]))]
+            guesses = [int(request.POST[f"g{i}"]) for i in range(len(quiz["items"]))] if ctx["has_partner"] else []
         except (KeyError, ValueError):
             return render(request, "pages/quiz_week.html", {**ctx, "error": True}, status=422)
-        if all(0 <= p < len(item["options"]) for p, item in zip(picks, quiz["items"], strict=True)):
-            _, created = QuizAnswer.objects.update_or_create(pair=pair, side=side, quiz_key=quiz["key"], defaults={"picks": picks})
+        fits = lambda row: all(0 <= p < len(item["options"]) for p, item in zip(row, quiz["items"], strict=False))  # noqa: E731
+        if fits(picks) and fits(guesses):
+            _, created = QuizAnswer.objects.update_or_create(
+                pair=pair, side=side, quiz_key=quiz["key"], defaults={"picks": picks, "guesses": guesses}
+            )
             if created:
                 notify_partner(pair, side, "quiz")
         return redirect("quiz_week")
-    rows = {r.side: r.picks for r in QuizAnswer.objects.filter(pair=pair, quiz_key=quiz["key"])}
-    mine, theirs = rows.get(side), rows.get("b" if side == "a" else "a")
+    rows = {r.side: r for r in QuizAnswer.objects.filter(pair=pair, quiz_key=quiz["key"])}
+    me_row, them_row = rows.get(side), rows.get("b" if side == "a" else "a")
+    mine, theirs = (me_row.picks if me_row else None), (them_row.picks if them_row else None)
     if mine and theirs:
+        my_guess, their_guess = me_row.guesses or [None] * len(mine), them_row.guesses or [None] * len(theirs)  # type: ignore[union-attr]
         results = [
-            {"q": item["q"], "mine": item["options"][m], "theirs": item["options"][t], "same": m == t}
-            for item, m, t in zip(quiz["items"], mine, theirs, strict=True)
+            {
+                "q": item["q"],
+                "mine": item["options"][m],
+                "theirs": item["options"][t],
+                "same": m == t,
+                "i_guessed": g == t,
+                "they_guessed": h == m,
+            }
+            for item, m, t, g, h in zip(quiz["items"], mine, theirs, my_guess, their_guess, strict=True)
         ]
         ctx |= {"results": results, "match": round(100 * sum(r["same"] for r in results) / len(results))}
+        if me_row.guesses and them_row.guesses:  # type: ignore[union-attr]
+            ctx |= {"i_guessed": sum(r["i_guessed"] for r in results), "they_guessed": sum(r["they_guessed"] for r in results)}
     me, partner = (pair.a.name, pair.b.name) if side == "a" else (pair.b.name, pair.a.name)
     return render(
         request, "pages/quiz_week.html", {**ctx, "mine": mine, "partner_done": bool(theirs), "me_name": me, "partner_name": partner}
@@ -942,6 +1026,7 @@ def _stored(request: HttpRequest, rid, template: str, **ctx) -> HttpResponse:
         "locked": locked,
         "price_deep": settings.PRICE_DEEP,
         "unlock_items": _unlock_items(report_of(stored)) if locked else [],
+        "gift_code": request.session.get("gift_code", "") if locked else "",  # a gift waiting for this pair
         "quiz_url": reverse("person_quiz", args=[pair.a_id]),
         "invite_url": reverse("invite", args=[stored.id]),
         "share_url": request.build_absolute_uri(reverse("public_share", args=[share_token(stored)])),
@@ -1165,12 +1250,41 @@ def join(request: HttpRequest, code: str) -> HttpResponse:
 
 
 def _join(pair: Pair, owner: Owner) -> None:
-    pair.partner = owner
-    pair.save(update_fields=["partner"])
+    pair.partner, pair.joined_at = owner, timezone.now()
+    pair.save(update_fields=["partner", "joined_at"])
     if not owner.name and pair.b.name:  # the profile is named from the invite, not asked again
         owner.name = pair.b.name[:60]
         owner.save(update_fields=["name"])
     notify_partner(pair, "b", "joined")
+    grant_trial(pair)
+
+
+def pair_story(request: HttpRequest, pair_id) -> HttpResponse:
+    """«История пары»: the timeline, how the spheres moved, and a nudge to look again after three months."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).select_related("a", "b").filter(id=pair_id).first() if owner and owner.is_account else None
+    if not pair:
+        raise Http404
+    ready = list(pair.reports.filter(status=StoredReport.Status.READY).order_by("created_at"))
+    snaps = [s.snapshot or {} for s in ready]
+    rows = [
+        {"created_at": s.created_at, "score": n["total_score"], "pair_type": n["pair_type"]["name"]}
+        for s, n in zip(ready, snaps, strict=True)
+    ]
+    opened = (
+        Purchase.objects.filter(pair=pair, kind="deep", status="succeeded").order_by("paid_at").values_list("paid_at", flat=True).first()
+    )
+    side = side_of(owner, pair)  # type: ignore[arg-type]
+    ctx = {
+        "pair": pair,
+        "events": story.events(rows, pair.joined_at, pair.plan.get("week"), opened),
+        "changes": story.changes(snaps[0].get("spheres", []), snaps[-1].get("spheres", [])) if len(snaps) > 1 else [],
+        "scores": [r["score"] for r in rows],
+        "recheck": bool(ready) and story.recheck_due(ready[-1].created_at, timezone.now()),
+        "quiz_url": reverse("person_quiz", args=[pair.a_id if side == "a" else pair.b_id]),
+        "latest": ready[-1] if ready else None,
+    }
+    return render(request, "pages/story.html", ctx)
 
 
 @require_POST
@@ -1179,9 +1293,21 @@ def unlink_partner(request: HttpRequest, pair_id) -> HttpResponse:
     pair = pairs_of(owner).filter(id=pair_id).first() if owner else None
     if not pair:
         raise Http404
-    pair.partner = None
-    pair.save(update_fields=["partner"])
-    invite_code(pair, fresh=True)
+    with transaction.atomic():
+        # what the partner put in themselves leaves with them: questionnaire, daily and quiz answers; the report is
+        # recounted without them. Birth data stays — the creator entered it to make the pair in the first place.
+        had_answers = bool(pair.b.answers)
+        pair.b.answers = None
+        pair.b.save(update_fields=["answers"])
+        DailyAnswer.objects.filter(pair=pair, side="b").delete()
+        QuizAnswer.objects.filter(pair=pair, side="b").delete()
+        IntimacyAnswer.objects.filter(pair=pair, side="b").delete()
+        pair.partner = None
+        pair.save(update_fields=["partner"])
+        invite_code(pair, fresh=True)
+        if had_answers:
+            pair.reports.all().delete()
+            request_report(pair)
     return redirect("history")
 
 
@@ -1191,13 +1317,19 @@ def _next_url(request: HttpRequest) -> str:
     return nxt if url_has_allowed_host_and_scheme(nxt, {request.get_host()}, require_https=request.is_secure()) else reverse("account")
 
 
-LOGIN_TITLE = {"save": "Сохраните разбор — это и есть ваш профиль", "profile": "Вы ещё не вошли", "join": "Последний шаг — вход"}
+LOGIN_TITLE = {
+    "save": "Сохраните разбор — это и есть ваш профиль",
+    "profile": "Вы ещё не вошли",
+    "join": "Последний шаг — вход",
+    "gift": "Вам подарили полный разбор",
+}
 LOGIN_WHY = {
     "save": "Разбор не потеряется, откроется с любого устройства, и партнёра можно будет позвать. Пароль не нужен — пришлём код на почту.",
     "profile": "Без пароля — пришлём код. Имя возьмём из вашего разбора, аватар выберете потом. Пока вы не вошли, разборы хранятся только в этом браузере 7 дней.",
     "invite": "Чтобы пригласить партнёра, войдите по почте: так вы оба найдёте вашу пару с любого устройства.",
     "join": "После входа вы сразу окажетесь в паре — так вы оба найдёте её с любого устройства. Пароль не нужен.",
     "pay": "Войдите по почте: туда придёт чек, а покупка откроется с любого устройства. Пароль не нужен.",
+    "gift": "Войдите — и подарок откроет разбор вашей пары целиком, вам обоим. Пароль не нужен.",
 }
 
 
@@ -1360,10 +1492,13 @@ def telegram_webhook(request: HttpRequest, secret: str) -> HttpResponse:
 
 
 # ── payments (ADR-0011) ───────────────────────────────────────────────────
+CHECKOUT = {"deep": "PRICE_DEEP", "plus": "PRICE_PLUS", "plus365": "PRICE_PLUS_YEAR", "gift": "PRICE_DEEP"}  # kind → price setting
+
+
 @require_POST
 def checkout(request: HttpRequest, kind: str) -> HttpResponse:
     owner = get_owner(request)
-    if kind not in ("deep", "plus"):
+    if kind not in CHECKOUT:
         raise Http404
     if not owner or not owner.is_account:
         return _to_login(request, "save")
@@ -1375,9 +1510,9 @@ def checkout(request: HttpRequest, kind: str) -> HttpResponse:
             pair = None
     if kind == "deep" and not pair:
         raise Http404
-    amount = settings.PRICE_DEEP if kind == "deep" else settings.PRICE_PLUS
+    amount = getattr(settings, CHECKOUT[kind])
     purchase = Purchase.objects.create(owner=owner, pair=pair, kind=kind, amount=amount)
-    description = "Duoverse: полный разбор пары" if kind == "deep" else f"Duoverse: Пара+ на {settings.PLUS_DAYS} дней"
+    description = f"Duoverse: {purchase.title}"
     return_url = request.build_absolute_uri(reverse("pay_return", args=[purchase.id]))
     if yookassa.enabled():
         if not owner.email:
@@ -1417,13 +1552,33 @@ def pay_return(request: HttpRequest, pid) -> HttpResponse:
     if not purchase:
         raise Http404
     _settle(purchase)
-    stored = latest_ready(purchase.pair) if purchase.pair else None
+    stored = latest_ready(purchase.pair) if purchase.pair and purchase.kind != "gift" else None
     back = reverse("stored_report", args=[stored.id]) + "razbor/" if stored else reverse("history")
-    return render(
-        request,
-        "pages/pay_result.html",
-        {"ok": purchase.status == "succeeded", "pending": purchase.status == "pending", "purchase": purchase, "back": back},
-    )
+    ctx = {"ok": purchase.status == "succeeded", "pending": purchase.status == "pending", "purchase": purchase, "back": back}
+    if purchase.kind == "gift" and purchase.gift_code:
+        ctx["gift_url"] = request.build_absolute_uri(reverse("gift", args=[purchase.gift_code]))
+    return render(request, "pages/pay_result.html", ctx)
+
+
+def gift(request: HttpRequest, code: str) -> HttpResponse:
+    """A gifted full report: sign in, pick the pair it opens (or make one first — the code waits in the session)."""
+    present = open_gift(code)
+    if not present:
+        return render(request, "pages/gift.html", {"state": "gone"}, status=404)
+    owner = get_owner(request)
+    if not owner or not owner.is_account:
+        query = urlencode({"sheet": "1", "why": "gift", "next": request.path})
+        return render(request, "pages/gift.html", {"state": "signin", "login_query": query})
+    request.session["gift_code"] = present.gift_code
+    locked = [p for p in pairs_of(owner).select_related("a", "b").order_by("-created_at") if not unlocked(p)]
+    if request.method == "POST":
+        pair = next((p for p in locked if str(p.id) == request.POST.get("pair")), None)
+        if pair:
+            redeem_gift(present, pair, owner)
+            request.session.pop("gift_code", None)
+            stored = latest_ready(pair)
+            return redirect(reverse("stored_report", args=[stored.id]) + "razbor/" if stored else reverse("history"))
+    return render(request, "pages/gift.html", {"state": "pick", "pairs": locked, "code": present.gift_code})
 
 
 @csrf_exempt
@@ -1567,12 +1722,8 @@ def account(request: HttpRequest) -> HttpResponse:
         "devices": owner.devices.all() if owner and owner.is_account else [],
         "telegram_bot": settings.TELEGRAM_BOT_NAME,
         "telegram_linked": bool(owner and owner.telegram_chat_id),
-        "plus_until": Purchase.objects.filter(owner=owner, kind="plus", status="succeeded")
-        .order_by("-valid_until")
-        .values_list("valid_until", flat=True)
-        .first()
-        if has_plus(owner)
-        else None,
+        "plus_until": plus_until(owner) if owner else None,
+        "price_plus_year": settings.PRICE_PLUS_YEAR,
         "price_plus": settings.PRICE_PLUS,
         "privacy_email": settings.PRIVACY_EMAIL,
         "login_query": urlencode({"sheet": "1", "why": "profile", "next": reverse("account")}),
@@ -1589,7 +1740,14 @@ def account(request: HttpRequest) -> HttpResponse:
 
 def _cabinet_pair(request: HttpRequest, pair: Pair) -> dict:
     stored = latest_ready(pair)
-    return {"a": pair.a, "b": pair.b, "url": reverse("stored_report", args=[stored.id]) if stored else "", **_pair_people(request, pair)}
+    url = reverse("stored_report", args=[stored.id]) if stored else ""
+    return {
+        "a": pair.a,
+        "b": pair.b,
+        "url": url,
+        "story": reverse("pair_story", args=[pair.id]) if stored else "",
+        **_pair_people(request, pair),
+    }
 
 
 def export_data(request: HttpRequest) -> HttpResponse:
@@ -1602,6 +1760,7 @@ def export_data(request: HttpRequest) -> HttpResponse:
         "people": [{"id": str(p.id), "name": p.name, "birth": p.birth, "answers": p.answers} for p in owner.people.all()],
         "reports": [s.snapshot for s in StoredReport.objects.filter(pair__in=pairs_of(owner), status="ready")],
         "plans": [{"pair": str(p.id), **p.plan} for p in pairs_of(owner) if p.plan],
+        "intimacy": [{"pair": str(p.id), "mine": r.picks} for p in pairs_of(owner) for r in p.intimacy.filter(side=side_of(owner, p))],
     }
     resp = HttpResponse(json.dumps(data, ensure_ascii=False, indent=2, default=str), content_type="application/json; charset=utf-8")
     resp["Content-Disposition"] = 'attachment; filename="duoverse-data.json"'

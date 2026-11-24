@@ -5,7 +5,7 @@
   <a href="{% url 'daily' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}Сегодня</a>
   <p class="eyebrow mt-6">Квиз недели</p>
   <h1 class="mt-1 text-3xl font-extrabold">{{ quiz.title }}</h1>
-  <p class="mt-2 text-ink-2">Каждый отвечает про себя. Когда ответите оба, увидите, где вы совпадаете, а где — повод поговорить.</p>
+  <p class="mt-2 text-ink-2">Каждый отвечает про себя и угадывает ответ партнёра. Когда ответите оба, увидите, где вы совпадаете и кто кого знает лучше.</p>
 
   {% if not plus %}
     <div class="card mt-8 p-6 text-center">
@@ -15,9 +15,17 @@
       <form method="post" action="{% url 'checkout' 'plus' %}" class="mt-5">{% csrf_token %}<button class="btn btn-primary">Подключить за {{ price_plus }} ₽ на 30 дней</button></form>
     </div>
   {% elif results %}
-    <div class="sticker mt-8 bg-synergy-soft p-6 text-center">
-      <p class="font-display text-5xl font-extrabold">{{ match }}%</p>
-      <p class="mt-1 text-sm font-bold text-ink-2">совпадений</p>
+    <div class="mt-8 grid gap-3 {% if i_guessed is not None %}sm:grid-cols-2{% endif %}">
+      <div class="sticker bg-synergy-soft p-6 text-center">
+        <p class="font-display text-5xl font-extrabold">{{ match }}%</p>
+        <p class="mt-1 text-sm font-bold text-ink-2">совпадений</p>
+      </div>
+      {% if i_guessed is not None %}
+      <div class="sticker bg-pair-soft p-6 text-center">
+        <p class="font-display text-3xl font-extrabold">{{ i_guessed }} <span class="text-ink-3">·</span> {{ they_guessed }}</p>
+        <p class="mt-1 text-sm font-bold text-ink-2">угадано: вы · {{ partner_name }} из {{ results|length }}</p>
+      </div>
+      {% endif %}
     </div>
     <ul class="mt-5 space-y-3">
       {% for r in results %}
@@ -27,6 +35,7 @@
           <p class="side-a rounded-xl t-bg p-3"><b class="t-ink">{{ me_name }}:</b> {{ r.mine }}</p>
           <p class="side-b rounded-xl t-bg p-3"><b class="t-ink">{{ partner_name }}:</b> {{ r.theirs }}</p>
         </div>
+        {% if i_guessed is not None %}<p class="mt-2 text-xs text-ink-3">{% if r.i_guessed %}Вы угадали{% else %}Вы не угадали{% endif %} · {{ partner_name }} {% if r.they_guessed %}угадывает вас{% else %}не угадывает вас{% endif %}</p>{% endif %}
         {% if not r.same %}<p class="mt-2 text-xs font-bold text-attention-ink">Разные ответы — хороший повод спросить друг друга «почему?»</p>{% endif %}
       </li>
       {% endfor %}
@@ -53,8 +62,18 @@
             <input type="radio" name="q{{ qi }}" value="{{ forloop.counter0 }}" required class="accent-[var(--color-ink)]">{{ opt }}
           </label>
           {% endfor %}
-          {% endwith %}
         </div>
+        {% if has_partner %}
+        <p class="mt-4 text-xs font-bold uppercase tracking-wider text-ink-3">А что ответит {{ partner_name }}?</p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          {% for opt in item.options %}
+          <label class="side-b cursor-pointer rounded-full border border-line px-3 py-1.5 text-xs font-semibold has-[:checked]:border-b has-[:checked]:bg-b-soft">
+            <input type="radio" name="g{{ qi }}" value="{{ forloop.counter0 }}" required class="sr-only">{{ opt }}
+          </label>
+          {% endfor %}
+        </div>
+        {% endif %}
+          {% endwith %}
       </fieldset>
       {% endfor %}
       {% if error %}<p class="text-sm text-risk-ink">Ответьте на все вопросы.</p>{% endif %}

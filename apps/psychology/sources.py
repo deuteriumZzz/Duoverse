@@ -54,6 +54,9 @@ SOURCES: dict[str, Source] = {
     "le2010": Source("Le et al., 2010", "Le, B., Dove, N. L., Agnew, C. R., Korn, M. S., & Mutso, A. A. (2010). Predicting nonmarital romantic relationship dissolution: A meta-analytic synthesis. Personal Relationships, 17(3), 377–390.", _doi("10.1111/j.1475-6811.2010.01285.x")),
     "dew2012": Source("Dew, Britt & Huston, 2012", "Dew, J., Britt, S., & Huston, S. (2012). Examining the relationship between financial issues and divorce. Family Relations, 61(4), 615–628.", _doi("10.1111/j.1741-3729.2012.00715.x")),
     "holt2017": Source("Holt-Lunstad, Robles & Sbarra, 2017", "Holt-Lunstad, J., Robles, T. F., & Sbarra, D. A. (2017). Advancing social connection as a public health priority in the United States. American Psychologist, 72(6), 517–530.", _doi("10.1037/amp0000103")),
+    # the 36 questions and the love-languages review
+    "aron1997": Source("Aron et al., 1997", "Aron, A., Melinat, E., Aron, E. N., Vallone, R. D., & Bator, R. J. (1997). The experimental generation of interpersonal closeness: A procedure and some preliminary findings. Personality and Social Psychology Bulletin, 23(4), 363–377.", _doi("10.1177/0146167297234003")),
+    "impett2024": Source("Impett, Park & Muise, 2024", "Impett, E. A., Park, H. G., & Muise, A. (2024). Popular psychology through a scientific lens: Evaluating love languages from a relationship science perspective. Current Directions in Psychological Science, 33(2), 87–92.", _doi("10.1177/09637214231217663")),
 }  # fmt: skip
 
 

@@ -35,7 +35,7 @@
       <p class="eyebrow mb-1.5 flex items-center gap-1.5">{% icon 'lightbulb' 'size-3.5' %}Пока ждём</p>
       <template x-for="(f, k) in facts" :key="k"><p x-show="i === k" x-transition:enter="transition duration-500" x-transition:enter-start="opacity-0 translate-y-2" x-text="f"></p></template>
     </div>
-    <p class="group-has-[.gen-done]/gen:hidden mt-6 text-center"><a href="{% url 'report' %}" class="text-sm font-bold text-ink-3 underline hover:text-ink">Пропустить анимацию</a></p>
+    <p class="group-has-[.gen-done]/gen:hidden mt-6 text-center">{% if rid %}<a href="{% url 'generating' %}?r={{ rid }}" hx-get="{% url 'generating_status' %}?step={{ steps|length }}&r={{ rid }}" hx-target="#gen" hx-swap="innerHTML" class="text-sm font-bold text-ink-3 underline hover:text-ink">Пропустить анимацию</a>{% else %}<a href="{% url 'report' %}" class="text-sm font-bold text-ink-3 underline hover:text-ink">Пропустить анимацию</a>{% endif %}</p>
   </div>
 </div>
 {% endblock %}

@@ -19,8 +19,9 @@
       <span class="chip bg-sand">{{ it.mode }}</span>
       <div class="flex gap-1.5">
         <a href="{% url 'stored_report' it.id %}" class="btn btn-ghost btn-sm">Открыть</a>
+        <a href="{% url 'pair_story' it.pair_id %}" class="btn btn-ghost btn-sm" title="История пары">{% icon 'book-heart' 'size-4' %}<span class="sr-only">История пары</span></a>
         {% if it.shared and not it.mine %}<a href="{% url 'profile_edit' it.b_id %}" class="btn btn-ghost btn-sm">Мои данные</a>{% endif %}
-        {% if it.shared %}<form method="post" action="{% url 'unlink_partner' it.pair_id %}" onsubmit="return confirm('{% if it.mine %}Отвязать партнёра? Он(а) больше не увидит эту пару.{% else %}Выйти из пары? Вы больше не увидите этот разбор.{% endif %}')">{% csrf_token %}<button class="btn btn-ghost btn-sm" title="{% if it.mine %}Отвязать партнёра{% else %}Выйти из пары{% endif %}">{% icon 'unlink' 'size-4' %}<span class="sr-only">{% if it.mine %}Отвязать партнёра{% else %}Выйти из пары{% endif %}</span></button></form>{% endif %}
+        {% if it.shared %}<form method="post" action="{% url 'unlink_partner' it.pair_id %}" onsubmit="return confirm('{% if it.mine %}Отвязать партнёра? Партнёр больше не увидит эту пару, а всё, что партнёр ответил в анкете, на вопросы дня и квизы, удалится — разбор пересчитается без этого.{% else %}Выйти из пары? Вы больше не увидите этот разбор, а ваши ответы в анкете, на вопросы дня и квизы удалятся из этой пары.{% endif %}')">{% csrf_token %}<button class="btn btn-ghost btn-sm" title="{% if it.mine %}Отвязать партнёра{% else %}Выйти из пары{% endif %}">{% icon 'unlink' 'size-4' %}<span class="sr-only">{% if it.mine %}Отвязать партнёра{% else %}Выйти из пары{% endif %}</span></button></form>{% endif %}
         {% if it.mine %}        <button class="btn btn-ghost btn-icon btn-sm text-risk-ink hover:bg-risk-soft" aria-label="Удалить отчёт {{ it.names }}" @click="confirm = '{{ it.id }}'">{% icon 'trash' 'size-4' %}</button>{% endif %}
       </div>
     </li>

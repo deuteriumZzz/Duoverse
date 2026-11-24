@@ -11,9 +11,17 @@
     </li>
     {% endfor %}
   </ul>
+  {% if gift_code %}
+  <form method="post" action="{% url 'gift' gift_code %}" class="mt-6 flex flex-wrap items-center gap-3">
+    {% csrf_token %}<input type="hidden" name="pair" value="{{ stored.pair_id }}">
+    <button class="btn btn-primary">{% icon 'gift' 'size-4' %}Открыть подарком</button>
+    <span class="text-xs text-ink-3">вам подарили полный разбор · откроется вам обоим</span>
+  </form>
+  {% else %}
   <form method="post" action="{% url 'checkout' 'deep' %}" class="mt-6 flex flex-wrap items-center gap-3">
     {% csrf_token %}<input type="hidden" name="pair" value="{{ stored.pair_id }}">
     <button class="btn btn-primary"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}>{% icon 'lock-open' 'size-4' %}Открыть всё за {{ price_deep }} ₽</button>
     <span class="text-xs text-ink-3">разово за эту пару · открывается вам обоим · чек на почту · <a href="{% url 'pricing' %}" class="underline">все тарифы</a></span>
   </form>
+  {% endif %}
 </section>

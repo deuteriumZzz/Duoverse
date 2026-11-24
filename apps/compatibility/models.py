@@ -84,6 +84,7 @@ class Pair(models.Model):
     b = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     mode = models.CharField(max_length=12, default="extended")
     partner = models.ForeignKey(Owner, on_delete=models.SET_NULL, null=True, blank=True, related_name="partner_pairs")
+    joined_at = models.DateTimeField(null=True, blank=True)  # when the partner joined (the pair's story)
     invite_code = models.CharField(max_length=6, unique=True, null=True, blank=True)  # shown as K7M-2QX
     plan = models.JSONField(default=dict, blank=True)  # weekly micro-habits, see compatibility/plan.py
     created_at = models.DateTimeField(auto_now_add=True)
@@ -137,7 +138,8 @@ class DailyAnswer(models.Model):
 
 
 class Purchase(models.Model):
-    """A paid unlock: «deep» opens one pair for both partners; «plus» opens every pair of the payer for 30 days."""
+    """A paid unlock: «deep» opens one pair for both partners; «plus»/«plus365»/«trial» open every pair of the payer for a while;
+    «gift» is a full report bought for someone else, redeemed by its code onto their pair."""
 
     class Status(models.TextChoices):
         PENDING = "pending"
@@ -147,16 +149,44 @@ class Purchase(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(Owner, on_delete=models.SET_NULL, null=True, related_name="purchases")  # receipts outlive deletion
     pair = models.ForeignKey(Pair, on_delete=models.SET_NULL, null=True, blank=True, related_name="purchases")
-    kind = models.CharField(max_length=8)  # deep | plus
+    kind = models.CharField(max_length=8)  # deep | plus | plus365 | trial | gift
     amount = models.PositiveIntegerField()  # rubles
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     provider_id = models.CharField(max_length=64, unique=True, null=True, blank=True)  # YooKassa payment id
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
     valid_until = models.DateTimeField(null=True, blank=True)  # plus only
+    gift_code = models.CharField(max_length=12, unique=True, null=True, blank=True)  # gift: what the recipient enters; pair = where it went
+
+    TITLES = {
+        "deep": "Полный разбор пары",
+        "plus": "Пара+ на 30 дней",
+        "plus365": "Пара+ на год",
+        "trial": "Пара+ на 7 дней — подарок за пару",
+        "gift": "Полный разбор пары в подарок",
+    }
 
     def __str__(self) -> str:
         return f"{self.kind} {self.amount}₽ {self.status}"
+
+    @property
+    def title(self) -> str:
+        return self.TITLES.get(self.kind, self.kind)
+
+
+class IntimacyAnswer(models.Model):
+    """«Близость 18+»: one partner's private wishes for a pair (wish → yes/maybe/no). Never shown raw to the other side."""
+
+    pair = models.ForeignKey(Pair, on_delete=models.CASCADE, related_name="intimacy")
+    side = models.CharField(max_length=1)
+    picks = EncryptedJSONField(default=dict)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["pair", "side"], name="one_intimacy_answer_per_side")]
+
+    def __str__(self) -> str:
+        return f"intimacy {self.pair_id} {self.side}"
 
 
 class QuizAnswer(models.Model):
@@ -166,6 +196,7 @@ class QuizAnswer(models.Model):
     side = models.CharField(max_length=1)
     quiz_key = models.CharField(max_length=16)
     picks = models.JSONField()  # option index per question
+    guesses = models.JSONField(default=list, blank=True)  # what this side thinks the partner picked, same order
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
