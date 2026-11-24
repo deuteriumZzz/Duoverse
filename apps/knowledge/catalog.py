@@ -193,9 +193,10 @@ NUMBERS = [*range(1, 10), 11, 22, 33]  # life path and name numbers keep the mas
 
 
 def symbolic_keys() -> list[str]:
-    """Arcana and numbers: the person's arcana in love, the pair's union, the link, and every number the report shows."""
+    """Arcana and numbers: each arcana in love, the union, the link, all 253 arcana pairs, and every number the report shows."""
     keys = [f"TAROT:{kind}:{n}" for kind in ("arcana", "union") for n in range(1, 23)]
     keys += [f"TAROT:link:{t}" for t in ("Зеркальные", "Дополняющие", "Напряжённые", "Нейтральные")]
+    keys += [f"TAROT:pair:{a}+{b}" for a in range(1, 23) for b in range(a, 23)]  # every pair of arcana, smaller first
     keys += [f"NUM:{kind}:{n}" for kind in ("lifepath", "destiny") for n in NUMBERS]
     keys += [f"NUM:{kind}:{n}" for kind in ("pair", "year") for n in range(1, 10)]
     from apps.numerology.domain.numerology import RELATION

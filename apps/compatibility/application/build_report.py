@@ -565,8 +565,9 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         pair=arcana(p_arc, kb.text(f"TAROT:union:{p_arc}")),
         link_type=lk.type,
         link_tone=lk.tone,  # type: ignore[arg-type]
-        reading=kb.text(f"TAROT:pair:{min(a_arc, b_arc)}+{max(a_arc, b_arc)}")  # a hand-written pair reading wins
-        or kb.text(f"TAROT:link:{lk.type}")
+        reading=" ".join(  # this pair of arcana, then what the link type means; the old portraits if neither exists
+            t for t in (kb.text(f"TAROT:pair:{min(a_arc, b_arc)}+{max(a_arc, b_arc)}"), kb.text(f"TAROT:link:{lk.type}")) if t
+        )
         or f"{tarot.ARCANA[a_arc - 1][2]} {tarot.ARCANA[b_arc - 1][2]} Вместе это {tarot.ARCANA[p_arc - 1][0]}: {portrait_pair[:1].lower()}{portrait_pair[1:]}",
         questions=[q for q in [union.get("question", "")] + [kb.data(f"SPHERE:{s}").get("question", "") for s in ("plans", "talk")] if q],
         how=tarot.how(a.name, a.birth_date, b.name, b.birth_date),
