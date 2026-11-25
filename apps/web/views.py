@@ -570,7 +570,10 @@ def weights(request: HttpRequest) -> HttpResponse:
 
 
 def question_of_day(report: Report, seed: str, today: date) -> str:
-    """A new question every day, leaning on the pair's weakest spheres; both partners get the same one."""
+    """A new question every day, leaning on the pair's weakest spheres; both partners get the same one.
+    Even days go to the four weakest spheres, odd days to the rest; each sphere walks its own pool in turn, so a
+    question comes back only after its whole sphere was asked (weak ones in about 7 months, the rest in over a year).
+    """
     from apps.knowledge.infrastructure.repository import KnowledgeRepository
 
     kb = KnowledgeRepository()
@@ -580,10 +583,9 @@ def question_of_day(report: Report, seed: str, today: date) -> str:
     if not order:
         return report.daily.question
     n = (today - date(2026, 1, 1)).days + int(hashlib.sha256(seed.encode()).hexdigest()[:6], 16)
-    weak = order[:4]
-    sphere = weak[(n // 2) % len(weak)] if n % 2 == 0 else order[(n // 2) % len(order)]  # every other day a weak sphere
-    pool = pools[sphere]
-    return pool[(n // 7) % len(pool)]["question"]
+    group, k = ((order[:4] if n % 2 == 0 else order[4:]), n // 2) if order[4:] else (order, n)
+    pool = pools[group[k % len(group)]]
+    return pool[(k // len(group)) % len(pool)]["question"]
 
 
 def _week_days(report: Report, seed: str) -> list[dict]:

@@ -413,6 +413,16 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
 @keyframes sunrise { from { translate: 0 8px; } to { translate: 0 -6px; } }
 @media (prefers-reduced-motion: reduce) { .poster * { animation: none !important; } }
 
+/* ───────── questionnaire scenes (components/quiz_scenes.html): --v is the answer, 1 → 0 … 5 → 1 ───────── */
+.scene { stroke: var(--color-ink); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+.scene :is(.sc-in, .sc-out, .sc-move) { transition: opacity .45s var(--ease-out), transform .6s var(--ease-spring); }
+.scene .sc-in { --in: clamp(0, (var(--v) - var(--at, 0)) * 8 + 1, 1); }
+.scene .sc-out { --in: clamp(0, (var(--at, 1) - var(--v)) * 8 + 1, 1); }
+.scene :is(.sc-in, .sc-out) { opacity: var(--in); transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(calc((1 - var(--in)) * 10px)) scale(calc(.8 + var(--in) * .2)); }
+.scene .sc-move { transform-box: view-box; }
+.scene text { stroke: none; fill: var(--color-ink); font: 800 12px var(--font-sans); text-anchor: middle; }
+@media (prefers-reduced-motion: reduce) { .scene * { transition: none !important; } }
+
 /* ───────── aligning loader ("сверяем планеты") ───────── */
 .aligning-card { animation: al-enter .6s var(--ease-spring) both; }
 .aligning g, .aligning line { transform-box: view-box; transform-origin: 50% 50%; }

@@ -91,9 +91,9 @@ def test_daily_question_changes_by_day_and_leans_on_weak_spheres():
         k: {b.data["question"] for b in KnowledgeBlock.objects.filter(key__startswith=f"QUESTION:{k}:")}
         for k in [s.key for s in report.spheres]
     }
-    days = [date(2026, 11, 1) + timedelta(days=i) for i in range(14)]
+    days = [date(2026, 11, 1) + timedelta(days=i) for i in range(180)]
     asked = [question_of_day(report, "pair-1", d) for d in days]
-    assert len(set(asked)) >= 10  # a different question most days
+    assert len(set(asked)) == len(asked)  # half a year without a single repeat
     assert question_of_day(report, "pair-1", days[0]) == asked[0]  # both partners see the same one
     from_weak = sum(any(q in pools[k] for k in weak) for q in asked)
     assert from_weak >= 7  # every other day at least
