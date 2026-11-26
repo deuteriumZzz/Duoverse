@@ -24,7 +24,7 @@ STEPS = [
     GenerationStep(title="Считаем аспекты между картами", detail="5 видов аспектов, орбы до 8°", icon="sparkles"),
     GenerationStep(title="Числа и Матрица судьбы", detail="путь, судьба, личный год, 5 точек матрицы", icon="hash"),
     GenerationStep(title="Арканы партнёров и пары", detail="редукция дат → 22 Старших аркана", icon="layers"),
-    GenerationStep(title="Психологический профиль", detail="Big Five, привязанность, индикаторы Готтмана", icon="brain"),
+    GenerationStep(title="Психологический профиль", detail="Большая пятёрка, привязанность, индикаторы Готтмана", icon="brain"),
     GenerationStep(title="Сводим вселенные", detail="веса 35 / 35 / 15 / 15 · индекс согласия", icon="scale"),
     GenerationStep(title="Подбираем блоки знаний", detail="проверенные тексты по ключам расчёта", icon="book-open"),
     GenerationStep(title="Собираем текст и сверяем факты", detail="каждое утверждение — со ссылкой на расчёт", icon="shield-check"),

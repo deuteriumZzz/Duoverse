@@ -109,7 +109,7 @@
   <section id="plan" class="card mt-4 flex scroll-mt-24 flex-wrap items-center gap-4 p-6" data-reveal>
     <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
     <div class="min-w-[12rem] flex-1"><h2 class="font-extrabold">Пара+</h2>
-      <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }}. Действует и для партнёра в связанной паре.{% else %}Все ваши разборы целиком, квизы и история ответов — {{ price_plus }} ₽ на 30 дней, без автосписаний.{% endif %}</p></div>
+      <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }}. Действует и для партнёра в связанной паре.{% else %}Квиз недели, дневник пары, тихая бронь подарков и план свидания — от {{ plus_from }} ₽ в месяц, без автосписаний. С годом открыты и все ваши разборы.{% endif %}</p></div>
     <div class="flex flex-wrap gap-2"><a href="{% url 'pricing' %}" class="btn btn-ghost btn-sm">Все тарифы</a><form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% if plus_until %}Продлить на 30 дней{% else %}30 дней · {{ price_plus }} ₽{% endif %}</button></form><form method="post" action="{% url 'checkout' 'plus365' %}">{% csrf_token %}<button class="btn btn-primary btn-sm">Год · {{ price_plus_year }} ₽</button></form></div>
   </section>
   {% endif %}
@@ -121,7 +121,7 @@
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Даты, время и место рождения — для астрологии, чисел и таро. Хранятся зашифрованными.</li>
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Ответы анкет — для научного слоя. Зашифрованы; партнёр видит только общий вывод, не ваши ответы.</li>
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Почта — только для входа и чеков. Зашифрована, рассылок нет.</li>
-      <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'check' 'size-4' %}</span>Аналитики и рекламных трекеров нет. Cookies — только для входа.</li>
+      <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'check' 'size-4' %}</span>Аналитики и рекламных трекеров нет. Файлы cookie — только для входа.</li>
     </ul>
     <div class="mt-4 flex flex-wrap gap-2">
       <a class="btn btn-ghost btn-sm" href="{% url 'export_data' %}" download>{% icon 'download' 'size-4' %}Скачать мои данные (JSON)</a>

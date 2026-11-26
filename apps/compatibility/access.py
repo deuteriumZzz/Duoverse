@@ -1,4 +1,5 @@
-"""Who sees what (ADR-0011): a pair is unlocked by a «deep» purchase for it, or by «Пара+» of either partner."""
+"""Who sees what (ADR-0011): a pair's full report opens by a «deep» purchase for it, or by a paid year of «Пара+» of
+either partner. Any «Пара+» (month, year, the free week) opens the daily extras: quiz, diary, quiet reservation, date plan."""
 
 import secrets
 from datetime import timedelta
@@ -34,8 +35,15 @@ def plus_for_pair(pair: Pair) -> bool:
     return any(has_plus(o) for o in owners)
 
 
+def year_for_pair(pair: Pair) -> bool:
+    """A paid year of «Пара+» of either partner also opens all their reports; the month and the free week don't, so 249 ₽
+    never undercuts the 490 ₽ report and the week never gives the report away."""
+    owners = [o for o in (pair.owner, pair.partner) if o is not None]
+    return Purchase.objects.filter(owner__in=owners, kind="plus365", status="succeeded", valid_until__gt=timezone.now()).exists()
+
+
 def unlocked(pair: Pair) -> bool:
-    return Purchase.objects.filter(pair=pair, kind="deep", status="succeeded").exists() or plus_for_pair(pair)
+    return Purchase.objects.filter(pair=pair, kind="deep", status="succeeded").exists() or year_for_pair(pair)
 
 
 def mark_paid(purchase: Purchase) -> None:

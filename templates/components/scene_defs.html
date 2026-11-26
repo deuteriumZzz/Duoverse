@@ -1,0 +1,21 @@
+{% comment %} The pieces every scene is drawn with (questionnaire, «Свидание недели», calendar, wish map), centred on the origin —
+   a figure stands on it. --fig paints a body, --fill repaints a piece. Include once per page, before the scenes.
+{% endcomment %}
+<svg width="0" height="0" class="absolute" aria-hidden="true"><defs>
+  <g id="sc-fig">
+    <rect x="-20" y="-52" width="40" height="52" rx="20" fill="var(--fig, var(--color-a))"/>
+    <circle cy="-70" r="17" fill="var(--color-paper)"/>
+    <circle cx="-5.5" cy="-71" r="2" fill="var(--color-ink)" stroke="none"/><circle cx="5.5" cy="-71" r="2" fill="var(--color-ink)" stroke="none"/>
+  </g>
+  {# hair over #sc-fig: hers to the shoulders, his short; drawn only when a person said who they are #}
+  <path id="sc-hair-f" d="M-19-52V-70a19 19 0 0 1 38 0V-52q-3 3-6 0V-70q-7-10-13-8q-6-2-13 8V-52q-3 3-6 0z" fill="var(--hair, #6b4430)"/>
+  <path id="sc-hair-m" d="M-17-73q1-16 17-16t17 16q-7-7-17-7t-17 7z" fill="var(--hair, #3b2a20)"/>
+  <path id="sc-heart" d="M0 9s-11.5-6.6-11.5-14.4A6.2 6.2 0 0 1 0-8.8a6.2 6.2 0 0 1 11.5 3.4C11.5 2.4 0 9 0 9z" fill="var(--fill, var(--color-a))"/>
+  <path id="sc-cloud" d="M-18 10a9 9 0 0 1-1-18a12 12 0 0 1 22-5a10 10 0 0 1 16 9a8 8 0 0 1-3 14z" fill="var(--fill, var(--color-paper))"/>
+  <g id="sc-sun"><circle r="11" fill="var(--color-pair)"/><path d="M0-17v-5M0 17v5M-17 0h-5M17 0h5M-12-12l-4-4M12 12l4 4M-12 12l-4 4M12-12l4-4" fill="none"/></g>
+  <path id="sc-book" d="M-14-8q7-4 14 0v16q-7-4-14 0zM0-8q7-4 14 0v16q-7-4-14 0z" fill="var(--color-paper)"/>
+  <g id="sc-mug"><rect x="-8" y="-10" width="16" height="20" rx="3" fill="var(--fill, var(--color-lilac))"/><path d="M8-5h3a4.5 4.5 0 0 1 0 9h-3" fill="none"/></g>
+  <g id="sc-cake"><path d="M-18 8h36" fill="none"/><rect x="-14" y="-6" width="28" height="14" rx="3" fill="var(--color-paper)"/><path d="M-14 0q3.5 3 7 0t7 0t7 0t7 0" fill="none" stroke="var(--color-a)"/><path d="M-6-6v-7M0-6v-8M6-6v-7" fill="none"/><g stroke="none" fill="var(--color-pair)"><path d="M-6-14q-2.5-3 0-6q2.5 3 0 6z"/><path d="M0-15q-2.5-3 0-6q2.5 3 0 6z"/><path d="M6-14q-2.5-3 0-6q2.5 3 0 6z"/></g></g>
+  <path id="sc-star" d="M0-12l3.5 7.2 8 1.2-5.8 5.6 1.4 8L0 6.2-7.1 10l1.4-8-5.8-5.6 8-1.2z" fill="var(--fill, var(--color-pair))"/>
+  <g id="sc-gift"><rect x="-14" y="-6" width="28" height="20" rx="3" fill="var(--fill, var(--color-a))"/><rect x="-16" y="-12" width="32" height="8" rx="2" fill="var(--fill, var(--color-a))"/><path d="M0-12v26" fill="none"/><path d="M0-12q-9-10-11-2q3 3 11 2q9-10 11-2q-3 3-11 2z" fill="var(--color-pair)"/></g>
+</defs></svg>

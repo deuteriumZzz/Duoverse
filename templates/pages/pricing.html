@@ -1,29 +1,67 @@
 {% extends "base.html" %}
 {% block title %}Тарифы — Duoverse{% endblock %}
 {% block content %}
+{% comment %}Plans the way couple apps show them: what stays free forever (quiet, dashed), the one-off report (a plain card),
+and «Пара+» as the one dark card with the year and the month as two rows; the paid lists say only what they add.{% endcomment %}
 <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
   <div class="text-center">
     <span class="chip bg-synergy-soft text-synergy-ink fade-up">{% icon 'badge-check' 'size-3.5' %}Без автосписаний и скрытых условий</span>
-    <h1 class="mt-5 text-3xl font-extrabold leading-tight sm:text-5xl fade-up" style="--i:1">Платите только за глубину</h1>
-    <p class="mx-auto mt-4 max-w-lg text-ink-2 fade-up" style="--i:2">Быстрый отчёт — бесплатно и навсегда. Глубокий разбор — разово, без подписки.</p>
+    <h1 class="mt-5 text-3xl font-extrabold leading-tight sm:text-5xl fade-up" style="--i:1">Всё на каждый день — бесплатно</h1>
+    <p class="mx-auto mt-4 max-w-lg text-ink-2 fade-up" style="--i:2">Вопрос дня, дерево, календарь и желания — навсегда без оплаты. Платите, только если хочется глубже: разбор — разово, «Пара+» — одна на вас двоих.</p>
   </div>
   <div class="mt-12 grid items-stretch gap-5 lg:grid-cols-3">
     {% for plan in plans %}
-    <article class="{% if plan.featured %}sticker bg-pair-soft{% else %}card{% endif %} relative flex flex-col p-7" data-reveal style="--i: {{ forloop.counter }}">
-      {% if plan.featured %}<span class="chip absolute -top-3.5 left-7 border-2 border-ink bg-paper">{% icon 'star' 'size-3.5' %}Чаще всего выбирают</span>{% endif %}
-      <h2 class="font-display text-xl font-extrabold">{{ plan.name }}</h2>
+    {% if plan.kind == "plus" %}
+    {% comment %}The one dark card: the plan we'd pick for a couple. Year or month as two rows, the way app paywalls do it —
+    the row carries the price per month, the year's total and the saving; the button says what you pay.{% endcomment %}
+    <article id="plus" x-data="{ year: true }" class="relative flex min-w-0 scroll-mt-24 flex-col rounded-[var(--radius-card)] bg-ink p-7 text-milk shadow-lift lg:-my-4 lg:py-9" data-reveal style="--i: {{ forloop.counter }}">
+      <div class="flex items-start justify-between gap-3">
+        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-milk">{% glyph plan.glyph 'size-8' %}</span>
+        <span class="chip bg-milk/10 text-milk">{% icon 'users' 'size-3.5' %}на вас двоих</span>
+      </div>
+      <h2 class="mt-5 font-display text-2xl font-extrabold">{{ plan.name }}</h2>
+      <p class="mt-1 text-sm text-milk/70">{{ plan.note }}</p>
+      <div class="mt-5 space-y-2" role="radiogroup" aria-label="Срок «Пары+»">
+        <button type="button" role="radio" aria-checked="true" :aria-checked="year" @click="year = true" class="flex w-full items-center gap-3 rounded-2xl border-2 border-pair bg-milk/10 p-3 text-left transition" :class="{ 'border-pair bg-milk/10': year, 'border-milk/15': !year }">
+          <span class="grid size-5 shrink-0 place-items-center rounded-full border-2 border-pair" :class="{ 'border-pair': year, 'border-milk/40': !year }"><i class="size-2.5 rounded-full bg-pair" x-show="year"></i></span>
+          <span class="min-w-0 flex-1"><b>Год</b> <span class="ml-1 rounded-full bg-pair px-1.5 py-0.5 text-[0.7rem] font-bold text-ink">−{{ plus_save }}%</span><span class="mt-0.5 block text-xs text-milk/60">{{ price_plus_year }} ₽ раз в год</span></span>
+          <span class="text-right"><b class="font-display text-xl">{{ plus_from }} ₽</b><span class="block text-xs text-milk/60">в месяц</span></span>
+        </button>
+        <button type="button" role="radio" aria-checked="false" :aria-checked="!year" @click="year = false" class="flex w-full items-center gap-3 rounded-2xl border-2 border-milk/15 p-3 text-left transition" :class="{ 'border-pair bg-milk/10': !year, 'border-milk/15': year }">
+          <span class="grid size-5 shrink-0 place-items-center rounded-full border-2 border-milk/40" :class="{ 'border-pair': !year, 'border-milk/40': year }"><i class="size-2.5 rounded-full bg-pair" x-show="!year" x-cloak></i></span>
+          <span class="min-w-0 flex-1"><b>Месяц</b><span class="mt-0.5 block text-xs text-milk/60">каждые 30 дней</span></span>
+          <span class="text-right"><b class="font-display text-xl">{{ plan.price }}</b><span class="block text-xs text-milk/60">в месяц</span></span>
+        </button>
+      </div>
+      <p class="mt-3 flex items-center gap-2 text-xs font-bold text-pair">{% icon 'gift' 'size-4 shrink-0' %}Неделя бесплатно, когда партнёр присоединится</p>
+      <hr class="my-6 border-milk/15">
+      <p class="text-xs font-bold uppercase tracking-wide text-milk/50">Всё из бесплатного, плюс</p>
+      <ul class="mt-3 flex-1 space-y-3 text-sm">
+        {% for f in plan.features %}<li class="flex items-start gap-2.5"><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-milk/15 text-pair">{% icon 'check' 'size-3' %}</span>{{ f }}</li>{% endfor %}
+        <li class="flex items-start gap-2.5 font-bold text-pair" x-show="year" x-transition.opacity><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-pair text-ink">{% icon 'plus' 'size-3' %}</span>{{ plan.year_extra }} — с годом</li>
+      </ul>
+      <form method="post" action="{% url 'checkout' 'plus365' %}" :action="year ? '{% url 'checkout' 'plus365' %}' : '{% url 'checkout' 'plus' %}'" class="mt-8">{% csrf_token %}
+        <button class="btn btn-light w-full"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}><span x-text="year ? 'Подключить на год · {{ price_plus_year }} ₽' : 'Подключить на месяц · {{ plan.price }}'">Подключить на год · {{ price_plus_year }} ₽</span></button>
+      </form>
+      <p class="mt-3 text-center text-xs text-milk/50">{{ plan.small }}</p>
+    </article>
+    {% else %}
+    <article class="relative flex min-w-0 flex-col rounded-[var(--radius-card)] p-7 {% if plan.kind == 'free' %}border border-dashed border-ink-3/40{% else %}card{% endif %}" data-reveal style="--i: {{ forloop.counter }}">
+      <span class="grid size-12 place-items-center rounded-2xl {% if plan.kind == 'free' %}bg-sage-soft{% else %}bg-pair-soft{% endif %}">{% glyph plan.glyph 'size-8' %}</span>
+      <h2 class="mt-5 font-display text-2xl font-extrabold">{{ plan.name }}</h2>
       <p class="mt-1 text-sm text-ink-2">{{ plan.note }}</p>
-      <p class="mt-6"><span class="font-display text-4xl font-extrabold">{{ plan.price }}</span> <span class="text-sm text-ink-3">{{ plan.per }}</span></p>
-      <ul class="mt-6 flex-1 space-y-2.5 text-sm">
+      <p class="mt-5 flex items-baseline gap-2"><span class="font-display text-5xl font-extrabold tracking-tight">{{ plan.price }}</span><span class="text-sm text-ink-3">{{ plan.per }}</span></p>
+      <hr class="my-6 border-line">
+      {% if plan.kind != "free" %}<p class="mb-3 text-xs font-bold uppercase tracking-wide text-ink-3">Всё из бесплатного, плюс</p>{% endif %}
+      <ul class="flex-1 space-y-3 text-sm">
         {% for f in plan.features %}<li class="flex items-start gap-2.5"><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3' %}</span>{{ f }}</li>{% endfor %}
       </ul>
-      {% if plan.free %}<a href="{% url 'start' %}" class="btn btn-ghost mt-8">{{ plan.cta }}</a>
-      {% elif plan.kind == "plus" %}<div class="mt-8 grid gap-2">
-        <form method="post" action="{% url 'checkout' 'plus365' %}">{% csrf_token %}<button class="btn btn-primary w-full"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}>На год · {{ price_plus_year }} ₽ <span class="chip h-5 bg-pair text-[0.65rem] text-ink">−50%</span></button></form>
-        <form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn btn-ghost w-full"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}>На 30 дней · {{ plan.price }}</button></form></div>
-      {% else %}<a href="{% url 'history' %}" class="btn {% if plan.featured %}btn-primary{% else %}btn-ghost{% endif %} mt-8">{{ plan.cta }}</a>{% endif %}
+      {% if plan.kind == "free" %}
+        {% if me.account and not me.plus %}<span class="btn btn-ghost pointer-events-none mt-8 opacity-70">Ваш тариф сейчас</span>{% else %}<a href="{% url 'start' %}" class="btn btn-ghost mt-8">{{ plan.cta }}</a>{% endif %}
+      {% else %}<a href="{% url 'history' %}" class="btn btn-primary mt-8">{{ plan.cta }}</a>{% endif %}
       <p class="mt-3 text-center text-xs text-ink-3">{{ plan.small }}</p>
     </article>
+    {% endif %}
     {% endfor %}
   </div>
 
@@ -34,16 +72,23 @@
     <form method="post" action="{% url 'checkout' 'gift' %}">{% csrf_token %}<button class="btn btn-primary w-full"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}>{% icon 'gift' 'size-4' %}Подарить · {{ price_deep }} ₽</button></form>
   </section>
 
-  <p class="mt-6 text-center text-xs text-ink-3">Оплачивая, вы принимаете <a href="{% url 'terms' %}" class="underline">Соглашение и публичную оферту</a>. Пара+ не продлевается сама.</p>
+  <p class="mt-6 text-center text-xs text-ink-3">Оплачивая, вы принимаете <a href="{% url 'terms' %}" class="underline">Соглашение и публичную оферту</a>. «Пара+» не продлевается сама.</p>
 
-  <div class="card mt-12 overflow-x-auto p-2" data-reveal>
+  <h2 class="mt-14 text-center font-display text-2xl font-extrabold">Что где есть</h2>
+  <div class="card mt-6 overflow-x-auto p-2" data-reveal>
     <table class="w-full min-w-[34rem] text-left text-sm">
       <thead><tr class="text-ink-3"><th class="p-4 font-bold">Что входит</th><th class="p-4 font-bold">Бесплатно</th><th class="p-4 font-bold">Глубокий разбор</th><th class="p-4 font-bold">Пара+</th></tr></thead>
       <tbody class="divide-y divide-line">
-        {% for row in compare %}<tr><td class="p-4 font-semibold">{{ row.0 }}</td>{% for v in row.1 %}<td class="p-4">{% if v == True %}<span class="text-synergy">{% icon 'check' 'size-4' %}</span>{% elif v == False %}<span class="text-ink-3">—</span>{% else %}{{ v }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
+        {% for row in compare %}<tr><td class="p-4 font-semibold">{{ row.0 }}</td>{% for v in row.1 %}<td class="p-4">{% if v == True %}<span class="text-synergy" aria-label="есть">{% icon 'check' 'size-4' %}</span>{% elif v == False %}<span class="text-ink-3" aria-label="нет">—</span>{% else %}{{ v }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
       </tbody>
     </table>
   </div>
-  <p class="mt-6 text-center text-sm text-ink-3">Возврат в течение 14 дней, если разбор не открывали. Отменить Пара+ — одна кнопка в настройках.</p>
+
+  <div class="mx-auto mt-14 max-w-2xl">
+    <h2 class="text-center font-display text-2xl font-extrabold">Частые вопросы</h2>
+    <div class="mt-6 space-y-3">
+      {% for q, a in faq %}<details class="card group p-5"><summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-bold">{{ q }}<span class="text-ink-3 transition group-open:rotate-45">{% icon 'plus' 'size-4' %}</span></summary><p class="mt-3 text-sm text-ink-2">{{ a }}</p></details>{% endfor %}
+    </div>
+  </div>
 </div>
 {% endblock %}

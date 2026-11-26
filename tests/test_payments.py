@@ -7,7 +7,7 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from apps.compatibility.access import mark_paid, unlocked
+from apps.compatibility.access import mark_paid, plus_for_pair, unlocked
 from apps.compatibility.infrastructure import yookassa
 from apps.compatibility.models import Purchase
 from tests.test_flows import make_pair, sign_in
@@ -69,7 +69,7 @@ def test_yookassa_status_is_checked_server_side(settings, monkeypatch):
     assert unlocked(stored.pair)
 
 
-def test_plus_stacks_and_covers_every_pair_of_the_payer():
+def test_plus_stacks_and_only_the_year_opens_every_report_of_the_payer():
     client = Client()
     first = make_pair(client, email="anya@example.com")
     second = make_pair(client, email="anya@example.com")
@@ -78,8 +78,10 @@ def test_plus_stacks_and_covers_every_pair_of_the_payer():
     mark_paid(p1)
     p2 = Purchase.objects.create(owner=owner, kind="plus", amount=249)
     mark_paid(p2)
-    assert unlocked(first.pair) and unlocked(second.pair)
     assert p2.valid_until - timezone.now() > timedelta(days=59)  # paying early never loses days
+    assert plus_for_pair(first.pair) and not unlocked(first.pair)  # the month is the daily extras, never cheaper than the report
+    mark_paid(Purchase.objects.create(owner=owner, kind="plus365", amount=1490))
+    assert unlocked(first.pair) and unlocked(second.pair)  # a paid year opens every report of the payer
 
 
 def test_quiz_of_the_week_is_plus_and_opens_after_both_answer():
@@ -89,9 +91,9 @@ def test_quiz_of_the_week_is_plus_and_opens_after_both_answer():
     misha = Client()
     sign_in(misha, "misha@example.com")
     misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
-    assert "Квизы — в «Паре+»" not in anya.get("/daily/quiz/").content.decode()  # the joining week of «Пара+» opens it
+    assert "Квиз недели — в «Паре+»" not in anya.get("/daily/quiz/").content.decode()  # the joining week of «Пара+» opens it
     Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())  # the week is over
-    assert "Квизы — в «Паре+»" in anya.get("/daily/quiz/").content.decode()
+    assert "Квиз недели — в «Паре+»" in anya.get("/daily/quiz/").content.decode()
 
     mark_paid(Purchase.objects.create(owner=stored.pair.owner, kind="plus", amount=249))
     picks = {f"q{i}": "0" for i in range(6)}
@@ -114,13 +116,16 @@ def test_year_of_plus_and_a_week_when_the_partner_joins(settings):
     sign_in(misha, "misha@example.com")
     misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
     trial = Purchase.objects.get(kind="trial")  # the moment both see the value: a week of «Пара+» for the pair
-    assert trial.owner == stored.pair.owner and unlocked(stored.pair)
+    assert trial.owner == stored.pair.owner and plus_for_pair(stored.pair)
+    assert not unlocked(stored.pair)  # the free week opens the extras, not the report
+    assert "год «Пары+» за 1490 ₽" in anya.get(f"/r/{stored.id}/razbor/").content.decode()  # the lock offers both ways
     assert (trial.valid_until - timezone.now()).days in (6, 7)
 
     year = anya.post("/pay/plus365/")["Location"]
     anya.post(year, {"result": "ok"})
     paid = Purchase.objects.get(kind="plus365")
     assert paid.amount == 1490 and (paid.valid_until - trial.valid_until).days == 365  # stacks on the trial, no days lost
+    assert unlocked(stored.pair)
 
     other = make_pair(anya, email="anya@example.com")
     from apps.compatibility.access import grant_trial

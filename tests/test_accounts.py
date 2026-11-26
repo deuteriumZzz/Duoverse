@@ -212,11 +212,13 @@ def test_question_of_day_opens_only_when_both_answered():
     assert {r.side for r in rows} == {"a", "b"} and len({r.question for r in rows}) == 1  # same server-side question
     rows.update(day=timezone.localdate() - timedelta(days=1))
     Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())  # past the joining week of «Пара+»
-    assert "История ваших ответов (1)" in anya.get("/daily/").content.decode()  # free: a teaser
+    page = anya.get("/daily/").content.decode()  # yesterday in the week strip: the diary is «Пара+», free shows a lock
+    assert "Дневник пары — в «Паре+»" in page and "Поездка в горы" not in page
     from apps.compatibility.access import mark_paid
 
     mark_paid(Purchase.objects.create(owner=stored.pair.partner, kind="plus", amount=249))  # Misha's «Пара+» covers Anya too
-    assert "Ваши прошлые ответы" in anya.get("/daily/").content.decode()
+    page = anya.get("/daily/").content.decode()
+    assert "Вечер у реки" in page and "Поездка в горы" in page  # yesterday's question and both answers
 
 
 def test_answer_without_partner_invites_them():
@@ -268,6 +270,34 @@ def test_evening_reminder_once_for_linked_owner_without_answer(settings, monkeyp
     call_command("scheduled_jobs")
     call_command("scheduled_jobs")
     assert len([t for t in sent if "Вопрос дня ждёт" in t]) == 1
+
+
+def test_both_partners_hear_the_evening_before_the_free_week_of_plus_ends(settings, monkeypatch):
+    from datetime import datetime, timedelta
+
+    from django.core.management import call_command
+
+    from apps.compatibility.infrastructure import telegram
+
+    sent = []
+    monkeypatch.setattr(telegram, "send_message", lambda chat, text, url="": sent.append((chat, text)) or True)
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    Owner.objects.filter(id=pair.owner_id).update(telegram_chat_id=1)
+    Owner.objects.filter(id=pair.partner_id).update(telegram_chat_id=2)
+    trial = Purchase.objects.get(kind="trial")
+    Purchase.objects.filter(id=trial.id).update(valid_until=timezone.now() + timedelta(hours=10))
+    evening = timezone.make_aware(datetime.combine(timezone.localdate(), datetime.min.time()).replace(hour=settings.REMINDER_HOUR))
+    monkeypatch.setattr(timezone, "localtime", lambda *a: evening)
+    paid = Purchase.objects.create(owner_id=pair.partner_id, kind="plus", amount=249, status="succeeded",
+                                   valid_until=timezone.now() + timedelta(days=30))  # fmt: skip
+    call_command("scheduled_jobs")
+    assert not [t for _, t in sent if "Подарочная неделя" in t]  # Misha already pays: nothing closes, nothing to say
+    paid.delete()
+    call_command("scheduled_jobs")
+    call_command("scheduled_jobs")
+    told = sorted(chat for chat, t in sent if "Подарочная неделя" in t)
+    assert told == [1, 2]  # both partners, once each
 
 
 def test_invite_nudge_once_when_the_partner_has_not_joined(settings, monkeypatch):
@@ -398,7 +428,7 @@ def test_intimacy_shows_only_what_both_chose_and_leaves_with_the_partner():
     from apps.compatibility.models import IntimacyAnswer
 
     anya, misha, stored = _linked_pair()
-    assert "Близость" in anya.get("/daily/").content.decode()
+    assert "Близость" in anya.get("/pair/").content.decode()  # «Вдвоём» holds what is «ours»
     anya.post("/intimacy/", {"hug": "yes", "role": "maybe", "trip": "yes", "place": "no"})
     page = misha.get("/intimacy/").content.decode()
     assert "ответы уже есть" in page and "Вы оба хотите" not in page  # nothing of Anya's shows before Misha answers
@@ -428,7 +458,7 @@ def test_pair_calendar_is_shared_and_a_birthday_is_told_only_to_the_partner(sett
     assert misha.post("/calendar/", {"title": "Слишком далеко", "day": (today + timedelta(days=400)).isoformat()}).status_code == 422
     page = anya.get("/calendar/").content.decode()
     assert "993" in page and "Поездка в Казань" in page and "билеты в почте" in page and "День рождения Миши" in page
-    assert "Календарь пары" in anya.get("/daily/").content.decode()
+    assert "весь календарь" in anya.get("/daily/").content.decode() and "Календарь" in anya.get("/pair/").content.decode()
 
     pair = Pair.objects.get(id=stored.pair_id)
     misha_person = Person.objects.get(id=pair.b_id)
@@ -530,3 +560,117 @@ def test_date_of_the_week_offers_18_plus_only_from_mutual_yes_after_both_switch_
     call_command("scheduled_jobs")
     ideas = [t for t in sent if "идея на эту неделю" in t]
     assert len(ideas) == 2 and not any("18" in t or "Близост" in t for t in ideas)  # both, once, in neutral words
+
+
+def test_we_did_it_counts_when_both_mark_and_the_calendar_and_wish_map_celebrate():
+    from datetime import timedelta
+
+    anya, misha, stored = _linked_pair()
+    assert anya.post("/idea/done/")["Location"].endswith("/daily/#date-idea")  # one mark is not a date yet
+    assert "together=1" in misha.post("/idea/done/")["Location"]  # the second one is: confetti on the way back
+    page = anya.get("/daily/").content.decode()
+    assert "Свиданий вместе: 1" in page and "Вы отметили" in page and "засчитано вам двоим" in page
+
+    today = timezone.localdate()
+    anya.post("/calendar/", {"kind": "met", "day": (today - timedelta(days=100)).isoformat()})
+    cal = anya.get("/calendar/").content.decode()
+    assert "Сегодня: 100 дней со знакомства!" in cal and "До 200 дней со знакомства — ещё 100 дн." in cal
+    pages = page + cal + anya.get("/quiz/").content.decode() + anya.get("/wishes/").content.decode()
+    assert "{#" not in pages and "#}" not in pages  # a template comment spread over lines would print as text
+
+    anya.post("/wishes/", {"kind": "thing", "title": "Книга про Японию"})
+    misha.post("/wishes/", {"kind": "dream", "title": "Поехать в Японию"})
+    gift, dream = (w["id"] for w in Pair.objects.get(id=stored.pair_id).wishes)
+    assert f"?tied={gift}" in misha.post("/wishes/", {"action": "reserve", "id": gift})["Location"]  # the joining week of «Пара+»
+    assert "sc-tie" in misha.get(f"/wishes/?tied={gift}").content.decode()
+    assert "sc-tie" not in anya.get(f"/wishes/?tied={gift}").content.decode()  # never on the owner's side, even by URL
+    assert f"?lit={dream}" in anya.post("/wishes/", {"action": "done", "id": dream})["Location"]
+    assert "sc-lit" in anya.get(f"/wishes/?lit={dream}").content.decode()
+
+
+def test_together_space_nudge_thanks_tree_and_what_leaves_with_the_partner(settings, monkeypatch):
+    from apps.compatibility.infrastructure import telegram
+
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    Owner.objects.filter(id=pair.owner_id).update(telegram_chat_id=1)
+    sent = []
+    monkeypatch.setattr(telegram, "send_message", lambda chat, text, url="": sent.append(text) or True)
+    page = anya.get("/pair/").content.decode()
+    assert "наше дерево" in page and "Семечко" in page and "Думаю о тебе" in page  # the space, not a redirect to the report
+
+    assert "sent=nudge" in misha.post("/pair/nudge/")["Location"]
+    misha.post("/pair/nudge/")
+    misha.post("/pair/nudge/")
+    assert "sent=enough" in misha.post("/pair/nudge/")["Location"]  # three a day is plenty
+    assert [t for t in sent if "думает о вас" in t] == ["Миша думает о вас."] * 3
+    misha.post("/pair/thanks/", {"text": "вчерашний ужин"})
+    assert any("спасибо" in t for t in sent) and not any("ужин" in t for t in sent)  # the words stay in the app
+    page = anya.get("/pair/").content.decode()
+    assert "Миша недавно" in page and "за вчерашний ужин" in page and "думает о вас" in page
+
+    anya.post("/daily/answer/", {"text": "Вечер у реки"})
+    misha.post("/daily/answer/", {"text": "Поездка в горы"})
+    page = anya.get("/pair/").content.decode()
+    assert "Росток" in page and "полито сегодня" in page  # both answered today: a leaf, and the tree is watered
+    assert "ответ на вопрос дня" in page
+
+    misha.post(f"/p/{stored.pair_id}/unlink/")
+    assert Pair.objects.get(id=stored.pair_id).notes == []  # his «Думаю о тебе» and thank-you leave with him
+
+
+def test_gender_is_optional_and_gives_the_right_endings_and_hair(settings, monkeypatch):
+    from apps.compatibility.infrastructure import telegram
+    from apps.compatibility.models import Person
+
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    misha.post(f"/profiles/{pair.b_id}/", {"name": "Миша", "gender": "m", "date": "1994-09-02"})
+    assert Person.objects.get(id=pair.b_id).gender == "m"
+    Person.objects.filter(id=pair.a_id).update(gender="f")
+    Owner.objects.filter(id=pair.owner_id).update(telegram_chat_id=1)
+    sent = []
+    monkeypatch.setattr(telegram, "send_message", lambda chat, text, url="": sent.append(text) or True)
+    misha.post("/daily/answer/", {"text": "Поездка в горы"})
+    assert any(t.startswith("Миша ответил на вопрос дня") for t in sent)  # not «ответил(а)»
+    page = anya.get("/daily/").content.decode()
+    assert "Миша уже ответил —" in page and "ответил(а)" not in page
+    together = anya.get("/pair/").content.decode()
+    assert "#sc-hair-f" in together and "#sc-hair-m" in together  # her hair on the peach figure, his on the cobalt one
+
+
+def test_a_couple_opens_on_together_with_their_path_and_todays_line():
+    anya = Client()
+    stored = make_pair(anya, email="anya@example.com")
+    assert anya.get("/")["Location"] == "/pair/"  # signed in, «Главная» is the pair
+    assert anya.get("/pair/")["Location"].endswith("/invite/")  # before the partner joins, it is step one: the invite
+    tabs = anya.get("/daily/").content.decode().split('aria-label="Нижнее меню"')[1]
+    assert "Вдвоём" not in tabs and tabs.index("Главная") < tabs.index("Сегодня") and 'href="/pair/"' in tabs  # Главная = the pair
+    head = anya.get("/daily/").content.decode().split('aria-label="Основное меню"')[1].split("</nav>")[0]
+    assert head.index("Главная") < head.index("Сегодня") and "Вдвоём" not in head  # the same on a computer
+    assert "путь пары" not in anya.get("/?about").content.decode()  # the page about Duoverse is one link away
+    assert Client().get("/").status_code == 200  # guests still see it first
+    code = re.search(r"/join/([A-Z0-9]{6})/", anya.get(f"/r/{stored.id}/invite/").content.decode()).group(1)
+    misha = Client()
+    sign_in(misha, "misha@example.com")
+    misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
+    page = anya.get("/pair/").content.decode()
+    assert "шаг 2 из 3" in page and "Анкеты вдвоём" in page and "Пройти анкету" in page
+    assert "Вопрос дня ждёт вас" in page and "из 100 ·" in page  # today in one line; the score links to the report
+    misha.post("/daily/answer/", {"text": "Поездка в горы"})
+    assert "уже ответил(а) — ваш ход" in anya.get("/pair/").content.decode()
+
+
+def test_without_an_account_together_is_a_preview_and_today_says_it_is_a_sample():
+    visitor = Client()
+    page = visitor.get("/pair/").content.decode()
+    assert "Пространство вашей пары" in page and "Узнать совместимость" in page  # nothing yet: start with the check
+    visitor.post("/new/", {"mode": "quick", "a_name": "Аня", "a_date": "1996-03-14", "b_name": "Миша", "b_date": "1994-09-02"})
+    page = visitor.get("/pair/").content.decode()
+    assert "Войти и позвать партнёра" in page  # a report but no account: sign in, then invite
+    assert "Это пример." in visitor.get("/daily/").content.decode()
+
+
+def test_an_english_browser_still_gets_one_language_russian():
+    r = Client().get("/pricing/", HTTP_ACCEPT_LANGUAGE="en-US,en;q=0.9")
+    assert r.headers["Content-Language"] == "ru"  # so dates and Django's own messages stay Russian too

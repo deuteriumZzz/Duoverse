@@ -117,7 +117,9 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
 LANGUAGE_CODE = "ru"
-LANGUAGES = [("ru", "Русский"), ("en", "English")]
+# Only Russian until the interface and the knowledge base are translated: with "en" listed, an English browser got Russian
+# text with English dates and Django messages. Add ("en", "English") back together with the translations.
+LANGUAGES = [("ru", "Русский")]
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True

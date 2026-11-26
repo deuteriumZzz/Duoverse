@@ -31,9 +31,7 @@
         Duoverse
       </a>
       <nav class="ml-6 hidden items-center gap-1 text-sm font-semibold text-ink-2 md:flex" aria-label="Основное меню">
-        {% url 'report' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'report' or nav == 'report_tab' or nav == 'share' %}bg-sand text-ink{% endif %}">Отчёт</a>
-        {% url 'daily' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'daily' %}bg-sand text-ink{% endif %}">Сегодня</a>
-        {% url 'pair_invite' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav|slice:':4' == 'pair' %}bg-sand text-ink{% endif %}">Вдвоём</a>
+        {% for url_name, ic, label, active in tabbar %}{% if url_name != 'landing' and url_name != 'account' %}{% url url_name as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if active %}bg-sand text-ink{% endif %}"{% if active %} aria-current="page"{% endif %}>{{ label }}</a>{% endif %}{% endfor %}
         {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
       </nav>
       <div class="ml-auto flex items-center gap-2">

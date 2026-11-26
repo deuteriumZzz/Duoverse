@@ -1,29 +1,117 @@
 {% extends "base.html" %}
 {% block title %}Сегодня — Duoverse{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6" x-data="{ streak: {{ plan.streak }}, week: {{ plan.week|safe_json }} }"
-     @plan-changed="streak = $event.detail.streak; week = $event.detail.week">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div><p class="eyebrow">{% now "l, j E" %}</p><h1 class="mt-1 text-3xl font-extrabold">Сегодня для вас двоих</h1></div>
-    <div class="card flex items-center gap-3 px-4 py-2.5">
-      <span class="text-a">{% icon 'flame' %}</span>
-      <div><p class="font-display text-lg font-extrabold leading-none"><span x-text="streak"></span> дн.</p><p class="text-xs text-ink-3">подряд с привычками</p></div>
-      <div class="ml-2 flex gap-1"><template x-for="(d, j) in week"><i class="size-2.5 rounded-full" :class="d ? 'bg-a' : (j === {{ plan.today }} ? 'bg-ink-3/40' : 'bg-sand-2')" :title="['пн','вт','ср','чт','пт','сб','вс'][j]"></i></template></div>
-    </div>
+{% comment %}«Сегодня»: what to do now, not what to read. The week on top (a ring per day, your dates on their days, a tap
+opens that day); today is one main thing — the question of the day — and tiles with both partners' marks; everything
+else opens in a sheet from the bottom. Past days are the pair's diary.{% endcomment %}
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6"
+     x-data="{ streak: {{ plan.streak }}, week: {{ plan.week|safe_json }}, sel: '{{ today_iso|default:"today" }}', sheet: null }"
+     x-init="sheet = ({'#week': 'week', '#talk': 'talk', '#date-idea': 'date', '#habits': 'habits'})[location.hash] || null"
+     @plan-changed="streak = $event.detail.streak; week = $event.detail.week" @keydown.escape.window="sheet = null">
+  {% if pair %}{% include "components/scene_defs.html" %}{% endif %}
+  <div class="flex items-center gap-3">
+    {% if pair %}<span class="flex shrink-0 -space-x-3" aria-hidden="true">{% avatar me_av 40 %}{% if partner_av %}{% avatar partner_av 40 %}{% endif %}</span>{% endif %}
+    <div class="min-w-0 flex-1"><p class="eyebrow">{% now "l, j E" %}</p><h1 class="text-2xl font-extrabold sm:text-3xl">Сегодня</h1></div>
+    {% if strip %}
+    <span class="chip shrink-0 gap-1 bg-paper py-1.5 shadow-soft" title="Дней подряд вы оба ответили на вопрос дня. Один пропуск в неделю не обнуляет серию.">
+      <span class="text-a">{% icon 'flame' 'size-4' %}</span><b class="font-display text-base">{{ streak }}</b><span class="sr-only"> дней подряд вместе</span>
+      {% if freeze %}<span class="text-b" title="Заморозка на этой неделе свободна">{% icon 'snowflake' 'size-4' %}</span>{% endif %}
+    </span>
+    {% endif %}
   </div>
 
+  {% if strip %}
+  <nav class="sticker mt-5 p-2" aria-label="Эта неделя">
+    <div class="grid grid-cols-7 gap-0.5">
+      {% for d in strip %}
+      <button type="button" @click="sel = '{{ d.iso }}'" class="flex flex-col items-center gap-1 rounded-2xl py-1.5 transition" :class="sel === '{{ d.iso }}' ? 'bg-sand' : 'hover:bg-sand/60'"
+        aria-label="{{ d.day|date:'j E' }}{% if d.today %}, сегодня{% endif %}{% if d.ring == 2 %}, оба ответили{% elif d.ring %}, ответил один{% endif %}{% for e in d.events %}, {{ e.title }}{% endfor %}">
+        <span class="text-[0.65rem] font-bold uppercase text-ink-3">{{ d.wd }}</span>
+        <span class="relative grid size-9 place-items-center">
+          <svg class="absolute inset-0" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="{% if d.today %}var(--color-ink){% else %}none{% endif %}" stroke="var(--color-sand-2)" stroke-width="3"/>{% if d.ring %}<circle cx="18" cy="18" r="15" fill="none" stroke="var(--color-synergy)" stroke-width="3" stroke-linecap="round" stroke-dasharray="{% if d.ring == 2 %}94.3{% else %}47.1{% endif %} 94.3" transform="rotate(-90 18 18)"/>{% endif %}</svg>
+          <span class="relative text-sm font-extrabold {% if d.today %}text-milk{% endif %}">{{ d.day.day }}</span>
+        </span>
+        <span class="flex h-3 items-center gap-0.5 text-a" aria-hidden="true">{% for e in d.events|slice:":2" %}{% if e.kind == 'birthday' %}{% icon 'cake' 'size-3' %}{% elif e.kind == 'holiday' %}{% icon 'party-popper' 'size-3' %}{% else %}{% icon 'heart' 'size-3' %}{% endif %}{% endfor %}</span>
+      </button>
+      {% endfor %}
+    </div>
+    <a href="{% url 'pair_calendar' %}" class="mt-0.5 flex items-center justify-center gap-1 py-1 text-xs font-bold text-ink-3 hover:text-ink">{% icon 'calendar-days' 'size-3.5' %}весь календарь</a>
+  </nav>
+
+  {% for d in strip %}{% if not d.today %}
+  <section x-show="sel === '{{ d.iso }}'" x-cloak class="mt-6 space-y-3" aria-label="{{ d.day|date:'j E' }}">
+    <p class="eyebrow">{{ d.day|date:"l, j E" }}{% if not d.past %} · через {{ d.in }} дн.{% endif %}</p>
+    {% for e in d.events %}
+    <div class="card flex items-center gap-3 p-4">
+      <span class="grid size-11 shrink-0 place-items-center rounded-2xl {% if e.kind == 'birthday' %}bg-a-soft{% elif e.kind == 'holiday' %}bg-sand{% else %}bg-pair-soft{% endif %}">{% if e.kind == 'birthday' %}{% glyph 'gift' 'size-7' %}{% elif e.kind == 'holiday' %}{% glyph 'star' 'size-7' %}{% else %}{% glyph 'heart' 'size-7' %}{% endif %}</span>
+      <div class="min-w-0 flex-1"><p class="font-bold">{{ e.title }}</p>{% if e.sub or e.note %}<p class="text-sm text-ink-2">{{ e.sub }}{% if e.sub and e.note %} · {% endif %}{{ e.note }}</p>{% endif %}</div>
+      {% if e.kind == 'birthday' and e.side != my_side and not d.past %}<a href="{% url 'wish_map' %}#theirs" class="btn btn-soft btn-sm shrink-0">Подарок</a>{% endif %}
+    </div>
+    {% endfor %}
+    {% if d.diary %}
+    <div class="card p-5">
+      <p class="text-xs font-bold text-ink-3">Вопрос дня</p>
+      <p class="mt-1 font-bold leading-snug">{{ d.diary.question|agree:me_g }}</p>
+      <div class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+        <p class="rounded-2xl bg-a-soft p-3"><b class="text-a-ink">{{ me_name }}:</b> {{ d.diary.mine }}</p>
+        <p class="rounded-2xl bg-b-soft p-3"><b class="text-b-ink">{{ partner_name }}:</b> {{ d.diary.theirs }}</p>
+      </div>
+    </div>
+    {% elif d.locked %}
+    {% include "components/plus_lock.html" with title="Дневник пары" text="В этот день вы оба ответили — перечитайте, что написали." cls="mt-0" %}
+    {% elif d.past and not d.events %}
+    <p class="card p-5 text-center text-sm text-ink-2">{% if d.ring %}В этот день ответил только один из вас.{% else %}В этот день вопрос остался без ответа — бывает.{% endif %}</p>
+    {% elif not d.past and not d.events %}
+    <div class="card p-5 text-center text-sm text-ink-2">Пока свободно.<br><a href="{% url 'pair_calendar' %}#add" class="btn btn-soft btn-sm mt-3">{% icon 'plus' 'size-4' %}Своя дата</a></div>
+    {% endif %}
+    <button type="button" class="text-sm font-bold text-ink-3 hover:text-ink" @click="sel = '{{ today_iso }}'">← к сегодня</button>
+  </section>
+  {% endif %}{% endfor %}
+  {% endif %}
+
+  <div x-show="sel === '{{ today_iso|default:"today" }}'">
+    {% for e in today_events|slice:":1" %}
+    <section class="sticker mt-5 overflow-hidden bg-a-soft p-4 text-center" data-burst-in="500">
+      <svg class="scene mx-auto block h-24 w-auto" viewBox="0 0 320 110" aria-hidden="true"><path d="M12 102H308" fill="none"/>
+        <g transform="translate(130 102) scale(.8)"><use href="#sc-fig"/>{% hair me_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g>
+        <g transform="translate(190 102) scale(.8)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g>
+        {% if e.kind == 'birthday' %}<use class="sc-float" href="#sc-cake" x="160" y="24"/>{% else %}<use class="sc-float" href="#sc-heart" x="160" y="26"/>{% endif %}
+        <g stroke="none"><rect x="64" y="22" width="6" height="11" rx="1.5" fill="var(--color-a)" transform="rotate(-20 67 27)"/><circle cx="100" cy="14" r="3.5" fill="var(--color-b)"/><rect x="238" y="16" width="6" height="11" rx="1.5" fill="var(--color-sage)" transform="rotate(25 241 21)"/><use href="#sc-star" x="44" y="56"/><use href="#sc-star" x="280" y="64"/></g>
+      </svg>
+      <p class="mt-1 font-display text-lg font-extrabold">Сегодня: {{ e.title }}!</p>
+      {% if e.sub %}<p class="text-sm text-ink-2">{{ e.sub }}</p>{% endif %}
+    </section>
+    {% endfor %}
+
+    {% if tree %}
+    <a href="{% url 'pair_invite' %}#tree" x-data="{ due: (+localStorage.getItem('tree:{{ pair.id }}') || 0) < {{ tree.points }} }" x-show="due" x-cloak
+       class="sticker mt-5 flex items-center gap-3 bg-sage-soft p-3 pr-4 transition hover:-translate-y-0.5">
+      <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-paper">{% glyph 'sprout' 'size-8' %}</span>
+      <span class="min-w-0 flex-1"><b class="block">Можно полить наше дерево</b><span class="block text-xs text-ink-2">вы сделали кое-что вдвоём — {{ tree.species|lower }} подрастёт</span></span>
+      {% icon 'arrow-right' 'size-4' %}
+    </a>
+    {% endif %}
+    {% if not pair %}
+    {# no account yet: everything here is for two, so say it once instead of letting the page pretend #}
+    <div class="sticker mt-5 flex flex-wrap items-center gap-3 bg-pair-soft p-4">
+      {% glyph 'heart' 'size-9' %}
+      <p class="min-w-[12rem] flex-1 text-sm"><b>Это пример.</b> Чтобы отвечать на вопросы вдвоём, копить серию и растить ваше дерево — войдите и позовите партнёра.</p>
+      <a href="{% url 'login' %}?next={% url 'daily' %}" class="btn btn-primary btn-sm" @click.prevent="$dispatch('login-open')">{% icon 'mail' 'size-4' %}Войти</a>
+    </div>
+    {% endif %}
+    <p class="eyebrow mt-6">главное сегодня</p>
   {# question of the day: one question for both; the partner's answer opens once both have answered #}
   <section id="question" class="scroll-mt-24" x-data="{ drawn: {% if answers.mine %}true{% else %}false{% endif %}, drawing: false }">
   {# the deck and the drawn card share one grid cell: the top card leaves the deck edge-on, the question card finishes the turn in place #}
-  <div class="mt-8 grid *:[grid-area:1/1]">
-  <button type="button" x-show="!drawn" class="deck group relative grid h-72 w-full place-items-center overflow-hidden rounded-[var(--radius-card)] border-2 border-ink bg-ink text-milk shadow-sticker fade-up"
+  <div class="mt-3 grid *:[grid-area:1/1]">
+  <button type="button" x-show="!drawn" class="deck group relative grid h-52 w-full place-items-center overflow-hidden rounded-[var(--radius-card)] border-2 border-ink bg-ink text-milk shadow-sticker fade-up"
     :class="drawing && 'drawing'" @click="if (drawing) return; drawing = true; setTimeout(() => { drawn = true; setTimeout(() => burst($refs.q, 26), 420) }, 560)"
     x-transition:leave="transition duration-300" x-transition:leave-end="opacity-0">
     <div class="absolute inset-3 rounded-[1.4rem] border border-milk/15"></div>
-    {% for _ in "123" %}<span class="deck-card {% if forloop.counter == 2 %}deck-top{% endif %} absolute h-56 w-40 rounded-3xl border-2 border-milk/20 bg-ink" style="--r: {% cycle '-6deg' '0deg' '6deg' %}; --fan: {% cycle '-18deg' '0deg' '18deg' %}"></span>{% endfor %}
+    {% for _ in "123" %}<span class="deck-card {% if forloop.counter == 2 %}deck-top{% endif %} absolute h-40 w-28 rounded-3xl border-2 border-milk/20 bg-ink" style="--r: {% cycle '-6deg' '0deg' '6deg' %}; --fan: {% cycle '-18deg' '0deg' '18deg' %}"></span>{% endfor %}
     <div class="deck-label relative text-center">
-      <div class="mx-auto h-14 w-20" aria-hidden="true">{% mark "h-full w-full" merge=True light=True %}</div>
-      <p class="mt-6 font-display text-xl font-extrabold">Вытянуть вопрос дня</p>
+      <div class="mx-auto h-10 w-14" aria-hidden="true">{% mark "h-full w-full" merge=True light=True %}</div>
+      <p class="mt-4 font-display text-xl font-extrabold">Вытянуть вопрос дня</p>
       <p class="mono mt-2 text-xs text-milk/60">один вопрос — на вас двоих</p>
     </div>
   </button>
@@ -31,7 +119,7 @@
        x-transition:enter="transition duration-700 ease-[var(--ease-spring)]" x-transition:enter-start="card-edge" x-transition:enter-end="card-face">
     <div class="absolute -right-10 -top-10 size-40 rounded-full bg-b/30 blob" aria-hidden="true"></div>
     <span class="chip relative bg-paper">{% icon 'message-circle-heart' 'size-3.5' %}Вопрос дня</span>
-    <h2 class="relative mt-4 text-2xl font-extrabold leading-snug sm:text-[1.7rem]">{{ daily_question|default:r.daily.question }}</h2>
+    <h2 class="relative mt-4 text-2xl font-extrabold leading-snug sm:text-[1.7rem]">{{ daily_question|default:r.daily.question|agree:me_g }}</h2>
 
     {% if answers and answers.mine %}
     <div class="relative mt-6 grid gap-3 sm:grid-cols-2">
@@ -60,7 +148,7 @@
         <span class="mono text-xs text-ink-3" x-text="text.length + ' / 500'"></span>
         <button class="btn btn-primary" :disabled="text.trim().length < 2" :class="text.trim().length < 2 && 'opacity-40'">{% icon 'send' 'size-4' %}Ответить</button>
       </div>
-      <p class="mt-2 text-xs text-ink-3">{% if answers.partner_answered %}{{ partner_name }} уже ответил(а) — ответьте, и ответы откроются вам обоим.{% else %}Ответ партнёра откроется, когда ответите вы оба.{% endif %}</p>
+      <p class="mt-2 text-xs text-ink-3">{% if answers.partner_answered %}{{ partner_name }} уже {{ partner_g|gv:"ответил|ответила|ответил(а)" }} — ответьте, и ответы откроются вам обоим.{% else %}Ответ партнёра откроется, когда ответите вы оба.{% endif %}</p>
     </form>
     {% else %}
     <div class="relative mt-6 rounded-2xl bg-paper p-4 text-sm text-ink-2">
@@ -71,30 +159,34 @@
   </div>
   </div>
   </section>
+    <p class="eyebrow mt-7">на этой неделе</p>
+    <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {% if date_idea %}{% include "components/today_tile.html" with key="date" g="heart" bg="bg-a-soft" title="Свидание недели" mine=idea_mine partner=idea_partner solo=solo sub="открыть идею" why=date_idea.why %}{% endif %}
+      {% if step %}{% include "components/today_tile.html" with key="week" g="zap" bg="bg-pair-soft" title="Шаг недели" mine=step.mine partner=step.partner solo=solo sub="сегодняшний шаг" why=step.sphere_title %}
+      {% else %}{% include "components/today_tile.html" with key="week" g="zap" bg="bg-pair-soft" title="Неделя пары" solo=True sub="7 шагов · начать" %}{% endif %}
+      {% if pair %}{% include "components/today_tile.html" with key="talk" g="message-circle" bg="bg-b-soft" title="«Как мы?»" mine=talk_mine partner=talk_partner solo=solo sub="15 минут вдвоём" %}{% endif %}
+      {% if answers %}{% url 'quiz_week' as quiz_url %}{% include "components/today_tile.html" with href=quiz_url g="gem" bg="bg-lilac-soft" title="Квиз недели" mine=quiz_mine partner=quiz_partner solo=solo sub="6 вопросов" %}{% endif %}
+      <button type="button" @click="sheet = 'habits'" class="card flex min-h-[8.5rem] flex-col items-start gap-2 p-3.5 text-left transition hover:-translate-y-0.5 hover:border-ink">
+        <span class="grid size-10 place-items-center rounded-2xl bg-sage-soft">{% glyph 'sprout' 'size-7' %}</span>
+        <span class="font-extrabold leading-tight">Привычки</span>
+        <span class="mt-auto text-xs font-bold text-ink-3">{% if plan.habits %}<span x-text="week[{{ plan.today }}] ? 'сегодня отмечено' : 'отметить сегодня'"></span>{% else %}выбрать 2–3{% endif %}</span>
+      </button>
+    </div>
 
-  {% if answers.history and not plus %}
-  <a href="{% url 'pricing' %}" class="card mt-5 flex items-center gap-3 p-5 text-sm">{% icon 'lock' 'size-5' %}<span>История ваших ответов ({{ answers.history|length }}) — в «Паре+»: перечитывайте, что вы рассказали друг другу.</span></a>
-  {% endif %}
-  {% if answers.history and plus %}
-  <section class="card mt-5 p-6 sm:p-8">
-    <p class="eyebrow">Ваши прошлые ответы</p>
-    <ul class="mt-4 space-y-4">
-      {% for h in answers.history|slice:":7" %}
-      <li class="border-t border-line pt-4 first:border-0 first:pt-0">
-        <p class="mono text-xs text-ink-3">{{ h.day|date:"j E" }}</p>
-        <p class="mt-1 font-bold leading-snug">{{ h.question }}</p>
-        <div class="mt-2 grid gap-2 text-sm sm:grid-cols-2">
-          <p class="side-a rounded-2xl t-bg p-3"><b class="t-ink">{{ me_name }}:</b> {{ h.mine }}</p>
-          <p class="side-b rounded-2xl t-bg p-3"><b class="t-ink">{{ partner_name }}:</b> {{ h.theirs }}</p>
-        </div>
-      </li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
+  </div>
 
+  {# the sheet: a tile's whole story, from the bottom on a phone and in the middle on a wide screen #}
+  <div x-show="sheet" x-cloak class="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label="Подробнее">
+    <div class="absolute inset-0 bg-ink/40" @click="sheet = null" x-show="sheet" x-transition.opacity.duration.300ms></div>
+    <div class="absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-t-2 border-ink bg-milk px-3 pb-8 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[40rem] sm:-translate-x-1/2 sm:rounded-[1.75rem] sm:border-2"
+         x-show="sheet" x-transition:enter="transition duration-500 ease-[var(--ease-out)]" x-transition:enter-start="translate-y-full" x-transition:leave="transition duration-200" x-transition:leave-end="translate-y-full">
+      <div class="sticky top-0 z-10 -mx-3 mb-2 flex items-center justify-center bg-milk/90 py-2.5 backdrop-blur">
+        <span class="h-1.5 w-10 rounded-full bg-line"></span>
+        <button type="button" class="btn btn-ghost btn-icon btn-sm absolute right-2" @click="sheet = null" aria-label="Закрыть">{% icon 'x' 'size-4' %}</button>
+      </div>
+      <div x-show="sheet === 'week'">
   {# «Неделя пары»: seven steps from the report, marked by each partner (apps/compatibility/week.py) #}
-  <section id="week" class="card mt-5 scroll-mt-24 overflow-hidden p-6 sm:p-8 fade-up" style="--i:1"
+  <section id="week" class="card overflow-hidden p-5 sm:p-7"
     {% if week %}x-data="{
       w: {{ week|safe_json }}, open: false,
       get day() { return this.w.days[this.w.today - 1] },
@@ -180,10 +272,10 @@
     {% endif %}
     {% endif %}
   </section>
-
-  {% if pair %}
+      </div>
+      {% if pair %}<div x-show="sheet === 'talk'">
   {# «Как мы»: a short weekly talk in the spirit of Gottman's «state of the union»; it counts when both marked it #}
-  <section id="talk" class="card mt-5 scroll-mt-24 p-6 sm:p-8 fade-up" style="--i:1">
+  <section id="talk" class="card p-5 sm:p-7">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div><p class="eyebrow">разговор недели</p><h2 class="mt-1 text-xl font-extrabold">«Как мы?» — 15 минут вдвоём</h2></div>
       {% if talk_mine and talk_partner %}<span class="chip bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3.5' %}поговорили на этой неделе</span>{% endif %}
@@ -199,66 +291,48 @@
       <span class="text-xs text-ink-3">{% if talk_partner %}у {{ partner_name|gen }} уже отмечено{% else %}засчитается, когда отметите оба{% endif %}</span>
     </form>
   </section>
-
-  <a href="{% url 'pair_calendar' %}" class="card mt-5 block p-5 transition hover:border-ink fade-up" style="--i:1">
-    <span class="flex items-center gap-4">
-      <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'calendar-days' 'size-5' %}</span>
-      <span class="min-w-0 flex-1"><span class="block font-extrabold">Календарь пары</span>
-        <span class="block text-sm text-ink-2">{% if dates_soon %}{% with e=dates_soon.0 %}{{ e.title }} — {% if e.in == 0 %}сегодня{% elif e.in == 1 %}завтра{% else %}через {{ e.in }} дн.{% endif %}{% endwith %}{% elif not met_set %}Добавьте день знакомства — посчитаем, сколько дней вы знакомы.{% else %}Дни рождения, годовщины и ваши даты.{% endif %}</span></span>
-      {% icon 'arrow-right' 'size-4' %}
-    </span>
-    {% if dates_soon|length > 1 %}<span class="mt-3 flex flex-wrap gap-2 sm:pl-15">{% for e in dates_soon|slice:"1:" %}<span class="chip bg-sand text-xs">{{ e.title }} · {{ e.day|date:"j E" }}</span>{% endfor %}</span>{% endif %}
-  </a>
-
-  <a href="{% url 'wish_map' %}" class="card mt-3 flex items-center gap-4 p-5 transition hover:border-ink fade-up" style="--i:1">
-    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-a-soft">{% icon 'gift' 'size-5' %}</span>
-    <span class="min-w-0 flex-1"><span class="block font-extrabold">Карта желаний</span>
-      <span class="block text-sm text-ink-2">{% if wish_count %}Идей в карте у {{ partner_name|gen }}: {{ wish_count }} — можно тихо забронировать подарок.{% else %}Идеи подарков друг другу и мечты на двоих.{% endif %}</span></span>
-    {% icon 'arrow-right' 'size-4' %}
-  </a>
-
+      </div>{% endif %}
+      <div x-show="sheet === 'date'">
   {% if date_idea %}
-  <section id="date-idea" class="card mt-5 scroll-mt-24 p-6 sm:p-8 fade-up" style="--i:1">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <p class="eyebrow">свидание недели · {{ date_idea.theme_title|lower }}</p>
-      {% if date_idea.theme == 'close' %}<span class="rounded-md border border-ink px-1.5 text-[0.65rem] font-extrabold">18+</span>{% endif %}
+  {% comment %}«Свидание недели»: a card to turn over — the scene and the theme in front, the idea behind (for 18+ the turn
+     is the privacy step and is never remembered); «Мы сделали» counts when both mark it, and the stars add up{% endcomment %}
+  <section id="date-idea" class=""
+    x-data="{ open: {% if idea_mine or idea_celebrate %}true{% elif date_idea.theme == 'close' %}false{% else %}localStorage.getItem('idea:{{ idea_week }}') === '1'{% endif %}, turning: false }">
+    <div class="grid *:[grid-area:1/1]">
+      <button type="button" x-show="!open" class="sticker block w-full overflow-hidden p-5 text-left transition hover:-translate-y-0.5 {% if date_idea.theme == 'talk' %}bg-b-soft{% elif date_idea.theme == 'play' %}bg-pair-soft{% elif date_idea.theme == 'romance' %}bg-a-soft{% else %}bg-lilac-soft{% endif %}"
+        @click="if (turning) return; turning = true; setTimeout(() => { open = true;{% if date_idea.theme != 'close' %} localStorage.setItem('idea:{{ idea_week }}', '1');{% endif %} setTimeout(() => burst($refs.idea, 18), 420) }, 260)"
+        x-transition:leave="transition duration-300" x-transition:leave-end="opacity-0 scale-95">
+        <span class="flex items-center justify-between gap-2"><span class="eyebrow">свидание недели · {{ date_idea.theme_title|lower }}</span>
+          {% if date_idea.theme == 'close' %}<span class="rounded-md border border-ink px-1.5 text-[0.65rem] font-extrabold">18+</span>{% endif %}</span>
+        {% include "components/date_scene.html" %}
+        <span class="mt-2 flex items-center justify-center gap-2 font-display text-lg font-extrabold">{% icon 'sparkles' 'size-5' %}{% if date_idea.theme == 'close' %}Открыть идею для вас двоих{% else %}Открыть идею недели{% endif %}</span>
+      </button>
+      <div x-show="open" x-cloak x-ref="idea" class="card p-6 sm:p-8"
+        x-transition:enter="transition duration-700 ease-[var(--ease-spring)]" x-transition:enter-start="card-edge" x-transition:enter-end="card-face">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="eyebrow">свидание недели · {{ date_idea.theme_title|lower }}</p>
+          {% if date_idea.theme == 'close' %}<span class="rounded-md border border-ink px-1.5 text-[0.65rem] font-extrabold">18+</span>{% endif %}
+        </div>
+        {% include "components/date_idea_body.html" %}
+        <form method="post" action="{% url 'idea_done' %}" class="mt-5 flex flex-wrap items-center gap-3">{% csrf_token %}
+          <button class="btn btn-sm {% if idea_mine %}btn-ghost{% else %}btn-primary{% endif %}">{% if idea_mine %}{% icon 'check' 'size-4' %}Вы отметили{% else %}{% icon 'heart' 'size-4' %}Мы сделали{% endif %}</button>
+          <span class="text-xs text-ink-3">{% if idea_mine and idea_partner %}засчитано вам двоим{% elif idea_partner %}у {{ partner_name|gen }} уже отмечено{% elif pair.partner_id %}засчитается, когда отметите оба{% endif %}</span>
+        </form>
+        {% if ideas_together %}
+        <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pair-soft p-3"{% if idea_celebrate %} data-burst-in="300"{% endif %}>
+          <span class="flex flex-wrap gap-0.5">{% for _ in idea_stars %}<svg class="scene size-6 {% if idea_celebrate and forloop.last %}sc-lit{% endif %}" viewBox="-14 -14 28 28" aria-hidden="true"><use href="#sc-star"/></svg>{% endfor %}</span>
+          <span class="text-sm font-bold">Свиданий вместе: {{ ideas_together }}</span>
+        </div>
+        {% endif %}
+        <p class="mt-4 text-xs text-ink-3">Новая идея каждый понедельник{% if pair.partner_id %} · идеи 18+ включаются в «Близости», если согласитесь оба{% endif %}.</p>
+      </div>
     </div>
-    {% if date_idea.theme == 'close' %}
-    <details class="mt-3"><summary class="btn btn-soft btn-sm cursor-pointer list-none">{% icon 'eye' 'size-4' %}Показать идею для вас двоих</summary>
-      {% include "components/date_idea_body.html" %}</details>
-    {% else %}{% include "components/date_idea_body.html" %}{% endif %}
-    <p class="mt-4 text-xs text-ink-3">Новая идея каждый понедельник{% if pair.partner_id %} · идеи 18+ включаются в «Близости», если согласитесь оба{% endif %}.</p>
   </section>
   {% endif %}
-
-  {% if pair.partner_id %}
-  <a href="{% url 'intimacy' %}" class="card mt-5 flex items-center gap-4 p-5 transition hover:border-ink fade-up" style="--i:1">
-    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-a-soft">{% icon 'heart' 'size-5' %}</span>
-    <span class="min-w-0 flex-1"><span class="flex items-center gap-2 font-extrabold">Близость <span class="rounded-md border border-ink px-1 text-[0.6rem]">18+</span></span>
-      <span class="block text-sm text-ink-2">Отметьте желания — увидите только то, что совпало.</span></span>
-    {% icon 'arrow-right' 'size-4' %}
-  </a>
-  {% endif %}
-
-  {% if weather %}
-  {# «Погода пары»: this week's sky against both charts — symbolic, like all astrology here #}
-  <section class="card mt-5 p-6 sm:p-8 fade-up" style="--i:1">
-    <p class="eyebrow">погода пары · эта неделя</p>
-    <ul class="mt-3 space-y-3">
-      {% for w in weather %}
-      <li class="tone-{{ w.tone }} flex gap-3">
-        <span class="grid size-9 shrink-0 place-items-center rounded-xl t-bg t-ink font-display text-lg">{{ w.glyph }}</span>
-        <span class="text-sm"><b>{{ w.planet }} {{ w.glyph }} {{ w.point }} {{ w.who|gen }}</b> — {{ w.text }}.</span>
-      </li>
-      {% endfor %}
-    </ul>
-    <p class="mt-3 text-xs text-ink-3">Символический слой: повод для разговора, а не прогноз.</p>
-  </section>
-  {% endif %}
-  {% endif %}
-
+      </div>
+      <div x-show="sheet === 'habits'">
   {# the pair's weekly plan from the «Вместе» tab, with today's check-offs #}
-  <section class="card mt-5 p-6 sm:p-8 fade-up" style="--i:1"
+  <section id="habits" class="card p-5 sm:p-7"
            x-data="{
              habits: {{ plan.habits|safe_json }},
              async mark(i, el) {
@@ -302,13 +376,9 @@
     </div>
     {% endif %}
   </section>
-  {% if answers %}
-  <a href="{% url 'quiz_week' %}" class="card mt-5 flex items-center gap-4 p-5 transition hover:border-ink-3">
-    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
-    <span class="min-w-0 flex-1"><span class="block font-bold">Квиз недели</span><span class="text-sm text-ink-3">6 вопросов про вас двоих — сравните ответы</span></span>
-    {% if not plus %}<span class="chip bg-sand text-xs">Пара+</span>{% endif %}{% icon 'arrow-right' 'size-4' %}
-  </a>
-  {% endif %}
-  <p class="mt-6 text-center text-xs text-ink-3">Пропуски — это нормально: серию можно начать заново в любой день.</p>
+      </div>
+    </div>
+  </div>
+  <p class="mt-8 text-center text-xs text-ink-3">Один пропущенный день в неделю не обнуляет серию.</p>
 </div>
 {% endblock %}

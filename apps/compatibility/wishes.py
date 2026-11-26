@@ -62,6 +62,19 @@ def ideas_for(wishes: list[dict], side: str) -> tuple[int, int]:
     return len(own), sum(1 for w in own if not w["taken"])
 
 
+# star spots for «Мечты на двоих» in a 320 × 110 sky; past twelve dreams the pattern repeats a little lower and to the side
+SKY = ((34, 70), (70, 30), (110, 62), (150, 24), (186, 72), (224, 36), (262, 66), (292, 28), (52, 96), (132, 92), (206, 98), (280, 94))
+
+
+def sky(dreams: list[dict]) -> dict:
+    """The dreams constellation: a star per dream (lit once it came true) and a line through the lit ones, in order."""
+    stars = []
+    for i, d in enumerate(dreams):
+        x, y = SKY[i % len(SKY)]
+        stars.append({"id": d["id"], "x": x + 9 * (i // len(SKY)), "y": y + 4 * (i // len(SKY)), "done": d["done"], "title": d["title"]})
+    return {"stars": stars, "line": " ".join(f"{s['x']},{s['y']}" for s in stars if s["done"])}
+
+
 def leave(wishes: list[dict], side: str) -> list[dict]:
     """When `side` leaves the pair: what they added goes, and their reservations on the other's ideas are lifted."""
     return [{**w, "taken": "" if w["taken"] == side else w["taken"]} for w in wishes if w["by"] != side]
@@ -80,4 +93,7 @@ if __name__ == "__main__":
     assert apply(w, "a", "done", trip["id"])[1]["done"] and len(apply(w, "a", "delete", trip["id"])) == 1  # dreams are shared
     gone = leave(w, "b")
     assert [x["title"] for x in gone] == ["Книга про Японию"] and gone[0]["taken"] == ""  # Misha's dream and reservation go
+    night = sky([{"id": str(i), "done": i != 2, "title": ""} for i in (1, 2, 3)])
+    assert [s["done"] for s in night["stars"]] == [True, False, True] and night["line"] == "34,70 110,62"
+    assert sky([{"id": str(i), "done": False, "title": ""} for i in range(13)])["stars"][12]["x"] == 43  # the 13th shifts aside
     print("ok")

@@ -1,4 +1,5 @@
-"""Hourly housekeeping run by the scheduler container: anonymous data cleanup, the evening reminder and invite nudges."""
+"""Hourly housekeeping run by the scheduler container: anonymous data cleanup, the evening reminder, invite nudges, dates,
+the Monday idea and the notice that the free week of «Пара+» is ending."""
 
 import hashlib
 from datetime import timedelta
@@ -11,7 +12,8 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.compatibility import dates, wishes
-from apps.compatibility.models import DailyAnswer, Owner, Pair
+from apps.compatibility.access import PLUS_DAYS
+from apps.compatibility.models import DailyAnswer, Owner, Pair, Purchase
 from apps.compatibility.notify import notify
 from apps.compatibility.services import pairs_of, side_of
 
@@ -26,8 +28,23 @@ class Command(BaseCommand):
             self.remind(now.date())
             self.nudge_invites()
             self.remind_dates(now.date())
+            self.trial_ending()
             if now.weekday() == 0:
                 self.idea_notice(now.date())
+
+    def trial_ending(self) -> None:
+        """The evening before the joining week of «Пара+» ends, both partners hear what closes and what stays — unless one
+        of them already has «Пара+» past it. The one-day window makes it once per trial; the cache guards reruns."""
+        now = timezone.now()
+        ending = Purchase.objects.filter(kind="trial", status="succeeded", valid_until__gt=now, valid_until__lte=now + timedelta(days=1))
+        for trial in ending.select_related("pair"):
+            people = [o for o in (trial.owner_id, trial.pair and trial.pair.partner_id) if o]
+            later = Purchase.objects.filter(owner_id__in=people, kind__in=PLUS_DAYS, status="succeeded", valid_until__gt=trial.valid_until)
+            if later.exists():
+                continue
+            for owner_id in people:
+                if cache.add(f"trial_end:{trial.id}:{owner_id}", 1, 3 * 24 * 3600):
+                    notify(str(owner_id), "trial_end")
 
     def idea_notice(self, today) -> None:
         """Mondays: both partners of a linked pair hear there's a new «Свидание недели» — never what it is about."""

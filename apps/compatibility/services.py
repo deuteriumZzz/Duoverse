@@ -224,6 +224,7 @@ def person_input(p: Person) -> PersonInput:
         b.get("place"),
         p.answers,
         (b["lat"], b["lon"], b["tz"]) if b.get("tz") else None,
+        p.gender,
     )
 
 
@@ -231,11 +232,16 @@ def person_input(p: Person) -> PersonInput:
 def create_pair(owner: Owner, a: dict, b: dict, mode: str) -> Pair:
     now = timezone.now()
     pa = Person.objects.create(
-        owner=owner, name=a["name"] or "Я", birth=birth_payload(a["date"], a.get("time"), a.get("place"), a.get("point")), consent_at=now
+        owner=owner,
+        name=a["name"] or "Я",
+        gender=a.get("gender", ""),
+        birth=birth_payload(a["date"], a.get("time"), a.get("place"), a.get("point")),
+        consent_at=now,
     )
     pb = Person.objects.create(
         owner=owner,
         name=b["name"] or "Партнёр",
+        gender=b.get("gender", ""),
         birth=birth_payload(b["date"], b.get("time"), b.get("place"), b.get("point")),
         consent_at=now,
     )
@@ -244,8 +250,9 @@ def create_pair(owner: Owner, a: dict, b: dict, mode: str) -> Pair:
 
 def update_person(p: Person, data: dict) -> None:
     p.name = data["name"] or p.name
+    p.gender = data.get("gender", p.gender)
     p.birth = birth_payload(data["date"], data.get("time"), data.get("place"), data.get("point"))
-    p.save(update_fields=["name", "birth"])
+    p.save(update_fields=["name", "gender", "birth"])
 
 
 def input_hash(pair: Pair) -> str:

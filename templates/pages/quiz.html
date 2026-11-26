@@ -3,19 +3,7 @@
 {% block footer %}{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-2xl px-4 py-8 sm:px-6" x-data="quiz()" @keydown.window="key($event)">
-  {# the pieces scenes are drawn with, centred on the origin (a figure stands on it); --fig / --fill repaint them #}
-  <svg width="0" height="0" class="absolute" aria-hidden="true"><defs>
-    <g id="sc-fig">
-      <rect x="-20" y="-52" width="40" height="52" rx="20" fill="var(--fig, var(--color-a))"/>
-      <circle cy="-70" r="17" fill="var(--color-paper)"/>
-      <circle cx="-5.5" cy="-71" r="2" fill="var(--color-ink)" stroke="none"/><circle cx="5.5" cy="-71" r="2" fill="var(--color-ink)" stroke="none"/>
-    </g>
-    <path id="sc-heart" d="M0 9s-11.5-6.6-11.5-14.4A6.2 6.2 0 0 1 0-8.8a6.2 6.2 0 0 1 11.5 3.4C11.5 2.4 0 9 0 9z" fill="var(--fill, var(--color-a))"/>
-    <path id="sc-cloud" d="M-18 10a9 9 0 0 1-1-18a12 12 0 0 1 22-5a10 10 0 0 1 16 9a8 8 0 0 1-3 14z" fill="var(--fill, var(--color-paper))"/>
-    <g id="sc-sun"><circle r="11" fill="var(--color-pair)"/><path d="M0-17v-5M0 17v5M-17 0h-5M17 0h5M-12-12l-4-4M12 12l4 4M-12 12l-4 4M12-12l4-4" fill="none"/></g>
-    <path id="sc-book" d="M-14-8q7-4 14 0v16q-7-4-14 0zM0-8q7-4 14 0v16q-7-4-14 0z" fill="var(--color-paper)"/>
-    <g id="sc-mug"><rect x="-8" y="-10" width="16" height="20" rx="3" fill="var(--fill, var(--color-lilac))"/><path d="M8-5h3a4.5 4.5 0 0 1 0 9h-3" fill="none"/></g>
-  </defs></svg>
+  {% include "components/scene_defs.html" %}
   <div class="flex items-center gap-3">
     <a href="{% if joining %}{% url 'landing' %}{% else %}{% url 'history' %}{% endif %}" class="btn btn-ghost btn-icon btn-sm" aria-label="Закрыть">{% icon 'x' 'size-4' %}</a>
     <div class="flex-1">

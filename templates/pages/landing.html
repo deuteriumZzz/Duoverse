@@ -16,9 +16,9 @@
       {# sentence form #}
       <div class="fade-up" style="--i:3">
         <form class="madlib" hx-post="{% url 'quick_result' %}" hx-target="#quick" hx-swap="innerHTML swap:2400ms show:#quick:top" hx-indicator="this" hx-disabled-elt="find button" data-loader="aligning">
-          <p>Я&nbsp;родился(ась)
+          <p>Мой день рождения —
             <label class="side-a inline"><span class="sr-only">Ваша дата рождения</span>{% include "components/date_field.html" with name="date_a" value="1996-03-14" inline=True required=True %}</label>,
-            а&nbsp;мой человек —
+            а&nbsp;у&nbsp;моего человека —
             <label class="side-b inline"><span class="sr-only">Дата рождения партнёра</span>{% include "components/date_field.html" with name="date_b" value="1994-09-02" inline=True required=True %}</label>.
             Как мы&nbsp;устроены?</p>
           <div class="mt-7 flex flex-wrap items-center gap-3">
@@ -101,7 +101,7 @@
           <span class="grid size-11 shrink-0 place-items-center rounded-2xl {% if u.layer == 'scientific' %}bg-sage-soft text-[#2f6243]{% else %}bg-lilac-soft text-[#5b45a8]{% endif %}">{% glyph u.icon %}</span>
           <div class="min-w-0 flex-1">
             <p class="font-bold">{{ u.title }}</p>
-            <p class="text-sm text-ink-3">{% cycle 'Синастрия: аспекты и дома двух карт' 'Big Five, привязанность, индикаторы Готтмана' 'Путь, судьба, Матрица судьбы' 'Аркан каждого и аркан пары' %}</p>
+            <p class="text-sm text-ink-3">{% cycle 'Синастрия: аспекты и дома двух карт' 'Большая пятёрка, привязанность, индикаторы Готтмана' 'Путь, судьба, Матрица судьбы' 'Аркан каждого и аркан пары' %}</p>
           </div>
           {% include "components/layer_badge.html" with layer=u.layer %}
         </li>
@@ -178,7 +178,7 @@
         <span class="mono text-xs text-ink-3">{% cycle '≈ 30 секунд' '≈ 2 минуты' '≈ 10 минут' %}</span>
       </div>
       <h3 class="mt-5 text-lg font-extrabold">{% cycle 'Быстрый' 'Расширенный' 'Глубокий' %}</h3>
-      <p class="mt-2 text-sm leading-relaxed text-ink-2">{% cycle 'Только даты рождения. Балл пары, три категории и арканы — сразу.' 'Время и место рождения. Открываются дома, Асцендент и точная Луна.' 'Короткие анкеты для обоих. Включается научный слой: Big Five, привязанность, Готтман.' %}</p>
+      <p class="mt-2 text-sm leading-relaxed text-ink-2">{% cycle 'Только даты рождения. Балл пары, три категории и арканы — сразу.' 'Время и место рождения. Открываются дома, Асцендент и точная Луна.' 'Короткие анкеты для обоих. Включается научный слой: Большая пятёрка, привязанность, Готтман.' %}</p>
       <p class="mt-4 flex items-center gap-2 rounded-2xl bg-sand px-3 py-2 text-xs font-bold text-ink-2">{% icon 'chart-no-axes-column-increasing' 'size-4' %}точность {% cycle 'до 50%' 'до 75%' 'до 95%' %}</p>
       <a href="{% url 'wizard' %}?mode={% cycle 'quick' 'extended' 'deep' %}" class="mt-5 inline-flex items-center gap-1.5 text-sm font-bold hover:gap-2.5 transition-all">Выбрать {% icon 'arrow-right' 'size-4' %}</a>
     </li>
@@ -247,7 +247,7 @@
     <div class="rounded-[var(--radius-card)] border-2 border-sage bg-sage-soft/60 p-7 sm:p-9" data-reveal style="--i:1">
       {% include "components/layer_badge.html" with layer="scientific" %}
       <h3 class="mt-5 text-2xl font-extrabold">Психология отношений</h3>
-      <p class="mt-3 leading-relaxed text-ink-2">Big Five, теория привязанности и исследования Готтмана. Этот слой всегда показан отдельно, чтобы символика его не перекрывала.</p>
+      <p class="mt-3 leading-relaxed text-ink-2">Большая пятёрка, теория привязанности и исследования Готтмана. Этот слой всегда показан отдельно, чтобы символика его не перекрывала.</p>
     </div>
   </div>
   <p class="mt-6 flex items-start gap-2 text-sm text-ink-3" data-reveal>{% icon 'info' 'size-4 mt-0.5' %}Мы не ставим диагнозов, не предсказываем события и не говорим «вам нельзя быть вместе». Только зоны внимания и договорённости. <a href="{% url 'disclaimer' %}" class="font-bold text-ink-2 underline">Подробнее о методе</a></p>

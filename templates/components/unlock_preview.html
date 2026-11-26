@@ -21,7 +21,8 @@
   <form method="post" action="{% url 'checkout' 'deep' %}" class="mt-6 flex flex-wrap items-center gap-3">
     {% csrf_token %}<input type="hidden" name="pair" value="{{ stored.pair_id }}">
     <button class="btn btn-primary"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}>{% icon 'lock-open' 'size-4' %}Открыть всё за {{ price_deep }} ₽</button>
-    <span class="text-xs text-ink-3">разово за эту пару · открывается вам обоим · чек на почту · <a href="{% url 'pricing' %}" class="underline">все тарифы</a></span>
+    <span class="text-xs text-ink-3">разово за эту пару · открывается вам обоим · чек на почту</span>
   </form>
+  <p class="mt-3 text-sm text-ink-2">или <a href="{% url 'pricing' %}#plus" class="font-bold text-ink underline decoration-dotted underline-offset-4">год «Пары+» за {{ price_plus_year }} ₽</a> — с ним открыты все ваши разборы, квиз недели и дневник пары.</p>
   {% endif %}
 </section>

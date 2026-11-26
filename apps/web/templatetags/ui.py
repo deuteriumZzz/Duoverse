@@ -369,6 +369,28 @@ def universe_glyph(universe: str) -> str:
     return {"astrology": "orbit", "psychology": "brain", "numerology": "hash", "tarot": "layers"}.get(universe, "sparkles")
 
 
+@register.filter(name="gv")
+def gender_verb(gender: str, forms: str) -> str:
+    """{{ partner_g|gv:"ответил|ответила|ответил(а)" }} — the right ending, neutral when the gender isn't known."""
+    from apps.core.domain.names import inflect
+
+    return inflect("{" + forms + "}", gender or "")
+
+
+@register.filter(name="agree")
+def agree_filter(text: str, gender: str) -> str:
+    """{{ question|agree:me_g }} — «ты хотел(а)» becomes «ты хотела» for her, «ты хотел» for him, stays as is when unknown."""
+    from apps.core.domain.names import agree
+
+    return agree(str(text), gender or "")
+
+
+@register.simple_tag
+def hair(gender: str) -> str:
+    """A figure's hair in scenes (pieces in scene_defs.html), drawn over #sc-fig; nothing when the gender isn't known."""
+    return mark_safe({"f": '<use href="#sc-hair-f"/>', "m": '<use href="#sc-hair-m"/>'}.get(gender or "", ""))
+
+
 @register.filter(name="gen")
 def gen_filter(name: str) -> str:
     from apps.core.domain.names import gen

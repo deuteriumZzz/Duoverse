@@ -50,6 +50,15 @@ GLYPHS = {
     "magnet": f'<path d="M6.5 4.5h7v11a2.5 2.5 0 0 0 5 0v-11h7v11a9.5 9.5 0 0 1-19 0z" fill="{A}" {INK}/>'
     f'<path d="M7.4 5.4h5.2v3.7H7.4zM19.4 5.4h5.2v3.7h-5.2z" fill="{PAPER}"/><path d="M6.5 10h7M18.5 10h7" fill="none" {INK}/>',
     "zap": f'<path d="M18.5 3.5 7 18h7.5l-2 10.5L25 13h-7.5z" fill="{B}" {INK}/>',
+    # «Сегодня» and «Вдвоём» tiles
+    "calendar": f'<rect x="5" y="7" width="22" height="20" rx="4" fill="{PAPER}" {INK}/><rect x="5" y="7" width="22" height="6.5" rx="3" fill="{A}" {INK}/>'
+    f'<path d="M11 4.5v5M21 4.5v5" fill="none" {INK}/>'
+    f'<path d="M16 24.5s-4.5-2.6-4.5-5.6a2.4 2.4 0 0 1 4.5-1.3 2.4 2.4 0 0 1 4.5 1.3c0 3-4.5 5.6-4.5 5.6z" fill="{A}" {INK}/>',
+    "gift": f'<rect x="5.5" y="13" width="21" height="14" rx="2.5" fill="{A}" {INK}/><rect x="4" y="9" width="24" height="5.5" rx="2" fill="{A}" {INK}/>'
+    f'<path d="M16 9v18" fill="none" {INK}/><path d="M16 9c-3-5-8-5-7-1.5 1 2.5 7 1.5 7 1.5s6 1 7-1.5c1-3.5-4-3.5-7 1.5z" fill="{PAIR}" {INK}/>',
+    "sprout": f'<path d="M16 27V15M9 27h14" fill="none" {INK}/><path d="M16 17c-1-6-6-8-10-7 0 5 4 8 10 7z" fill="{SAGE}" {INK}/>'
+    f'<path d="M16 14c1-5 5-8 10-7 0 5-4 8-10 7z" fill="{SAGE}" {INK}/>',
+    "star": f'<path d="M16 4l3.6 7.4 8.1 1.2-5.9 5.7 1.4 8L16 22.5l-7.2 3.8 1.4-8-5.9-5.7 8.1-1.2z" fill="{PAIR}" {INK}/>',
     "house": f'<path d="M8 13.5V26.5h16V13.5" fill="{LILAC}" {INK}/><path d="M4.5 15 16 5.5 27.5 15" fill="none" {INK}/>'
     f'<rect x="13.5" y="18.5" width="5" height="8" rx="1.2" fill="{PAPER}" {INK}/>',
 }

@@ -12,6 +12,7 @@
       <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm mt-4">{% icon 'sparkles' 'size-4' %}Сделать разбор</a>
     </div>
   {% else %}
+  {% include "components/scene_defs.html" %}
 
   <section id="theirs" class="mt-8 scroll-mt-24" aria-labelledby="theirs-title">
     <h2 id="theirs-title" class="flex items-center gap-2 text-xl font-extrabold">{% icon 'gift' 'size-5' %}Идеи для {{ partner_name|gen }}</h2>
@@ -32,19 +33,29 @@
         {% endfor %}
       </ul>
       {% if not plus %}
-      <div class="card mt-3 flex flex-wrap items-center gap-3 p-4">
-        <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'lock' 'size-4' %}</span>
-        <p class="min-w-0 flex-1 text-sm text-ink-2">Тихая бронь — в «Паре+»: отметьте подарок, и {{ partner_name }} не узнает, что выбрано.</p>
-        <form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn btn-primary btn-sm">«Пара+» за {{ price_plus }} ₽</button></form>
-      </div>
+      {% with text="Отметьте подарок — "|add:partner_name|add:" не узнает, что выбрано." %}{% include "components/plus_lock.html" with title="Тихая бронь подарков" %}{% endwith %}
       {% endif %}
     {% else %}
-      <p class="card mt-4 p-5 text-sm text-ink-2">{{ partner_name }} пока ничего не добавил(а). Можно намекнуть: своей картой вы подаёте пример.</p>
+      <div class="card mt-4 flex items-center gap-4 p-5">
+        <svg class="scene h-20 w-auto shrink-0" viewBox="0 0 120 96" aria-hidden="true"><path d="M8 90H112" fill="none"/>
+          <g transform="translate(44 90) scale(.8)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}<path d="M-5-64h10" fill="none"/></g>
+          <use href="#sc-gift" x="88" y="74" style="--fill:var(--color-paper)"/>
+          <g class="sc-float"><rect x="70" y="8" width="26" height="22" rx="11" fill="var(--color-paper)"/><text x="83" y="24" style="fill:var(--color-b-ink); font-size:14px">?</text></g></svg>
+        <p class="text-sm text-ink-2">{{ partner_name }} пока ничего не {{ partner_g|gv:"добавил|добавила|добавил(а)" }}. Можно намекнуть: своей картой вы подаёте пример.</p>
+      </div>
     {% endif %}
   </section>
 
   <section id="mine" class="mt-10 scroll-mt-24" aria-labelledby="mine-title">
     <h2 id="mine-title" class="flex items-center gap-2 text-xl font-extrabold">{% icon 'heart' 'size-5' %}Моя карта</h2>
+    {% if not mine %}
+    <div class="mt-4 flex items-center gap-4 rounded-2xl bg-a-soft p-4">
+      <svg class="scene h-20 w-auto shrink-0" viewBox="0 0 120 96" aria-hidden="true"><path d="M8 90H112" fill="none"/>
+        <g transform="translate(48 90) scale(.8)"><use href="#sc-fig"/>{% hair me_g %}<path d="M-5-65q5 4 10 0" fill="none"/></g>
+        <g class="sc-float"><use href="#sc-gift" x="92" y="40"/></g><use href="#sc-star" x="20" y="22"/></svg>
+      <p class="text-sm text-a-ink">Начните с трёх желаний: вещь, впечатление и место. Так партнёру будет из чего выбрать.</p>
+    </div>
+    {% endif %}
     {% if mine %}
     <ul class="mt-4 space-y-2">
       {% for w in mine %}
@@ -74,6 +85,18 @@
   <section id="dreams" class="mt-10 scroll-mt-24" aria-labelledby="dreams-title">
     <h2 id="dreams-title" class="flex items-center gap-2 text-xl font-extrabold">{% icon 'mountain' 'size-5' %}Мечты на двоих</h2>
     <p class="mt-1 text-sm text-ink-2">Поездка, квартира, собака — то, к чему идёте вместе. Видите оба.</p>
+    <div class="mt-4 overflow-hidden rounded-[var(--radius-card)] border-2 border-ink bg-ink p-3"{% if lit %} data-burst-in="400"{% endif %}>
+      <svg class="scene block h-auto w-full" viewBox="0 0 320 110" aria-hidden="true" style="stroke: var(--color-milk)">
+        {% if sky.stars %}
+          {% if sky.line %}<polyline points="{{ sky.line }}" fill="none" stroke-dasharray="2 6" stroke-width="2"/>{% endif %}
+          {% for s in sky.stars %}<g transform="translate({{ s.x }} {{ s.y }})"><use href="#sc-star" class="{% if s.id == lit %}sc-lit{% endif %}" style="--fill:{% if s.done %}var(--color-pair){% else %}var(--color-ink){% endif %}"/></g>{% endfor %}
+        {% else %}
+          <path d="M40 104l50-62 22 26 30-44 58 80z" fill="var(--color-lilac)" stroke="var(--color-milk)"/><path d="M142 24v-18l16 6-16 6" fill="var(--color-pair)" stroke="var(--color-milk)"/>
+          <use href="#sc-star" x="250" y="30" style="--fill:var(--color-ink)"/><use href="#sc-star" x="280" y="64" style="--fill:var(--color-ink)"/>
+        {% endif %}
+      </svg>
+      <p class="px-1 pb-1 text-xs text-milk/70">{% if sky.line %}Звёзды загораются, когда мечта сбывается.{% elif sky.stars %}Отметьте сбывшуюся мечту — и зажжётся первая звезда.{% else %}Добавьте первую мечту — на небе появится звезда.{% endif %}</p>
+    </div>
     {% if dreams %}
     <ul class="mt-4 space-y-2">
       {% for w in dreams %}

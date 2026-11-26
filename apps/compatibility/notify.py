@@ -7,19 +7,29 @@ from django.urls import reverse
 from .models import Pair
 
 MESSAGES = {
-    "answered": ("{name} ответил(а) на вопрос дня. Ответьте и вы — и ответы откроются вам обоим.", "daily"),
-    "joined": ("{name} присоединился(лась) к вашей паре в Duoverse. Теперь разбор, план и вопрос дня у вас общие.", "history"),
-    "quiz": ("{name} прошёл(ла) квиз недели. Пройдите и вы — и увидите, где вы совпадаете.", "quiz_week"),
+    "answered": ("{name} {ответил|ответила|ответил(а)} на вопрос дня. Ответьте и вы — и ответы откроются вам обоим.", "daily"),
+    "joined": (
+        "{name} {присоединился|присоединилась|присоединился(лась)} к вашей паре в Duoverse. Теперь разбор, план и вопрос дня у вас общие.",
+        "history",
+    ),
+    "quiz": ("{name} {прошёл|прошла|прошёл(ла)} квиз недели. Пройдите и вы — и увидите, где вы совпадаете.", "quiz_week"),
     "reminder": ("Вопрос дня ждёт вас двоих. Пара минут — и узнаете, что ответил партнёр.", "daily"),
     "invite": (
         "Приглашение в пару ждёт ответа: {name} пока не с вами в Duoverse. "
         "Отправьте ссылку ещё раз — разбор, план и вопрос дня станут общими.",
         "account",
     ),
-    "week": ("{name} начал(а) «Неделю пары»: семь коротких шагов из вашего разбора. Первый — уже сегодня.", "daily"),
+    "week": ("{name} {начал|начала|начал(а)} «Неделю пары»: семь коротких шагов из вашего разбора. Первый — уже сегодня.", "daily"),
     "date": ("{text}", "pair_calendar"),  # built by dates.reminder_text
     # neutral on purpose, whatever the theme: a preview shows on a locked screen, mail is read at work
     "idea": ("Для вас двоих есть идея на эту неделю — загляните в «Сегодня».", "daily"),
+    "nudge": ("{name} думает о вас.", "pair_invite"),
+    "thanks": ("{name} говорит вам спасибо — загляните на главную.", "pair_invite"),  # the words stay in the app
+    "trial_end": (
+        "Подарочная неделя «Пары+» закончится в ближайшие сутки. Закроются квиз недели, дневник ответов, "
+        "тихая бронь подарков и план свидания. Дерево, календарь, желания и вопрос дня останутся с вами.",
+        "pricing",
+    ),
 }
 
 
@@ -28,13 +38,16 @@ def notify_partner(pair: Pair, side: str, event: str) -> None:
     target = pair.partner if side == "a" else pair.owner
     if target is None:
         return
-    name = pair.a.name if side == "a" else pair.b.name
-    notify(str(target.id), event, name=name)
+    who = pair.a if side == "a" else pair.b
+    notify(str(target.id), event, gender=who.gender, name=who.name)
 
 
-def notify(owner_id: str, event: str, **fmt: str) -> None:
+def notify(owner_id: str, event: str, gender: str = "", **fmt: str) -> None:
+    """{ответил|ответила|ответил(а)} in a message becomes the actor's form (names.inflect), neutral if unknown."""
+    from apps.core.domain.names import inflect
+
     from .tasks import deliver
 
     text, view = MESSAGES[event]
     url = settings.SITE_URL.rstrip("/") + reverse(view)
-    transaction.on_commit(lambda: deliver.delay(owner_id, text.format(**fmt), url))
+    transaction.on_commit(lambda: deliver.delay(owner_id, inflect(text, gender).format(**fmt), url))

@@ -30,22 +30,35 @@ def prototype(request):
     groups = {
         "landing": {"landing", "start", "wizard"},
         "report": {"report", "report_tab", "share", "weights", "generating"},
-        "daily": {"daily"},
-        "pair_invite": {"pair_invite", "pair_waiting", "pair_ready"},
+        "daily": {"daily", "quiz_week"},
+        "pair_invite": {"pair_invite", "pair_waiting", "pair_ready", "pair_calendar", "wish_map", "intimacy", "pair_story"},
         "account": {"history", "profiles", "profile_edit", "account"},
     }
-    tabbar = [
-        (name, ic, label, nav in groups[name])
-        for name, ic, label in [
+
+    def tabs() -> list:
+        """One job per tab: «Сегодня» what to do now, «Отчёт» who you are together, «Профиль» you. «Главная» depends on who
+        looks: a guest gets the page about Duoverse, a couple gets their pair (the tree, the path, what's yours)."""
+        from apps.compatibility.services import get_owner, pairs_of
+
+        owner = get_owner(request)
+        items = [
             ("landing", "house", "Главная"),
-            ("report", "chart-pie", "Отчёт"),
             ("daily", "sun", "Сегодня"),
+            ("report", "chart-pie", "Отчёт"),
             ("pair_invite", "users", "Вдвоём"),
             ("account", "circle-user-round", "Профиль"),
         ]
-    ]
+        if owner and owner.is_account and pairs_of(owner).exists():
+            items = [("pair_invite", "house", "Главная"), items[1], items[2], items[4]]
+        return [(name, ic, label, nav in groups[name]) for name, ic, label in items]
+
     return {
-        "tabbar": tabbar,
+        "GENDERS": (("f", "Она"), ("m", "Он"), ("", "Не указывать")),
+        # «Пара+» the way people compare it: the year as a price per month, and how much it saves against paying monthly
+        "plus_from": round(settings.PRICE_PLUS_YEAR / 12),
+        "price_plus_year": settings.PRICE_PLUS_YEAR,
+        "plus_save": round(100 - settings.PRICE_PLUS_YEAR * 100 / (settings.PRICE_PLUS * 12)),
+        "tabbar": SimpleLazyObject(tabs),
         "me": SimpleLazyObject(lambda: _me(request)),
         "debug": settings.DEBUG,
         "dev_screens": settings.DEV_SCREENS,

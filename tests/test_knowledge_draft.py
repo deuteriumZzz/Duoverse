@@ -146,3 +146,32 @@ def test_reverse_aspect_swaps_the_people():
     fwd = KnowledgeBlock.objects.get(key="ASPECT:Солнце:square:Луна").text
     back = KnowledgeBlock.objects.get(key="ASPECT:Луна:square:Солнце").text
     assert "{a" in fwd and back == swap(fwd) and back != fwd
+
+
+def test_every_written_gender_form_resolves_for_him_and_her():
+    """«хотел(а)», «незамеченным(ой)»… in texts, code and templates: each one must turn into a real word for a known gender
+    (names.agree), so a new ending added to the knowledge base can't slip through as «хотелa» or stay half-done."""
+    import glob
+
+    from apps.core.domain.names import FORM, gendered
+
+    plural = {"вселенная(ые)"}  # a plural hint, not a gender
+    files = (
+        glob.glob("apps/knowledge/seed/ru*.json")
+        + glob.glob("apps/**/*.py", recursive=True)
+        + glob.glob("templates/**/*.html", recursive=True)
+    )
+    found = {}
+    for f in files:
+        if "migrations" not in f:
+            with open(f, encoding="utf-8") as fh:
+                found |= {m[0]: (m[1], m[2]) for m in FORM.finditer(fh.read())}
+    assert len(found) > 100
+    assert [w for w, (word, end) in found.items() if w not in plural and gendered(word, end) is None] == []
+
+
+def test_knowledge_texts_agree_with_each_partner():
+    text = "{b} может чувствовать себя незамеченным(ой), а {a} — сдерживаемым(ой). «Чтобы ты выслушал(а)»."
+    filled = fill(text, a="Аня", b="Миша", a_g="f", b_g="m")
+    assert filled == "Миша может чувствовать себя незамеченным, а Аня — сдерживаемой. «Чтобы ты выслушал(а)»."
+    assert fill(text, a="Аня", b="Миша", a_g="", b_g="").startswith("Миша может чувствовать себя незамеченным(ой)")

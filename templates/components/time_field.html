@@ -1,0 +1,40 @@
+{% comment %}Birth-time field in the date_field look: type ЧЧ:ММ or pick the hour, then the minutes (every 5); posts HH:MM
+   under `name`, as <input type="time"> did. name, value (HH:MM), id, model (Alpine expr for the parent's x-model),
+   disabled (Alpine expr: «Не знаю время» turns the field off and nothing is posted), label.{% endcomment %}
+{% load ui %}
+<span class="dp relative block" x-data="timePicker()" data-value="{{ value|default:'' }}"
+  {% if model %}x-model="{{ model }}" x-modelable="value"{% endif %} @keydown.escape.stop="close(true)" @click.outside="open = false">
+  <input type="text" inputmode="numeric" autocomplete="off" placeholder="ЧЧ:ММ" maxlength="5" x-ref="text"{% if id %} id="{{ id }}"{% endif %}
+    class="field pr-14 disabled:opacity-40" :value="text" @input="typed" @click="openPicker()" @keydown.down.prevent="openPicker(true)"
+    aria-haspopup="dialog" :aria-expanded="open" aria-label="{{ label|default:'Время рождения' }}"{% if disabled %} :disabled="{{ disabled }}"{% endif %}>
+  <input type="hidden" name="{{ name }}" :value="value"{% if disabled %} :disabled="{{ disabled }}"{% endif %}>
+  <button type="button" class="dp-icon disabled:opacity-40" :class="open && 'is-open'" @click="open ? close(true) : openPicker(true)" aria-label="Выбрать время"{% if disabled %} :disabled="{{ disabled }}"{% endif %}>{% icon 'clock' 'size-[1.15rem]' %}</button>
+
+  <div x-ref="pop" x-show="open" x-cloak class="dp-pop" role="dialog" aria-label="Выбор времени"
+    x-transition:enter="dp-t-in" x-transition:enter-start="dp-t-from" x-transition:enter-end="dp-t-to"
+    x-transition:leave="dp-t-out" x-transition:leave-start="dp-t-to" x-transition:leave-end="dp-t-from">
+    <div class="flex items-center justify-center gap-0.5">
+      <button type="button" class="dp-head mono !text-2xl" :class="view === 'hours' && 'bg-sand'" @click="setView('hours')" x-text="hh" aria-label="Часы"></button>
+      <span class="font-display text-2xl font-extrabold text-ink-3" aria-hidden="true">:</span>
+      <button type="button" class="dp-head mono !text-2xl" :class="view === 'minutes' && 'bg-sand'" @click="setView('minutes')" x-text="mm" aria-label="Минуты"></button>
+    </div>
+    <p class="mt-0.5 text-center text-[.7rem] font-bold uppercase tracking-wide text-ink-3" x-text="view === 'hours' ? 'выберите час' : 'и минуты'"></p>
+    <div x-ref="grid" class="mt-2">
+      <template x-if="view === 'hours'">
+        <div class="grid grid-cols-6 gap-1">
+          <template x-for="x in hours" :key="x">
+            <button type="button" class="dp-cell mono" :class="{ 'is-sel': h === x }" :aria-pressed="h === x" @click="pickHour(x)" x-text="x"></button>
+          </template>
+        </div>
+      </template>
+      <template x-if="view === 'minutes'">
+        <div class="grid grid-cols-4 gap-1.5">
+          <template x-for="x in minutes" :key="x">
+            <button type="button" class="dp-cell mono" :class="{ 'is-sel': value === h + ':' + x }" :aria-pressed="value === h + ':' + x" @click="pickMinute(x)" x-text="':' + x"></button>
+          </template>
+        </div>
+      </template>
+    </div>
+    <p class="mt-3 border-t border-line pt-2.5 text-[.72rem] font-semibold text-ink-3">Точное время — с клавиатуры: 0743</p>
+  </div>
+</span>

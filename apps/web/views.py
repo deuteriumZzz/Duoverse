@@ -4,7 +4,7 @@ import hashlib
 import json
 import secrets
 import uuid
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from django.conf import settings
 from django.core.cache import cache
@@ -29,6 +29,7 @@ from apps.compatibility import date_ideas, places, story
 from apps.compatibility import dates as pair_dates
 from apps.compatibility import intimacy as intimacy_wishes
 from apps.compatibility import plan as habit_plan
+from apps.compatibility import tree as pair_tree
 from apps.compatibility import week as pair_week
 from apps.compatibility import wishes as pair_wishes
 from apps.compatibility.access import grant_trial, mark_paid, open_gift, plus_for_pair, plus_until, redeem_gift, unlocked
@@ -64,6 +65,8 @@ from apps.compatibility.services import (
     sign_in,
     update_person,
 )
+from apps.compatibility.streak import pair_streak
+from apps.core.domain.names import acc as gen_acc
 from apps.core.domain.names import gen
 from apps.psychology.domain import scoring as psy
 from apps.psychology.domain.instruments import ITEMS, LIKERT, SECTIONS
@@ -114,7 +117,7 @@ WIZARD_MODES = [
     ("deep", "Глубокий", "≈ 10 минут", "Всё выше + короткие анкеты", ["научный слой", "Готтман", "план привычек"], "brain"),
 ]
 WIZARD_QUIZZES = [
-    ("Big Five", "10 утверждений о характере", "user-round"),
+    ("Большая пятёрка", "10 утверждений о характере", "user-round"),
     ("Привязанность", "6 вопросов о близости", "heart-handshake"),
     ("Конфликт и стресс", "4 ситуации из жизни пары", "messages-square"),
     ("MBTI", "опционально, не влияет на балл", "shapes"),
@@ -140,64 +143,89 @@ CITIES = [
     "Нью-Йорк",
 ]
 
-PLANS = [
+PLANS = [  # what is gated: access.plus_for_pair (quiz, diary, reservation, date plan), access.unlocked (deep or a paid year)
     {
+        "kind": "free",
+        "glyph": "sprout",
         "name": "Бесплатно",
-        "note": "Чтобы познакомиться",
+        "note": "Всё, чтобы каждый день быть ближе",
         "price": "0 ₽",
         "per": "навсегда",
-        "free": True,
         "cta": "Начать",
         "small": "без карты · вход по почте за минуту",
         "features": [
-            "Итог: тип вашей пары и где вы сильны",
-            "Первая сфера целиком и первый день «Недели пары»",
-            "Вопрос дня на двоих и план привычек",
-            "Приглашение партнёра",
+            "Тип пары, балл и первая сфера",
+            "Вопрос дня, серия и наше дерево",
+            "Календарь и карта желаний",
+            "«Думаю о тебе» и «Свидание недели»",
+            "«Близость 18+» из ваших общих «да»",
         ],
     },
     {
+        "kind": "deep",
+        "glyph": "star",
         "name": "Глубокий разбор",
-        "note": "Понять, почему вы спорите об одном и том же, — и что с этим делать",
-        "price": "490 ₽",
-        "per": "разово",
-        "featured": True,
+        "note": "Почему вы спорите об одном и том же — и что с этим делать",
+        "price": f"{settings.PRICE_DEEP} ₽",
+        "per": "разово, навсегда",
         "cta": "Выбрать разбор",
-        "small": "разово за пару · открывается вам обоим · чек на почту",
+        "small": "за одну пару · открывается вам обоим · чек на почту",
         "features": [
-            "Все 13 сфер: что у вас работает и где зона внимания",
-            "Ваши сценарии в спорах и близости — со ссылками на исследования",
-            "«Неделя пары»: 7 шагов из вашего разбора, отмечаете вдвоём",
-            "Все 4 слоя с картами и графиками — откуда каждый вывод",
-            "Открывается вам обоим · PDF",
+            "Все 13 сфер: что работает и где зона внимания",
+            "Сценарии в спорах и близости — с исследованиями",
+            "«Неделя пары»: 7 шагов из разбора",
+            "4 слоя с картами и графиками",
+            "PDF, открыт вам обоим",
         ],
     },
     {
+        "kind": "plus",
+        "glyph": "heart",
         "name": "Пара+",
         "note": "Чтобы забота друг о друге стала привычкой",
-        "price": "249 ₽",
+        "price": f"{settings.PRICE_PLUS} ₽",
         "per": "в месяц",
         "cta": "Подключить",
-        "kind": "plus",
-        "small": "без автосписаний · 7 дней в подарок, когда партнёр присоединится",
+        "small": "не продлевается сама · без карты на пробной неделе",
+        "year_extra": "Полные разборы всех ваших пар",
         "features": [
-            "Всё из полного разбора — для всех ваших пар",
-            "Квиз недели: где вы совпадаете",
-            "История ответов на вопросы дня",
-            "Действует и для партнёра",
+            "Квиз недели: кто кого знает лучше",
+            "Дневник пары: все ответы на вопросы дня",
+            "Тихая бронь подарков",
+            "Пошаговый план свидания",
         ],
     },
 ]
 COMPARE = [
-    ("Балл пары и категории", (True, True, True)),
-    ("Четыре вселенные", ("2 из 4", True, True)),
-    ("Научный слой и сценарии вашей пары", (False, True, True)),
-    ("«Неделя пары»", ("1-й день", True, True)),
-    ("«Почему так»", ("частично", True, True)),
-    ("Партнёр по приглашению", (True, True, True)),
-    ("PDF", (False, True, True)),
-    ("Вопрос дня на двоих", (True, True, True)),
-    ("Квизы и история ответов", (False, False, True)),
+    ("Тип пары, балл и первая сфера", (True, True, True)),
+    ("Вопрос дня, серия и наше дерево", (True, True, True)),
+    ("Календарь пары и карта желаний", (True, True, True)),
+    ("«Думаю о тебе» и «спасибо за…»", (True, True, True)),
+    ("«Близость 18+» из общих «да»", (True, True, True)),
+    ("Все 13 сфер, научный слой и сценарии", (False, True, "с годом")),
+    ("Четыре вселенные", ("2 из 4", True, "с годом")),
+    ("«Неделя пары»", ("1-й день", True, "с годом")),
+    ("PDF", (False, True, "с годом")),
+    ("Для всех ваших пар", (False, "одна пара", "с годом")),
+    ("«Свидание недели»", ("идея", "идея", "идея и план")),
+    ("Квиз недели", (False, False, True)),
+    ("Дневник ответов", (False, False, True)),
+    ("Тихая бронь подарков", (False, False, True)),
+    ("Открывается партнёру", (True, True, True)),
+]
+FAQ_PRICING = [
+    ("Платить нужно обоим?", "Нет. Разбор открывается вам обоим, а «Пара+» одного из вас работает для всей пары."),
+    (
+        "Что будет после пробной недели?",
+        "Ничего не спишется: карту мы не просим. Закроются квиз, дневник ответов, тихая бронь и план свидания. "
+        "Дерево, календарь, желания и вопрос дня останутся с вами.",
+    ),
+    (
+        "Чем разбор отличается от «Пары+»?",
+        "Разбор — разовая покупка: полный текст о вашей паре, навсегда и вам обоим. «Пара+» — то, что каждый день: квиз, "
+        "дневник, тихая бронь и план свидания. Год «Пары+» вдобавок открывает все ваши разборы, пока действует.",
+    ),
+    ("Можно вернуть деньги?", "Да, в течение 14 дней, если разбор не открывали. «Пара+» не продлевается сама."),
 ]
 
 MARQUEE = [
@@ -501,7 +529,33 @@ def sign_compatibility(request: HttpRequest) -> HttpResponse:
     return render(request, "pages/sign_compatibility.html", {"sign_options": options, "selected_sign": selected, "sections": sections})
 
 
+def _pair_path(owner: Owner, pair: Pair, together: int, stored: StoredReport | None) -> dict | None:
+    """The couple's first steps as one card on «Вдвоём» until they're done — invite the partner, the questionnaires
+    together, three days answering together — then, three months on, a fresh look. None when there is nothing to do."""
+    side = side_of(owner, pair)
+    me, partner = (pair.a, pair.b) if side == "a" else (pair.b, pair.a)
+    invite = reverse("invite_new", args=[pair.id]) if pair.owner_id == owner.id else reverse("pair_invite")
+    steps = [
+        (bool(pair.partner_id), f"Позвать {gen_acc(partner.name)}", "Разбор станет общим, а вопрос дня — на двоих.", invite, "Пригласить"),
+        (bool(me.answers and partner.answers), "Анкеты вдвоём", "Психология двоих делает разбор точным: где вы совпадаете и где спорите.",
+         "" if me.answers else reverse("person_quiz", args=[me.id]), f"Ждём {gen_acc(partner.name)}" if me.answers else "Пройти анкету"),
+        (together >= 3, "Три дня вместе", "Ответьте оба на вопрос дня три дня подряд — и вы в ритме, а дерево растёт.",
+         reverse("daily"), f"Вопрос дня · {together} из 3"),
+    ]  # fmt: skip
+    for n, (done, title, text, url, cta) in enumerate(steps, 1):
+        if not done:
+            return {"n": n, "of": len(steps), "title": title, "text": text, "url": url, "cta": cta}
+    if stored and (timezone.now() - stored.created_at).days >= 90:
+        return {"n": 0, "title": "Пора взглянуть заново", "text": "Прошло три месяца: пройдите анкеты ещё раз и посмотрите, как вы изменились.",
+                "url": reverse("pair_story", args=[pair.id]), "cta": "Пересчитать"}  # fmt: skip
+    return None
+
+
 def landing(request: HttpRequest) -> HttpResponse:
+    owner = get_owner(request)
+    pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None
+    if pair and "about" not in request.GET:  # a couple opens on «Вдвоём»; ?about still shows the page about Duoverse
+        return redirect("pair_invite")
     r = report_provider().get_report("ideal")
     return render(
         request,
@@ -519,7 +573,13 @@ def landing(request: HttpRequest) -> HttpResponse:
 
 
 def pricing(request: HttpRequest) -> HttpResponse:
-    ctx = {"plans": PLANS, "compare": COMPARE, "price_plus_year": settings.PRICE_PLUS_YEAR, "price_deep": settings.PRICE_DEEP}
+    ctx = {
+        "plans": PLANS,
+        "compare": COMPARE,
+        "faq": FAQ_PRICING,
+        "price_plus_year": settings.PRICE_PLUS_YEAR,
+        "price_deep": settings.PRICE_DEEP,
+    }
     return render(request, "pages/pricing.html", ctx)
 
 
@@ -702,7 +762,9 @@ def _date_idea(pair: Pair, report: Report) -> dict:
 
     weak = [s.key for s in sorted(report.spheres, key=lambda s: s.score)[:4]]
     week = date_ideas.week_no(timezone.localdate())
-    return date_ideas.pick(week, str(pair.id), weak, open_to_new(pair.a) and open_to_new(pair.b), mutual, close_on)
+    idea = date_ideas.pick(week, str(pair.id), weak, open_to_new(pair.a) and open_to_new(pair.b), mutual, close_on)
+    titles = {s.key: s.title for s in report.spheres}  # «про „Деньги“» on the tile: where in your report it comes from
+    return {**idea, "why": next((titles[k] for k in idea["spheres"] if k in titles), "")}
 
 
 def pair_calendar(request: HttpRequest) -> HttpResponse:
@@ -732,11 +794,15 @@ def pair_calendar(request: HttpRequest) -> HttpResponse:
         error = True
     ctx = {
         "state": "ready",
-        "events": pair_dates.upcoming(today, pair_dates.people(pair), pair.dates),
+        "events": (events := pair_dates.upcoming(today, pair_dates.people(pair), pair.dates)),
+        "today_events": [e for e in events if e["in"] == 0 and e["kind"] != "holiday"],  # confetti day
         "together": (days := pair_dates.together(today, pair.dates)),
         "together_word": pair_dates.plural(days or 0, "день", "дня", "дней"),
+        "road": pair_dates.road(days) if days is not None else None,
         "met": pair_dates.met_day(pair.dates),
         "side": side,
+        "me_g": (pair.a if side == "a" else pair.b).gender,
+        "partner_g": (pair.b if side == "a" else pair.a).gender,
         "today": today.isoformat(),
         "max_day": (today + timedelta(days=365)).isoformat(),
         "error": error,
@@ -763,20 +829,62 @@ def wish_map(request: HttpRequest) -> HttpResponse:
                     pair = Pair.objects.select_for_update().get(id=pair.id)
                     pair.wishes = pair_wishes.apply(pair.wishes, side, action, request.POST.get("id", ""), new)
                     pair.save(update_fields=["wishes"])
+            wid = request.POST.get("id", "")
+            now = next((w for w in pair.wishes if w["id"] == wid), {})
+            if action == "reserve" and now.get("taken") == side:  # the box ties itself on the way back
+                return redirect(reverse("wish_map") + f"?tied={wid}#theirs")
+            if action == "done" and now.get("done"):  # the star lights up in the constellation
+                return redirect(reverse("wish_map") + f"?lit={wid}#dreams")
             anchor = "#dreams" if request.POST.get("kind") == "dream" or action == "done" else "#theirs" if action == "reserve" else "#mine"
             return redirect(reverse("wish_map") + anchor)
         error = True
     ctx = {
         "state": "ready",
-        **pair_wishes.view(pair.wishes, side),
+        **(seen := pair_wishes.view(pair.wishes, side)),
+        "sky": pair_wishes.sky(seen["dreams"]),
+        "tied": request.GET.get("tied", ""),
+        "lit": request.GET.get("lit", ""),
         "kinds": {k: v for k, v in pair_wishes.KINDS.items() if k != "dream"},
         "partner_name": pair.b.name if side == "a" else pair.a.name,
+        "me_g": (pair.a if side == "a" else pair.b).gender,
+        "partner_g": (pair.b if side == "a" else pair.a).gender,
         "has_partner": bool(pair.partner_id),
         "plus": plus,
         "price_plus": settings.PRICE_PLUS,
         "error": error,
     }
     return render(request, "pages/wishes.html", ctx, status=422 if error else 200)
+
+
+def _idea_marks(pair: Pair, side: str, celebrate: bool) -> dict:
+    """«Мы сделали» for this week's «Свидание недели», and how many weeks you have both marked so far."""
+    ideas = pair.plan.get("ideas", {})
+    marks = ideas.get(_talk_week(), [])
+    together = sum(1 for v in ideas.values() if set(v) == {"a", "b"})
+    return {
+        "idea_week": _talk_week(),
+        "idea_mine": side in marks,
+        "idea_partner": ("b" if side == "a" else "a") in marks,
+        "ideas_together": together,
+        "idea_stars": range(min(together, 12)),
+        "idea_celebrate": celebrate and set(marks) == {"a", "b"},
+    }
+
+
+@require_POST
+def idea_done(request: HttpRequest) -> HttpResponse:
+    """«Свидание недели»: each partner marks this week's idea; it counts when both did, and the moment it does, confetti."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None
+    if not pair:
+        raise Http404
+    side, week = side_of(owner, pair), _talk_week()  # type: ignore[arg-type]
+    ideas = {k: list(v) for k, v in pair.plan.get("ideas", {}).items()}
+    marks = ideas.setdefault(week, [])
+    marks.remove(side) if side in marks else marks.append(side)
+    pair.plan = {**pair.plan, "ideas": ideas}
+    pair.save(update_fields=["plan"])
+    return redirect(reverse("daily") + ("?together=1" if set(marks) == {"a", "b"} else "") + "#date-idea")
 
 
 @require_POST
@@ -793,6 +901,61 @@ def talk_done(request: HttpRequest) -> HttpResponse:
     pair.plan = {**pair.plan, "talk": talks}
     pair.save(update_fields=["plan"])
     return redirect(reverse("daily") + "#talk")
+
+
+WEEKDAYS = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")
+
+
+def _week_strip(pair: Pair, side: str, today: date, plus: bool) -> dict:
+    """«Сегодня» opens on a week around today — three days back, three ahead, so yesterday is always there: a ring per day (half for each partner who answered the question of the day), the
+    pair's dates on their days, and for a past day its question with both answers — the pair's diary, in «Пара+».
+    Also «дней подряд вместе» with its weekly freeze (streak.py)."""
+    sides: dict[date, set] = {}
+    for d, s in DailyAnswer.objects.filter(pair=pair, day__gte=today - timedelta(days=400)).values_list("day", "side"):
+        sides.setdefault(d, set()).add(s)
+    both = {d for d, s in sides.items() if len(s) == 2}
+    streak, freeze = pair_streak(both, today)
+    start = today - timedelta(days=3)
+    rows: dict[date, dict] = {}
+    for r in DailyAnswer.objects.filter(pair=pair, day__gte=start, day__lt=today):
+        rows.setdefault(r.day, {})[r.side] = r
+    events: dict[date, list] = {}
+    for e in pair_dates.upcoming(start, pair_dates.people(pair), pair.dates, horizon=6):
+        events.setdefault(e["day"], []).append(e)
+    other = "b" if side == "a" else "a"
+    strip = []
+    for i in range(7):
+        d = start + timedelta(days=i)
+        rs = rows.get(d, {})
+        diary = {"question": rs[side].question, "mine": rs[side].text, "theirs": rs[other].text} if len(rs) == 2 else None
+        strip.append({
+            "day": d, "iso": d.isoformat(), "wd": WEEKDAYS[d.weekday()], "today": d == today, "past": d < today, "in": (d - today).days,
+            "ring": len(sides.get(d, ())), "events": events.get(d, []), "diary": diary if plus else None, "locked": bool(diary) and not plus,
+        })  # fmt: skip
+    return {
+        "strip": strip,
+        "today_iso": today.isoformat(),
+        "today_events": [e for e in events.get(today, []) if e["kind"] != "holiday"],
+        "streak": streak,
+        "freeze": freeze,
+        "answers_together": len(both),
+    }
+
+
+def _tile_marks(pair: Pair, side: str, week: dict | None) -> dict:
+    """Who has done this week's things, so each tile on «Сегодня» shows both partners' marks instead of a paragraph."""
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    quizzes = KnowledgeRepository().series("QUIZ:")
+    done: set = set()
+    if quizzes:
+        key = quizzes[timezone.localdate().isocalendar().week % len(quizzes)]["key"]
+        done = set(QuizAnswer.objects.filter(pair=pair, quiz_key=key).values_list("side", flat=True))
+    return {
+        "step": week["days"][week["today"] - 1] if week else None,
+        "quiz_mine": side in done,
+        "quiz_partner": ("b" if side == "a" else "a") in done,
+    }
 
 
 def daily(request: HttpRequest) -> HttpResponse:
@@ -815,18 +978,22 @@ def daily(request: HttpRequest) -> HttpResponse:
             **_pair_people(request, pair),
         }
         extra["partner_av"] = extra["av_b"] if side == "a" else extra["av_a"]  # empty until the partner joins
+        extra["me_av"] = extra["av_a"] if side == "a" else extra["av_b"]
+        extra["me_g"], extra["partner_g"] = (pair.a.gender, pair.b.gender) if side == "a" else (pair.b.gender, pair.a.gender)
+        extra["solo"] = not pair.partner_id  # tiles say what to do instead of showing a partner's marks
         extra |= _week_ctx(pair, report, side)
         talk = pair.plan.get("talk", {}).get(_talk_week(), [])
         extra |= {"weather": _weather(pair), "talk_mine": side in talk, "talk_partner": ("b" if side == "a" else "a") in talk}
         extra |= {
-            "dates_soon": pair_dates.upcoming(today, pair_dates.people(pair), pair.dates, horizon=45)[:3],
-            "met_set": bool(pair_dates.met_day(pair.dates)),
             "date_idea": _date_idea(pair, report),
-            "wish_count": len(pair_wishes.view(pair.wishes, side)["theirs"]),
+            **_idea_marks(pair, side, request.GET.get("together") == "1"),
+            **_week_strip(pair, side, today, plus_for_pair(pair)),
         }
+        extra |= _tile_marks(pair, side, extra.get("week"))
+        extra["tree"] = _pair_tree(pair, extra["answers_together"], extra["strip"][3]["ring"] == 2, report)  # today is the middle
         return _render_report(request, report, "pages/daily.html", reverse("stored_report", args=[stored.id]), extra)
     demo = report_provider().get_report(_scenario(request))
-    demo_ctx = {"daily_question": question_of_day(demo, "demo", today), **_week_ctx(None, demo, "a")}
+    demo_ctx = {"daily_question": question_of_day(demo, "demo", today), "me_g": "", **_week_ctx(None, demo, "a")}  # a guest: neutral forms
     return _render_report(request, demo, "pages/daily.html", reverse("report"), demo_ctx)
 
 
@@ -862,7 +1029,9 @@ def quiz_week(request: HttpRequest) -> HttpResponse:
         raise Http404
     quiz = quizzes[timezone.localdate().isocalendar().week % len(quizzes)]
     side = side_of(owner, pair)
+    me, partner = (pair.a, pair.b) if side == "a" else (pair.b, pair.a)
     ctx = {"quiz": quiz, "pair": pair, "plus": plus_for_pair(pair), "has_partner": bool(pair.partner_id), "price_plus": settings.PRICE_PLUS}
+    ctx |= {"me_g": me.gender, "partner_g": partner.gender}  # «Побыть одному(ой)»: own options in my form, guesses in theirs
     if request.method == "POST" and ctx["plus"]:
         try:
             picks = [int(request.POST[f"q{i}"]) for i in range(len(quiz["items"]))]
@@ -896,10 +1065,8 @@ def quiz_week(request: HttpRequest) -> HttpResponse:
         ctx |= {"results": results, "match": round(100 * sum(r["same"] for r in results) / len(results))}
         if me_row.guesses and them_row.guesses:  # type: ignore[union-attr]
             ctx |= {"i_guessed": sum(r["i_guessed"] for r in results), "they_guessed": sum(r["they_guessed"] for r in results)}
-    me, partner = (pair.a.name, pair.b.name) if side == "a" else (pair.b.name, pair.a.name)
-    return render(
-        request, "pages/quiz_week.html", {**ctx, "mine": mine, "partner_done": bool(theirs), "me_name": me, "partner_name": partner}
-    )
+    ctx |= {"mine": mine, "partner_done": bool(theirs), "me_name": me.name, "partner_name": partner.name}
+    return render(request, "pages/quiz_week.html", ctx)
 
 
 def pair_ready(request: HttpRequest) -> HttpResponse:
@@ -1012,6 +1179,7 @@ def wizard(request: HttpRequest) -> HttpResponse:
     def person(prefix: str, day: date) -> dict:
         return {
             "name": request.POST.get(f"{prefix}_name", "").strip()[:80],
+            "gender": g if (g := request.POST.get(f"{prefix}_gender", "")) in ("f", "m") else "",
             "date": day,
             "time": _parse_time(request.POST.get(f"{prefix}_time")),
             **dict(zip(("place", "point"), _place_from(request, f"{prefix}_"), strict=True)),
@@ -1180,11 +1348,12 @@ def public_share(request: HttpRequest, token: str) -> HttpResponse:
 
 
 # ── questionnaires ────────────────────────────────────────────────────────
-def _quiz_ctx() -> dict:
-    return {
-        "sections": [{"title": s.title, "hint": s.hint, "items": [{"id": i.id, "text": i.text} for i in s.items]} for s in SECTIONS],
-        "likert": LIKERT,
-    }
+def _quiz_ctx(gender: str = "") -> dict:
+    """Questionnaire sections; «Я … сам(а)» in the form of the person answering when we know it."""
+    from apps.core.domain.names import agree
+
+    items = lambda s: [{"id": i.id, "text": agree(i.text, gender)} for i in s.items]  # noqa: E731
+    return {"sections": [{"title": s.title, "hint": s.hint, "items": items(s)} for s in SECTIONS], "likert": LIKERT}
 
 
 def quiz(request: HttpRequest) -> HttpResponse:
@@ -1217,7 +1386,7 @@ def person_quiz(request: HttpRequest, pid) -> HttpResponse:
         if pair.mode == "deep" and person == pair.a and not pair.b.answers:
             return redirect(reverse("invite_new", args=[pair.id]))
         return redirect(reverse("generating") + f"?r={request_report(pair).id}")
-    return render(request, "pages/quiz.html", {**_quiz_ctx(), "person": person, "submit_url": request.path})
+    return render(request, "pages/quiz.html", {**_quiz_ctx(person.gender), "person": person, "submit_url": request.path})
 
 
 # ── pair mode: the partner joins from their own account (ADR-0010) ────────
@@ -1303,15 +1472,114 @@ def profile_save(request: HttpRequest) -> HttpResponse:
     return redirect(_next_url(request) or reverse("account"))
 
 
+NOTES_KEEP, NUDGES_A_DAY, THANKS_MAX = 60, 3, 140
+
+
+def _pair_tree(pair: Pair, answers: int, watered: bool, report: Report | None) -> dict:
+    """«Наше дерево»: grown by what you did together, with a head start for months together and a species from the
+    pair's dynamic — compatibility picks the kind of tree, never its size (tree.py)."""
+    known = pair_dates.together(timezone.localdate(), pair.dates)
+    dates_n = sum(1 for v in pair.plan.get("ideas", {}).values() if set(v) == {"a", "b"})
+    dreams = sum(1 for w in pair.wishes if w["kind"] == "dream" and w["done"])
+    kind = report.pair_type.dynamic if report else "complement"
+    return pair_tree.grow(answers, dates_n, dreams, watered, months=(known or 0) // 30, kind=kind)
+
+
 def together(request: HttpRequest) -> HttpResponse:
-    """«Вдвоём» tab: the invite for your latest pair, the shared report if you joined one, the demo otherwise."""
+    """«Вдвоём»: your shared space — the tree you grow by doing things together, «Думаю о тебе», a thank-you, what your
+    partner did lately, and everything that is «ours» as tiles. Before the partner joins it is the invite."""
     owner = get_owner(request)
     pair = pairs_of(owner).order_by("-created_at").first() if owner else None
-    if pair and pair.owner_id == owner.id and not pair.partner_id:  # type: ignore[union-attr]
+    if not owner or not owner.is_account or not pair:  # without an account it is a preview: what is here and how to begin
+        return render(
+            request,
+            "pages/together_preview.html",
+            {"has_report": bool(pair and latest_ready(pair)), "account": bool(owner and owner.is_account)},
+        )
+    if not pair.partner_id:  # step one of the path: invite the partner
         return redirect("invite_new", pair_id=pair.id)
-    if pair and (stored := latest_ready(pair)):
-        return redirect("stored_report", rid=stored.id)
-    return render(request, "pages/pair_invite.html", {})
+    side, today = side_of(owner, pair), timezone.localdate()  # type: ignore[arg-type]
+    other = "b" if side == "a" else "a"
+    sides: dict[date, set] = {}
+    for d, s in DailyAnswer.objects.filter(pair=pair).values_list("day", "side"):
+        sides.setdefault(d, set()).add(s)
+    both = {d for d, s in sides.items() if len(s) == 2}
+    streak, freeze = pair_streak(both, today)
+    dates_n = sum(1 for v in pair.plan.get("ideas", {}).values() if set(v) == {"a", "b"})
+    dreams_done = sum(1 for w in pair.wishes if w["kind"] == "dream" and w["done"])
+    partner_name = pair.b.name if side == "a" else pair.a.name
+    feed = [{"at": datetime.fromisoformat(n["at"]), "kind": n["kind"], "text": n.get("text", "")} for n in pair.notes if n["by"] == other]
+    feed += [
+        {"at": a.created_at, "kind": "answer", "text": ""}
+        for a in DailyAnswer.objects.filter(pair=pair, side=other).order_by("-created_at")[:1]
+    ]
+    feed += [
+        {"at": q.created_at, "kind": "quiz", "text": ""}
+        for q in QuizAnswer.objects.filter(pair=pair, side=other).order_by("-created_at")[:1]
+    ]
+    soon = pair_dates.upcoming(today, pair_dates.people(pair), pair.dates, horizon=60)
+    ctx = {
+        "pair": pair,
+        "stored": latest_ready(pair),
+        "me_name": pair.a.name if side == "a" else pair.b.name,
+        "partner_name": partner_name,
+        "known": pair_dates.together(today, pair.dates),
+        "met": pair_dates.met_day(pair.dates),
+        "streak": streak,
+        "freeze": freeze,
+        "answers_together": len(both),
+        "dates_together": dates_n,
+        "dreams_done": dreams_done,
+        "tree": _pair_tree(pair, len(both), today in both, report := report_of(stored) if (stored := latest_ready(pair)) else None),
+        "report": report,
+        "dynamic": DYNAMICS[report.pair_type.dynamic].title if report and report.pair_type.dynamic in DYNAMICS else "",
+        "feed": sorted(feed, key=lambda f: f["at"], reverse=True)[:6],
+        "next_date": next((e for e in soon if e["kind"] != "holiday"), None),
+        "partner_ideas": len(pair_wishes.view(pair.wishes, side)["theirs"]),
+        "weather": _weather(pair),
+        "sent": request.GET.get("sent", ""),
+        "path": _pair_path(owner, pair, len(both), latest_ready(pair)),  # type: ignore[arg-type]
+        "today_mine": side in sides.get(today, ()),
+        "today_partner": other in sides.get(today, ()),
+        **_pair_people(request, pair),
+    }
+    ctx["me_av"], ctx["partner_av"] = (ctx["av_a"], ctx["av_b"]) if side == "a" else (ctx["av_b"], ctx["av_a"])
+    ctx["me_g"], ctx["partner_g"] = (pair.a.gender, pair.b.gender) if side == "a" else (pair.b.gender, pair.a.gender)
+    return render(request, "pages/together.html", ctx)
+
+
+def _note(request: HttpRequest, kind: str, text: str = "") -> HttpResponse:
+    """«Думаю о тебе» / «Спасибо за…»: a few a day, kept encrypted on the pair, and the partner hears about it in
+    neutral words — what was said is only shown inside the app."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).exclude(partner=None).order_by("-created_at").first() if owner and owner.is_account else None
+    if not pair:
+        raise Http404
+    side = side_of(owner, pair)  # type: ignore[arg-type]
+    if (
+        not cache.add(f"{kind}:{pair.id}:{side}:{timezone.localdate()}", 1, 26 * 3600)
+        and cache.incr(f"{kind}:{pair.id}:{side}:{timezone.localdate()}") > NUDGES_A_DAY
+    ):
+        return redirect(reverse("pair_invite") + "?sent=enough")
+    with transaction.atomic():
+        pair = Pair.objects.select_for_update().get(id=pair.id)
+        pair.notes = [*pair.notes, {"kind": kind, "by": side, "text": text, "at": timezone.now().isoformat()}][-NOTES_KEEP:]
+        pair.save(update_fields=["notes"])
+    notify_partner(pair, side, kind)
+    return redirect(reverse("pair_invite") + f"?sent={kind}")
+
+
+@require_POST
+def nudge(request: HttpRequest) -> HttpResponse:
+    return _note(request, "nudge")
+
+
+@require_POST
+def thanks(request: HttpRequest) -> HttpResponse:
+    text = " ".join(request.POST.get("text", "").split())[:THANKS_MAX]
+    if len(text) < 2:
+        return redirect(reverse("pair_invite") + "#thanks")
+    return _note(request, "thanks", text)
 
 
 def join_by_code(request: HttpRequest) -> HttpResponse:
@@ -1413,9 +1681,10 @@ def unlink_partner(request: HttpRequest, pair_id) -> HttpResponse:
         IntimacyAnswer.objects.filter(pair=pair, side="b").delete()
         pair.dates = [e for e in pair.dates if e.get("by") != "b"]  # the partner's calendar dates go too
         pair.wishes = pair_wishes.leave(pair.wishes, "b")  # their ideas and dreams, and their quiet reservations
+        pair.notes = [n for n in pair.notes if n["by"] != "b"]  # their «Думаю о тебе» and thank-yous
         pair.plan = {**pair.plan, "date18": [s for s in pair.plan.get("date18", []) if s != "b"]}
         pair.partner = None
-        pair.save(update_fields=["partner", "dates", "wishes", "plan"])
+        pair.save(update_fields=["partner", "dates", "wishes", "notes", "plan"])
         invite_code(pair, fresh=True)
         if had_answers:
             pair.reports.all().delete()
@@ -1666,6 +1935,8 @@ def pay_return(request: HttpRequest, pid) -> HttpResponse:
     _settle(purchase)
     stored = latest_ready(purchase.pair) if purchase.pair and purchase.kind != "gift" else None
     back = reverse("stored_report", args=[stored.id]) + "razbor/" if stored else reverse("history")
+    if purchase.kind == "plus":  # the month opens the daily extras, not the reports
+        back = reverse("pair_invite")
     ctx = {"ok": purchase.status == "succeeded", "pending": purchase.status == "pending", "purchase": purchase, "back": back}
     if purchase.kind == "gift" and purchase.gift_code:
         ctx["gift_url"] = request.build_absolute_uri(reverse("gift", args=[purchase.gift_code]))
@@ -1812,6 +2083,7 @@ def profile_edit(request: HttpRequest, pid) -> HttpResponse:
         day = _parse_date(request.POST.get("date"))
         if day:
             person.name = request.POST.get("name", person.name).strip()[:80] or person.name
+            person.gender = g if (g := request.POST.get("gender", "")) in ("f", "m") else ""
             person.birth = birth_payload(day, _parse_time(request.POST.get("time")), *_place_from(request, ""))
             person.save()
             for pair in Pair.objects.filter(models.Q(a=person) | models.Q(b=person)):
@@ -1876,6 +2148,7 @@ def export_data(request: HttpRequest) -> HttpResponse:
         "dates": [{"pair": str(p.id), "entries": p.dates} for p in pairs_of(owner) if p.dates],
         # as you see it on the page: your own ideas never say whether they were reserved
         "wishes": [{"pair": str(p.id), **pair_wishes.view(p.wishes, side_of(owner, p))} for p in pairs_of(owner) if p.wishes],
+        "notes": [{"pair": str(p.id), "notes": p.notes} for p in pairs_of(owner) if p.notes],
     }
     resp = HttpResponse(json.dumps(data, ensure_ascii=False, indent=2, default=str), content_type="application/json; charset=utf-8")
     resp["Content-Disposition"] = 'attachment; filename="duoverse-data.json"'

@@ -61,7 +61,7 @@ from apps.compatibility.domain.report import (
     UniverseKey,
 )
 from apps.compatibility.domain.report import Layer as EvidenceLayer
-from apps.core.domain.names import forms, gen
+from apps.core.domain.names import agree, forms, gen
 from apps.core.domain.scoring import Factor, ScoreResult, clamp
 from apps.knowledge.catalog import FINDINGS
 from apps.numerology.domain import numerology as num
@@ -144,6 +144,7 @@ class PersonInput:
     birth_place: str | None = None
     answers: dict[str, int] | None = None
     birth_coords: tuple[float, float, str] | None = None  # lat, lon, IANA zone of a place picked on the map
+    gender: str = ""  # "f" / "m" / "" — texts say «рада» / «рад» / «рад(а)» (names.agree)
 
 
 @dataclass
@@ -176,6 +177,11 @@ def _cap(s: str) -> str:
 def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> Report:
     kb, today = deps.kb, deps.today()
     names = {f"a{k}": v for k, v in forms(a.name).items()} | {f"b{k}": v for k, v in forms(b.name).items()}  # {a}, {b_gen}, {a_ins}…
+    names |= {"a_g": a.gender, "b_g": b.gender}  # knowledge fill() makes «незамеченным(ой)» agree with the nearest {a}/{b}
+    gender_of = {a.name: a.gender, b.name: b.gender}
+
+    def said(text: str) -> str:
+        return agree(text, a=a.gender, b=b.gender).format(**names)
 
     # ── charts and universes ────────────────────────────────────────────────
     def place_of(p: PersonInput) -> Place | None:
@@ -239,7 +245,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         ]
         tone: Tone = "synergy" if kind == "good" else ("risk" if cat_scores[cat] < 45 else "attention")
         return Insight(
-            title=d.get("title", CATEGORIES[cat][0]), text=d.get("text", "").format(**names), tone=tone, evidence=[ev(f) for f in evidence]
+            title=d.get("title", CATEGORIES[cat][0]), text=said(d.get("text", "")), tone=tone, evidence=[ev(f) for f in evidence]
         )
 
     # ── roles and pair type ────────────────────────────────────────────────
@@ -293,7 +299,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         return kb.text(key, default.replace("{", "(").replace("}", ")"), **names, **extra)
 
     def person_names(prefix: str, name: str) -> dict[str, str]:
-        return {f"{prefix}{k}": v for k, v in forms(name).items()}
+        return {f"{prefix}{k}": v for k, v in forms(name).items()} | {f"{prefix}_g": gender_of.get(name, "")}
 
     def planet_rows(c: Chart, name: str) -> list[PlanetPos]:
         return [
@@ -679,7 +685,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
                 score=score,
                 tone=tone_of(score),
                 summary=kb.text(f"CAT:{d['cats'][0]}:{tone_of(score)}"),
-                story=[d["intro"].format(**names), d["strong"] if score >= 75 else d["weak"]],  # one honest reading per sphere
+                story=[said(d["intro"]), d["strong"] if score >= 75 else d["weak"]],  # one honest reading per sphere
                 evidence=[ev(f) for f in evidence],
                 actions=[d["do"]],
                 question=d["question"],

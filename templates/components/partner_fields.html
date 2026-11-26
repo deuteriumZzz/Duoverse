@@ -6,6 +6,11 @@
   </div>
   <label class="block"><span class="label">Имя</span>
     <input class="field" name="{{ who }}_name" x-model="form.{{ who }}.name" placeholder="{% if who == 'a' %}Аня{% else %}Миша{% endif %}" autocomplete="{% if who == 'a' %}given-name{% else %}off{% endif %}"></label>
+  <fieldset><legend class="label">Пол <span class="font-normal text-ink-3">— по желанию</span></legend>
+    <div class="flex flex-wrap gap-2">
+      {% for v, l in GENDERS %}<label class="cursor-pointer rounded-full border border-line px-3.5 py-1.5 text-sm font-bold transition has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk"><input type="radio" name="{{ who }}_gender" value="{{ v }}" class="sr-only" {% if not v %}checked{% endif %}>{{ l }}</label>{% endfor %}
+    </div>
+  </fieldset>
   <div><label class="label" for="{{ who }}_date">Дата рождения <span class="text-risk">*</span></label>
     {% if who == 'a' %}{% include "components/date_field.html" with name="a_date" id="a_date" model="form.a.date" invalid="touched && !validDate(form.a.date)" %}
     {% else %}{% include "components/date_field.html" with name="b_date" id="b_date" model="form.b.date" invalid="touched && !validDate(form.b.date)" %}{% endif %}
@@ -16,7 +21,8 @@
       <div>
         <div class="flex items-center justify-between"><span class="label">Время рождения</span>
           <label class="mb-1.5 flex cursor-pointer items-center gap-2 text-xs font-bold text-ink-2"><input type="checkbox" class="size-4 accent-[var(--color-ink)]" x-model="form.{{ who }}.noTime">Не знаю время</label></div>
-        <input class="field disabled:opacity-40" type="time" name="{{ who }}_time" x-model="form.{{ who }}.time" :disabled="form.{{ who }}.noTime">
+        {% if who == 'a' %}{% include "components/time_field.html" with name="a_time" model="form.a.time" disabled="form.a.noTime" %}
+        {% else %}{% include "components/time_field.html" with name="b_time" model="form.b.time" disabled="form.b.noTime" %}{% endif %}
         <p x-show="form.{{ who }}.noTime" x-collapse class="mt-2 flex items-start gap-2 rounded-2xl bg-attention-soft p-3 text-xs leading-relaxed text-attention-ink">{% icon 'info' 'size-4' %}Ничего страшного: без времени не посчитаем дома и Асцендент, а Луну — приблизительно. Остальное — точно.</p>
       </div>
       <div><label class="label" for="{{ who }}_place">Город рождения</label>

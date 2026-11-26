@@ -13,6 +13,21 @@
     </div>
   {% else %}
 
+    {% include "components/scene_defs.html" %}
+    {% for e in today_events|slice:":1" %}
+    <section class="sticker mt-8 overflow-hidden bg-a-soft p-5" data-burst-in="500" data-reveal>
+      <svg class="scene mx-auto block h-28 w-auto" viewBox="0 0 320 120" aria-hidden="true">
+        <path d="M12 110H308" fill="none"/>
+        <g transform="translate(128 110) scale(.85)"><use href="#sc-fig"/>{% hair me_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g>
+        <g transform="translate(192 110) scale(.85)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g>
+        {% if e.kind == 'birthday' %}<use class="sc-float" href="#sc-cake" x="160" y="22" transform="scale(1)"/>{% else %}<use class="sc-float" href="#sc-heart" x="160" y="26"/>{% endif %}
+        <g stroke="none"><rect x="60" y="24" width="6" height="11" rx="1.5" fill="var(--color-a)" transform="rotate(-20 63 29)"/><circle cx="96" cy="16" r="3.5" fill="var(--color-b)"/><rect x="236" y="18" width="6" height="11" rx="1.5" fill="var(--color-sage)" transform="rotate(25 239 23)"/><circle cx="262" cy="40" r="3" fill="var(--color-lilac)"/><use href="#sc-star" x="40" y="60"/><use href="#sc-star" x="284" y="74"/></g>
+      </svg>
+      <p class="mt-2 text-center font-display text-xl font-extrabold">Сегодня: {{ e.title }}!</p>
+      {% if e.sub %}<p class="text-center text-sm text-ink-2">{{ e.sub }}</p>{% endif %}
+    </section>
+    {% endfor %}
+
     {% if together is not None %}
     <section class="sticker mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 bg-pair-soft p-6" data-reveal>
       <div class="min-w-0 flex-1">
@@ -24,10 +39,24 @@
         <summary class="cursor-pointer font-bold text-ink-3 hover:text-ink">изменить</summary>
         <form method="post" class="mt-2 flex gap-2">{% csrf_token %}
           <input type="hidden" name="kind" value="met">
-          <input type="date" name="day" value="{{ met|date:'Y-m-d' }}" max="{{ today }}" required class="field" aria-label="День знакомства">
+          <div class="min-w-0 flex-1">{% include "components/date_field.html" with name="day" value=met|date:"Y-m-d" max=today start="today" label="День знакомства" required=True %}</div>
           <button class="btn btn-soft btn-sm">Сохранить</button>
         </form>
       </details>
+      {% if road %}
+      <div class="basis-full">
+        <svg class="scene block h-auto w-full" viewBox="0 0 320 92" aria-hidden="true">
+          <path d="M36 60H298" fill="none" stroke-dasharray="1 7"/>
+          <path d="M36 60H{{ road.today_x }}" fill="none" stroke="var(--color-a)" stroke-width="5"/>
+          <g transform="translate(14 60) scale(.36)"><use href="#sc-fig"/>{% hair me_g %}</g><g transform="translate(29 60) scale(.36)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}</g>
+          {% for f in road.flags %}
+          <g transform="translate({{ f.x }} 60)"><path d="M0 0v-30" fill="none"/><path d="M0-30l16 6-16 6z" fill="{% if f.done %}var(--color-pair){% else %}var(--color-paper){% endif %}"{% if not f.done %} stroke-dasharray="3 3"{% endif %}/><text y="20" style="font-size:11px">{{ f.n }}</text></g>
+          {% endfor %}
+          <circle cx="{{ road.today_x }}" cy="60" r="6" fill="var(--color-a)"/>
+        </svg>
+        {% if road.next %}<p class="text-sm text-ink-2">До {{ road.next }} дней со знакомства — ещё {{ road.left }} дн.</p>{% endif %}
+      </div>
+      {% endif %}
     </section>
     {% else %}
     <form method="post" class="sticker mt-8 bg-pair-soft p-6" data-reveal>{% csrf_token %}
@@ -35,7 +64,7 @@
       <label for="met-day" class="font-extrabold">Когда вы познакомились?</label>
       <p class="mt-1 text-sm text-ink-2">Посчитаем, сколько дней вы знакомы, и напомним о годовщинах, 100, 500 и 1000 днях.</p>
       <div class="mt-4 flex flex-wrap gap-2">
-        <input type="date" id="met-day" name="day" max="{{ today }}" required class="field max-w-xs">
+        <div class="w-full max-w-xs">{% include "components/date_field.html" with name="day" id="met-day" max=today start="today" label="Когда вы познакомились" required=True %}</div>
         <button class="btn btn-primary btn-sm">{% icon 'heart' 'size-4' %}Сохранить</button>
       </div>
     </form>
@@ -52,7 +81,7 @@
           </span>
           <div class="min-w-0 flex-1">
             <p class="flex items-start gap-1.5 font-bold leading-snug">
-              <span class="mt-0.5 shrink-0">{% if e.kind == 'birthday' %}{% icon 'cake' 'size-4' %}{% elif e.kind == 'met' %}{% icon 'heart' 'size-4' %}{% elif e.kind == 'milestone' %}{% icon 'sparkles' 'size-4' %}{% elif e.kind == 'custom' %}{% icon 'star' 'size-4' %}{% else %}{% icon 'party-popper' 'size-4' %}{% endif %}</span>
+              <span class="mt-0.5 shrink-0">{% if e.kind == 'birthday' %}<svg class="scene size-5" viewBox="-17 -21 34 32" aria-hidden="true"><use href="#sc-cake"/></svg>{% elif e.kind == 'met' %}{% icon 'heart' 'size-4' %}{% elif e.kind == 'milestone' %}{% icon 'sparkles' 'size-4' %}{% elif e.kind == 'custom' %}{% icon 'star' 'size-4' %}{% else %}{% icon 'party-popper' 'size-4' %}{% endif %}</span>
               <span class="min-w-0 break-words">{{ e.title }}</span>
             </p>
             <p class="mt-0.5 text-sm text-ink-2"><span class="{% if e.in <= 7 %}font-extrabold text-ink{% endif %}">{% if e.in == 0 %}сегодня{% elif e.in == 1 %}завтра{% else %}через {{ e.in }} дн.{% endif %}</span>{% if e.sub %} · {{ e.sub }}{% endif %}{% if e.note %} · {{ e.note }}{% endif %}</p>
@@ -75,7 +104,7 @@
       {% if error %}<p class="rounded-2xl bg-risk-soft p-3 text-sm text-risk-ink" role="alert">Проверьте название и дату: дата — не дальше чем через год.</p>{% endif %}
       <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
         <input name="title" maxlength="60" required placeholder="Например, наша свадьба" class="field" aria-label="Название">
-        <input type="date" name="day" max="{{ max_day }}" required class="field" aria-label="Дата">
+        <div class="sm:w-48">{% include "components/date_field.html" with name="day" max=max_day start="today" label="Дата события" required=True %}</div>
       </div>
       <input name="note" maxlength="200" placeholder="Заметка для вас двоих — по желанию" class="field" aria-label="Заметка">
       <button class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}Добавить</button>

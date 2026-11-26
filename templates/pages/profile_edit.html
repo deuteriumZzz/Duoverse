@@ -3,7 +3,7 @@
 {% block content %}
 <div class="mx-auto max-w-2xl px-4 py-10 sm:px-6" x-data="{ del: false, typed: '' }">
   <a href="{% url back|default:'profiles' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}{% if as_partner %}Мои разборы{% else %}Сохранённые люди{% endif %}</a>
-  {% if as_partner %}<p class="mt-4 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">Это ваши данные в паре: их вводил(а) пригласивший, но поправить можете только вы. Разбор пересчитается для вас обоих.</p>{% endif %}
+  {% if as_partner %}<p class="mt-4 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">Это ваши данные в паре: их внёс тот, кто вас пригласил, но поправить их можете только вы. Разбор пересчитается для вас обоих.</p>{% endif %}
   <div class="side-a mt-5 flex items-center gap-4">
     <span class="grid size-16 place-items-center rounded-3xl t-fill font-display text-2xl font-extrabold text-white">{{ p.name|first }}</span>
     <div><h1 class="text-3xl font-extrabold">{{ p.name }}</h1><p class="text-ink-3">{% if p.answers %}анкеты пройдены{% else %}анкеты не пройдены{% endif %}</p></div>
@@ -11,9 +11,14 @@
   <form method="post" class="card mt-8 space-y-5 p-6 sm:p-8">
     {% csrf_token %}
     <label class="block"><span class="label">Имя</span><input class="field" name="name" value="{{ p.name }}" maxlength="80"></label>
+  <fieldset><legend class="label">Пол <span class="font-normal text-ink-3">— по желанию</span></legend>
+    <div class="flex flex-wrap gap-2">
+      {% for v, l in GENDERS %}<label class="cursor-pointer rounded-full border border-line px-3.5 py-1.5 text-sm font-bold transition has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk"><input type="radio" name="gender" value="{{ v }}" class="sr-only" {% if p.gender == v %}checked{% endif %}>{{ l }}</label>{% endfor %}
+    </div>
+  </fieldset>
     <div class="grid gap-5 sm:grid-cols-2">
       <div><label class="label" for="p_date">Дата рождения</label>{% include "components/date_field.html" with name="date" id="p_date" value=p.birth_date|date:'Y-m-d' required=True %}</div>
-      <label class="block"><span class="label">Время рождения</span><input class="field" type="time" name="time" value="{{ p.birth_time|time:'H:i' }}"></label>
+      <div><label class="label" for="p_time">Время рождения</label>{% include "components/time_field.html" with name="time" id="p_time" value=p.birth_time|time:'H:i' %}</div>
     </div>
     <div><label class="label" for="p_place">Город рождения</label>
       {% include "components/place_field.html" with prefix="" id="p_place" place=p.birth_place lat=p.birth.lat lon=p.birth.lon tz=p.birth.tz %}</div>

@@ -5,6 +5,7 @@ from typing import Any
 
 from django.conf import settings
 
+from apps.core.domain.names import agree
 from apps.knowledge.models import KnowledgeBlock
 
 
@@ -16,8 +17,12 @@ class _Keep(dict):
 
 
 def fill(template: str, **fmt: Any) -> str:
+    """Names into a knowledge text. «a_g»/«b_g»… (a person's gender) make «рад(а)» agree with the nearest {a}/{b}."""
     if not fmt:
         return template
+    who = {k[:-2]: v for k, v in fmt.items() if k.endswith("_g") and isinstance(v, str)}
+    if who:
+        template = agree(template, **who)
     try:
         return string.Formatter().vformat(template, (), _Keep(fmt))
     except (ValueError, IndexError):  # stray braces in hand-written text

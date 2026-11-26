@@ -1,0 +1,9 @@
+{% comment %}The one «Пара+» lock for every paid spot (the deep report has its own, paywall.html): what opens (title), why
+it's nice here (text, optional), the lowest price per month and that it covers both partners. Leads to the plans, where
+the year and the month sit side by side.{% endcomment %}
+<a href="{% url 'pricing' %}#plus" class="card {{ cls|default:'mt-3' }} flex items-center gap-3 p-4 text-left transition hover:border-ink">
+  <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'lock' 'size-4' %}</span>
+  <span class="min-w-0 flex-1 text-sm"><b class="block text-ink">{{ title }} — в «Паре+»</b>
+    <span class="text-ink-2">{% if text %}{{ text }} {% endif %}От {{ plus_from }} ₽ в месяц, одна подписка на вас двоих.</span></span>
+  <span class="text-ink-3">{% icon 'chevron-right' 'size-4' %}</span>
+</a>

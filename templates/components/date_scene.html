@@ -1,0 +1,37 @@
+{% comment %} «Свидание недели»: the front of the card, one sticker scene per theme (pieces from scene_defs.html).
+   The 18+ one stays abstract — two overlapping shapes — so it says nothing to someone looking over a shoulder.
+{% endcomment %}
+<svg class="scene mx-auto mt-2 block h-36 w-auto sm:h-40" viewBox="0 0 320 150" aria-hidden="true">
+  {% if date_idea.theme == 'close' %}
+    <g class="sc-float"><circle cx="138" cy="76" r="40" fill="var(--color-a)" opacity=".9"/></g>
+    <g class="sc-float" style="animation-delay:-3s"><circle cx="182" cy="76" r="40" fill="var(--color-b)" opacity=".9" style="mix-blend-mode:multiply"/></g>
+    <use href="#sc-heart" x="160" y="78" style="--fill:var(--color-paper)"/>
+    <use class="sc-float" href="#sc-star" x="78" y="40"/><use class="sc-float" href="#sc-star" x="246" y="118" style="animation-delay:-2s"/>
+  {% else %}
+    <path d="M12 136H308" fill="none"/>
+    {% if date_idea.theme == 'talk' %}
+      <rect x="136" y="104" width="48" height="7" rx="3" fill="var(--color-paper)"/><path d="M144 111v25M176 111v25" fill="none"/>
+      <use href="#sc-mug" x="150" y="94"/><use href="#sc-mug" x="170" y="94" style="--fill:var(--color-pair)"/>
+      <g transform="translate(104 136)"><use href="#sc-fig"/>{% hair me_g %}<path d="M-5-65q5 4 10 0" fill="none"/></g>
+      <g transform="translate(216 136)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}<path d="M-5-65q5 4 10 0" fill="none"/></g>
+      <g class="sc-float"><rect x="40" y="14" width="50" height="26" rx="13" fill="var(--color-paper)"/><g fill="var(--color-ink)" stroke="none"><circle cx="55" cy="27" r="2.4"/><circle cx="65" cy="27" r="2.4"/><circle cx="75" cy="27" r="2.4"/></g></g>
+      <g class="sc-float" style="animation-delay:-2s"><rect x="230" y="20" width="34" height="26" rx="13" fill="var(--color-paper)"/><text x="247" y="38" style="fill:var(--color-b-ink); font-size:15px">?</text></g>
+      <g class="sc-float" style="animation-delay:-4s"><use href="#sc-heart" x="160" y="52"/></g>
+    {% elif date_idea.theme == 'play' %}
+      <rect x="120" y="104" width="80" height="7" rx="3" fill="var(--color-paper)"/><path d="M130 111v25M190 111v25" fill="none"/>
+      <g class="sc-float"><rect x="138" y="80" width="20" height="20" rx="5" fill="var(--color-paper)" transform="rotate(-12 148 90)"/><g fill="var(--color-ink)" stroke="none" transform="rotate(-12 148 90)"><circle cx="143" cy="85" r="2"/><circle cx="148" cy="90" r="2"/><circle cx="153" cy="95" r="2"/></g></g>
+      <g class="sc-float" style="animation-delay:-3s"><rect x="164" y="76" width="20" height="20" rx="5" fill="var(--color-pair)" transform="rotate(14 174 86)"/><g fill="var(--color-ink)" stroke="none" transform="rotate(14 174 86)"><circle cx="169" cy="81" r="2"/><circle cx="179" cy="91" r="2"/></g></g>
+      <g transform="translate(88 136)"><use href="#sc-fig"/>{% hair me_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g>
+      <g transform="translate(232 136)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g>
+      <g stroke="none"><rect x="60" y="24" width="6" height="11" rx="1.5" fill="var(--color-a)" transform="rotate(-20 63 29)"/><circle cx="114" cy="18" r="3.5" fill="var(--color-b)"/><rect x="250" y="20" width="6" height="11" rx="1.5" fill="var(--color-sage)" transform="rotate(25 253 25)"/><circle cx="210" cy="30" r="3" fill="var(--color-lilac)"/></g>
+    {% else %}
+      <path d="M8 18q76 24 152 0t152 0" fill="none"/>
+      <g stroke="none"><circle cx="40" cy="25" r="4" fill="var(--color-pair)"/><circle cx="84" cy="31" r="4" fill="var(--color-a)"/><circle cx="128" cy="25" r="4" fill="var(--color-pair)"/><circle cx="192" cy="25" r="4" fill="var(--color-b)"/><circle cx="236" cy="31" r="4" fill="var(--color-pair)"/><circle cx="280" cy="25" r="4" fill="var(--color-a)"/></g>
+      <path d="M270 52a14 14 0 1 0 12 24a11 11 0 1 1-12-24z" fill="var(--color-pair)"/>
+      <rect x="40" y="114" width="7" height="22" rx="2" fill="var(--color-paper)"/><path d="M43.5 114v-6" fill="none"/><path class="sc-float" d="M43.5 106q-4-6 0-12q4 6 0 12z" fill="var(--color-pair)" stroke-width="1.6"/>
+      <g transform="translate(136 136)"><use href="#sc-fig"/>{% hair me_g %}<path d="M-5-65q5 4 10 0" fill="none"/></g>
+      <g transform="translate(184 136)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}<path d="M-5-65q5 4 10 0" fill="none"/></g>
+      <g class="sc-float"><use href="#sc-heart" x="160" y="40"/></g>
+    {% endif %}
+  {% endif %}
+</svg>

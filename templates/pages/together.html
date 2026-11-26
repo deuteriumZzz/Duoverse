@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Главная — Duoverse{% endblock %}
+{% block content %}
+{% comment %}«Вдвоём»: the pair's own space. Our tree on top (it grows from what you do together and never wilts), one
+button to say you're thinking of them, a thank-you, what the partner did lately, and everything that is «ours» as
+tiles. Numbers sit under the tree, not instead of it.{% endcomment %}
+<div class="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+  {% include "components/scene_defs.html" %}
+  <div class="flex items-center gap-3">
+    <span class="flex shrink-0 -space-x-3" aria-hidden="true">{% avatar me_av 44 %}{% avatar partner_av 44 %}</span>
+    <div class="min-w-0 flex-1">
+      <h1 class="text-2xl font-extrabold sm:text-3xl">{{ me_name }} и {{ partner_name }}</h1>
+      {% if report %}<a href="{% url 'stored_report' stored.id %}" class="text-sm font-bold text-ink-2 hover:text-ink">{{ report.total_score }} из 100 · {{ report.pair_type.name }} →</a>{% endif %}
+      <p class="text-sm text-ink-3">{% if met %}знакомы с {{ met|date:"j E Y" }}{% else %}<a href="{% url 'pair_calendar' %}" class="font-bold underline decoration-dotted underline-offset-4 hover:text-ink">когда вы познакомились?</a>{% endif %}</p>
+    </div>
+  </div>
+
+  {% if sent %}
+  <p class="mt-5 rounded-2xl p-3 text-center text-sm font-bold {% if sent == 'enough' %}bg-sand text-ink-2{% else %}bg-synergy-soft text-synergy-ink{% endif %}"{% if sent != 'enough' %} data-burst-in="200"{% endif %} role="status">
+    {% if sent == 'nudge' %}{{ partner_name }} получит: «{{ me_name }} думает о вас».{% elif sent == 'thanks' %}Спасибо отправлено — {{ partner_name }} увидит его здесь.{% else %}На сегодня хватит — приберегите тёплые слова на завтра.{% endif %}
+  </p>
+  {% endif %}
+
+  {% if path %}
+    <section class="sticker mt-5 bg-paper p-4 sm:p-5" aria-label="Путь пары">
+      <div class="flex items-center gap-3">
+        <span class="grid size-9 shrink-0 place-items-center rounded-full border-2 border-ink bg-pair font-display font-extrabold">{% if path.n %}{{ path.n }}{% else %}{% icon 'refresh-cw' 'size-4' %}{% endif %}</span>
+        <div class="min-w-0 flex-1"><p class="text-xs font-bold uppercase tracking-wide text-ink-3">{% if path.n %}путь пары · шаг {{ path.n }} из {{ path.of }}{% else %}три месяца спустя{% endif %}</p>
+          <p class="font-display text-lg font-extrabold leading-tight">{{ path.title }}</p></div>
+        {% if path.n %}<span class="flex gap-1" aria-hidden="true">{% for _ in "123" %}<i class="size-2 rounded-full {% if forloop.counter < path.n %}bg-synergy{% elif forloop.counter == path.n %}bg-ink{% else %}bg-sand-2{% endif %}"></i>{% endfor %}</span>{% endif %}
+      </div>
+      <p class="mt-2 text-sm text-ink-2">{{ path.text }}</p>
+      {% if path.url %}<a href="{{ path.url }}" class="btn btn-primary btn-sm mt-3">{{ path.cta }}{% icon 'arrow-right' 'size-4' %}</a>
+      {% else %}<p class="mt-3 inline-flex items-center gap-2 rounded-full bg-sand px-3 py-1.5 text-sm font-bold text-ink-2">{{ path.cta }}</p>{% endif %}
+    </section>
+  {% endif %}
+
+  {% comment %}Our tree, a living scene: depth layers drift and follow the pointer, the tree sways; when it grew since you last
+  looked, the two of you walk up with a watering can, water it, it grows and new leaves open (treeScene() below,
+  «Наше дерево» in app.css). Tap it to water again once you both answered today.{% endcomment %}
+  <section id="tree" class="sticker mt-5 scroll-mt-24 overflow-hidden bg-b-soft" aria-labelledby="tree-title"
+    x-data="treeScene('{{ pair.id }}', {{ tree.points }}, {{ tree.leaves|length }}, {{ tree.stage }})">
+    <div class="flex items-center justify-between gap-3 px-4 pt-4 sm:px-5">
+      <div><p class="eyebrow">наше дерево · {{ tree.species|lower }}</p><h2 id="tree-title" class="font-display text-xl font-extrabold">{{ tree.name }}</h2></div>
+      <span class="chip {% if tree.watered %}bg-paper text-synergy-ink{% else %}bg-paper/70 text-ink-3{% endif %}">{% icon 'sprout' 'size-3.5' %}{% if tree.watered %}полито сегодня{% else %}ждёт полива{% endif %}</span>
+    </div>
+    <svg x-ref="scene" class="scene tree-scene mt-1 block h-auto w-full cursor-pointer select-none" :class="playing && 'watering'" :style="'--from:' + from"
+      viewBox="0 0 320 230" role="img" aria-label="Наше дерево: {{ tree.name|lower }}, {{ tree.species|lower }}"
+      @click="{% if tree.watered %}water(){% else %}toast('Польём, когда вы оба ответите на вопрос дня', 'sprout'){% endif %}">
+      <defs><linearGradient id="tree-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--color-b-soft)"/><stop offset=".85" stop-color="var(--color-milk)"/></linearGradient></defs>
+      <rect width="320" height="230" fill="url(#tree-sky)" stroke="none"/>
+      <g class="depth" style="--d:.12"><g class="drift" style="--d:.12"><use href="#sc-sun" x="266" y="36"/></g></g>
+      <g class="cloud" style="--t:46s"><use href="#sc-cloud" x="20" y="34"/></g>
+      <g class="cloud" style="--t:64s; --delay:-34s"><use href="#sc-cloud" x="0" y="62"/></g>
+      <g class="depth" style="--d:.3"><g class="drift" style="--d:.3"><path d="M-30 182Q30 140 96 168T214 158T350 172V230H-30z" fill="var(--color-sage)" opacity=".35" stroke="none"/></g></g>
+      <g class="depth" style="--d:.55"><g class="drift" style="--d:.55">
+        <ellipse cx="160" cy="212" rx="176" ry="26" fill="var(--color-sage)" opacity=".55" stroke="none"/>
+        <ellipse class="wet" cx="160" cy="209" rx="48" ry="7" fill="var(--color-b)" stroke="none"/>
+        <ellipse cx="160" cy="208" rx="36" ry="5" fill="var(--color-ink)" opacity=".12" stroke="none"/>
+        <g class="sway"><g class="grow" x-ref="crown">
+        {% if tree.stage == 0 %}
+          <path d="M144 208q16-16 32 0z" fill="var(--color-sand-2)"/>
+          <ellipse cx="160" cy="199" rx="7" ry="5" fill="var(--color-a)"/>
+          <path d="M160 194q-2-10 7-15" fill="none"/><ellipse data-leaf cx="168" cy="179" rx="5" ry="3" fill="{{ tree.leaf_fill }}" stroke-width="1.4" transform="rotate(-30 168 179)"/>
+        {% elif tree.stage == 1 %}
+          <path d="M160 208V166" fill="none" stroke-width="3"/>
+          <path data-leaf d="M160 184c-2-12-14-16-22-13 0 10 10 15 22 13z" fill="var(--color-sage)"/>
+          <path data-leaf d="M160 174c2-11 13-15 21-12 0 10-9 14-21 12z" fill="var(--color-sage)"/>
+        {% else %}
+          {% if tree.stage == 2 %}<path d="M153 208q5-40 2-74h11q-3 34 3 74z" fill="var(--color-a-ink)" opacity=".85"/>
+          {% elif tree.stage == 3 %}<path d="M149 208q7-52 2-96h17q-5 44 3 96z" fill="var(--color-a-ink)" opacity=".85"/><path d="M156 150q-20-8-30-22M164 140q18-6 27-20" fill="none" stroke-width="3"/>
+          {% else %}<path d="M144 208q9-62 2-112h22q-7 50 5 112z" fill="var(--color-a-ink)" opacity=".85"/><path d="M154 150q-26-8-40-28M166 136q24-8 36-28M158 120q-6-14-2-26" fill="none" stroke-width="3"/>{% endif %}
+          {% for x, y, r in tree.crown %}<circle cx="{{ x }}" cy="{{ y }}" r="{{ r }}" fill="{{ tree.crown_fill }}"/>{% endfor %}
+          {% for x, y in tree.leaves %}<ellipse data-leaf cx="{{ x }}" cy="{{ y }}" rx="5" ry="3" fill="{{ tree.leaf_fill }}" stroke-width="1.4" transform="rotate({% cycle '-30' '25' '-10' '40' %} {{ x }} {{ y }})"/>{% endfor %}
+          {% for x, y in tree.blossoms %}<g transform="translate({{ x }} {{ y }})"><circle r="5.5" fill="{{ tree.blossom_fill }}" stroke-width="1.5"/><circle r="2" fill="var(--color-pair)" stroke="none"/></g>{% endfor %}
+          {% for x, y in tree.lanterns %}<g class="sc-float" transform="translate({{ x }} {{ y }})"><path d="M0-6v-7" fill="none" stroke-width="1.3"/><rect x="-4.5" y="-6" width="9" height="12" rx="3.5" fill="var(--color-pair)" stroke-width="1.5"/></g>{% endfor %}
+        {% endif %}
+        </g></g>
+      </g></g>
+      <g class="depth" style="--d:.85"><g class="drift" style="--d:.85">
+        <g class="walk-a">
+          <g class="bob"><g transform="translate(62 216) scale(.55)"><use href="#sc-fig"/>{% hair me_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g></g>
+          <g class="can"><g transform="translate(84 178)"><rect x="-10" y="-7" width="20" height="14" rx="4" fill="var(--color-b)"/><path d="M-6-7q6-9 12 0" fill="none"/><path d="M10-3l14-9" fill="none" stroke-width="3"/></g></g>
+          <g fill="var(--color-b)" stroke="none"><circle class="drop" style="--k:0" cx="110" cy="168" r="2.2"/><circle class="drop" style="--k:1" cx="114" cy="166" r="2"/><circle class="drop" style="--k:2" cx="106" cy="170" r="1.8"/><circle class="drop" style="--k:3" cx="112" cy="171" r="2"/></g>
+        </g>
+        <g class="walk-b"><g class="bob"><g transform="translate(258 216) scale(.55)"><use href="#sc-fig" style="--fig:var(--color-b)"/>{% hair partner_g %}<path d="M-6-66q6 6 12 0" fill="none"/></g></g></g>
+      </g></g>
+      <g class="depth" style="--d:1.25" fill="var(--color-sage)" stroke-width="1.6"><path d="M14 230q2-12 5-15q1 9 2 15q2-10 6-13q-1 8-1 13z"/><path d="M290 230q2-12 5-15q1 9 2 15q2-10 6-13q-1 8-1 13z"/><path d="M236 230q1-8 4-10q1 6 1 10z"/></g>
+    </svg>
+    <div class="px-4 pb-4 sm:px-5">
+      {% if tree.next_at %}
+      <div class="flex items-center gap-3 text-xs font-bold text-ink-2">
+        <span class="h-2 flex-1 overflow-hidden rounded-full bg-paper"><i class="block h-full rounded-full bg-synergy" style="width: {{ tree.progress }}%"></i></span>
+        <span>до следующего роста: {{ tree.progress }}%</span>
+      </div>
+      {% endif %}
+      <p class="mt-2 text-xs text-ink-2">{% if tree.watered %}Нажмите на дерево — польём ещё раз. {% endif %}Растёт от того, что вы делаете вдвоём: ответили оба на вопрос дня — листок, свидание недели — цветок, сбывшаяся мечта — фонарик.{% if dynamic %} {{ tree.species }} — потому что вы «{{ dynamic }}».{% endif %}{% if tree.head %} За время вместе у вашего дерева фора.{% endif %} Не вянет никогда.</p>
+    </div>
+  </section>
+
+  {# what to do today, in one line: the doing lives in «Сегодня», here only where you stand #}
+  <a href="{% url 'daily' %}" class="card mt-4 flex items-center gap-3 p-3 pr-4 transition hover:-translate-y-0.5 hover:border-ink">
+    <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-b-soft">{% glyph 'message-circle' 'size-7' %}</span>
+    <span class="min-w-0 flex-1"><b class="block leading-tight">{% if today_mine and today_partner %}Сегодня вы оба ответили{% elif today_partner %}{{ partner_name }} уже {{ partner_g|gv:"ответил|ответила|ответил(а)" }} — ваш ход{% elif today_mine %}Ждём ответ {{ partner_name|gen }}{% else %}Вопрос дня ждёт вас{% endif %}</b>
+      <span class="block text-xs text-ink-3">{% if today_mine and today_partner %}дерево полито · свидание и дела недели — в «Сегодня»{% else %}ответьте оба — и дерево будет полито{% endif %}</span></span>
+    {% icon 'arrow-right' 'size-4' %}
+  </a>
+  <div class="mt-4 grid grid-cols-4 gap-2 text-center">
+    <div class="card p-2.5"><p class="font-display text-xl font-extrabold">{% if known is not None %}{{ known }}{% else %}{{ streak }}{% endif %}</p><p class="text-[0.7rem] font-bold text-ink-3">{% if known is not None %}дней знакомы{% else %}дн. подряд{% endif %}</p></div>
+    <div class="card p-2.5"><p class="font-display text-xl font-extrabold">{{ answers_together }}</p><p class="text-[0.7rem] font-bold text-ink-3">ответов вместе</p></div>
+    <div class="card p-2.5"><p class="font-display text-xl font-extrabold">{{ dates_together }}</p><p class="text-[0.7rem] font-bold text-ink-3">свиданий</p></div>
+    <div class="card p-2.5"><p class="font-display text-xl font-extrabold">{{ dreams_done }}</p><p class="text-[0.7rem] font-bold text-ink-3">мечты сбылись</p></div>
+  </div>
+
+  {# a bid for connection in one tap (Gottman), and a small thank-you (Algoe): the words stay in the app #}
+  <form method="post" action="{% url 'nudge' %}" class="mt-5">{% csrf_token %}
+    <button class="sticker flex w-full items-center justify-center gap-2 bg-a py-4 font-display text-lg font-extrabold transition hover:-translate-y-0.5 active:translate-y-0.5">{% glyph 'heart' 'size-7' %}Думаю о тебе</button>
+  </form>
+  <form id="thanks" method="post" action="{% url 'thanks' %}" class="card mt-3 flex items-center gap-2 p-2 pl-4">{% csrf_token %}
+    <span class="shrink-0 text-sm font-bold text-ink-3">Спасибо за</span>
+    <input name="text" maxlength="140" required minlength="2" placeholder="вчерашний ужин" class="min-w-0 flex-1 bg-transparent py-2 text-sm font-semibold outline-none" aria-label="Спасибо за что">
+    <button class="btn btn-primary btn-sm shrink-0" aria-label="Отправить спасибо">{% icon 'send' 'size-4' %}</button>
+  </form>
+
+  {% if feed %}
+  <section class="mt-7" aria-labelledby="feed-title">
+    <h2 id="feed-title" class="eyebrow">{{ partner_name }} недавно</h2>
+    <ul class="mt-3 divide-y divide-dashed divide-line">
+      {% for f in feed %}
+      <li class="flex items-center gap-3 py-2.5 text-sm">
+        {% avatar partner_av 28 %}
+        <span class="min-w-0 flex-1">{% if f.kind == 'nudge' %}<b>думает о вас</b>{% elif f.kind == 'thanks' %}<b>спасибо</b> за {{ f.text }}{% elif f.kind == 'answer' %}ответ на вопрос дня{% else %}квиз недели пройден{% endif %}</span>
+        <span class="shrink-0 text-xs text-ink-3">{{ f.at|timesince }} назад</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section class="mt-7" aria-labelledby="ours-title">
+    <h2 id="ours-title" class="eyebrow">наше</h2>
+    <div class="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      <a href="{% url 'pair_calendar' %}" class="card flex flex-col items-center gap-1.5 p-3 text-center transition hover:-translate-y-0.5 hover:border-ink">{% glyph 'calendar' 'size-9' %}<span class="text-sm font-extrabold">Календарь</span>{% if next_date %}<span class="text-[0.7rem] font-bold text-ink-3">{{ next_date.title|truncatechars:18 }}</span>{% endif %}</a>
+      <a href="{% url 'wish_map' %}" class="card flex flex-col items-center gap-1.5 p-3 text-center transition hover:-translate-y-0.5 hover:border-ink">{% glyph 'gift' 'size-9' %}<span class="text-sm font-extrabold">Желания и мечты</span>{% if partner_ideas %}<span class="text-[0.7rem] font-bold text-ink-3">идей у {{ partner_name|gen }}: {{ partner_ideas }}</span>{% endif %}</a>
+      <a href="{% url 'intimacy' %}" class="card flex flex-col items-center gap-1.5 p-3 text-center transition hover:-translate-y-0.5 hover:border-ink">{% glyph 'flame' 'size-9' %}<span class="text-sm font-extrabold">Близость</span><span class="rounded-md border border-ink px-1 text-[0.6rem] font-extrabold">18+</span></a>
+      <a href="{% url 'pair_story' pair.id %}" class="card flex flex-col items-center gap-1.5 p-3 text-center transition hover:-translate-y-0.5 hover:border-ink">{% glyph 'layers' 'size-9' %}<span class="text-sm font-extrabold">История пары</span></a>
+    </div>
+  </section>
+
+  {% if weather %}
+  {# «Погода пары»: this week's sky against both charts — symbolic, like all astrology here #}
+  <section class="card mt-7 p-5">
+    <p class="eyebrow">погода пары · эта неделя</p>
+    <ul class="mt-3 space-y-2.5">
+      {% for w in weather %}
+      <li class="tone-{{ w.tone }} flex gap-3"><span class="grid size-8 shrink-0 place-items-center rounded-xl t-bg t-ink font-display">{{ w.glyph }}</span><span class="text-sm"><b>{{ w.planet }} {{ w.glyph }} {{ w.point }} {{ w.who|gen }}</b> — {{ w.text }}.</span></li>
+      {% endfor %}
+    </ul>
+    <p class="mt-3 text-xs text-ink-3">Символический слой: повод для разговора, а не прогноз.</p>
+  </section>
+  {% endif %}
+</div>
+<script>
+  // «Наше дерево»: plays the watering when the tree grew since this device last saw it, and lets the scene follow the pointer
+  function treeScene(id, points, leaves, stage) {
+    const key = "tree:" + id;
+    return {
+      playing: false, from: 1, fresh: 0,
+      init() {
+        const seen = JSON.parse(localStorage.getItem(key + ":s") || "null");
+        if ((+localStorage.getItem(key) || 0) < points) {
+          this.from = seen && seen.stage === stage ? 0.9 : 0.55;
+          this.fresh = Math.max(1, leaves - (seen ? seen.leaves : 0));
+          setTimeout(() => this.water(), 600);
+        }
+        const svg = this.$refs.scene;
+        svg.addEventListener("pointermove", (e) => {
+          const r = svg.getBoundingClientRect();
+          svg.style.setProperty("--px", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+          svg.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+        });
+        svg.addEventListener("pointerleave", () => { svg.style.setProperty("--px", 0); svg.style.setProperty("--py", 0); });
+      },
+      water() {
+        if (this.playing) return;
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return this.done();
+        const all = [...this.$refs.crown.querySelectorAll("[data-leaf]")];
+        all.slice(-(this.fresh || 1)).forEach((el, k) => { el.style.setProperty("--k", k); el.classList.add("leaf-new"); });
+        this.playing = true;
+        setTimeout(() => burst(this.$refs.crown, 20), 3000);
+        setTimeout(() => { this.done(); all.forEach((el) => el.classList.remove("leaf-new")); this.from = 1; this.fresh = 0; }, 4300);
+      },
+      done() {
+        this.playing = false;
+        localStorage.setItem(key, points);
+        localStorage.setItem(key + ":s", JSON.stringify({ leaves, stage }));
+      },
+    };
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% comment %}One tile on «Сегодня»: a sticker glyph, two words and both partners' marks instead of a paragraph.
+key opens the bottom sheet of that name; href goes to a page instead. g glyph, bg tile colour, mine / partner done,
+solo: no partner yet (then sub says what to do); why: the sphere of your report it is about.{% endcomment %}
+<{% if href %}a href="{{ href }}"{% else %}button type="button" @click="sheet = '{{ key }}'"{% endif %} class="card flex min-h-[8.5rem] flex-col items-start gap-2 p-3.5 text-left transition hover:-translate-y-0.5 hover:border-ink">
+  <span class="grid size-10 place-items-center rounded-2xl {{ bg }}">{% glyph g 'size-7' %}</span>
+  <span class="font-extrabold leading-tight">{{ title }}{% if why %}<span class="mt-0.5 block text-[0.7rem] font-bold text-ink-3">про «{{ why }}»</span>{% endif %}</span>
+  <span class="mt-auto flex items-center gap-1.5 text-xs font-bold {% if mine and partner %}text-synergy-ink{% else %}text-ink-3{% endif %}">
+    {% if solo %}{{ sub|default:"открыть" }}{% else %}
+    <span class="flex -space-x-1.5" aria-hidden="true">
+      <span class="grid size-5 place-items-center rounded-full border-2 border-paper text-[0.6rem] font-extrabold {% if mine %}bg-synergy text-white{% else %}bg-a-soft text-a-ink{% endif %}">{% if mine %}✓{% else %}{{ me_name|first }}{% endif %}</span>
+      <span class="grid size-5 place-items-center rounded-full border-2 border-paper text-[0.6rem] font-extrabold {% if partner %}bg-synergy text-white{% else %}bg-b-soft text-b-ink{% endif %}">{% if partner %}✓{% else %}{{ partner_name|first }}{% endif %}</span>
+    </span>
+    {% if mine and partner %}вдвоём{% elif mine %}ждём {{ partner_name|acc }}{% elif partner %}ваш ход{% else %}{{ sub|default:"ваш ход" }}{% endif %}
+    {% endif %}
+  </span>
+</{% if href %}a{% else %}button{% endif %}>

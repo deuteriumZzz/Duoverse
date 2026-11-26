@@ -421,6 +421,44 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
 .scene :is(.sc-in, .sc-out) { opacity: var(--in); transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(calc((1 - var(--in)) * 10px)) scale(calc(.8 + var(--in) * .2)); }
 .scene .sc-move { transform-box: view-box; }
 .scene text { stroke: none; fill: var(--color-ink); font: 800 12px var(--font-sans); text-anchor: middle; }
+.scene .sc-float { transform-box: fill-box; animation: float-a 6s ease-in-out infinite; }
+/* wish map: the gift box closes and the bow ties the moment you reserve it (only the giver ever sees this) */
+.sc-tie .lid { transform-box: fill-box; transform-origin: 50% 100%; animation: tie-lid .7s var(--ease-spring) .15s both; }
+.sc-tie .bow { transform-box: fill-box; transform-origin: center; animation: pop-in .6s var(--ease-spring) .7s both; }
+@keyframes tie-lid { from { translate: 0 -14px; rotate: -18deg; opacity: 0; } to { translate: 0 0; rotate: 0deg; opacity: 1; } }
+/* dreams: a star lights up and joins the constellation */
+.sc-lit { transform-box: fill-box; transform-origin: center; animation: star-lit .9s var(--ease-spring) both; }
+@keyframes star-lit { 0% { scale: .2; opacity: 0; } 60% { scale: 1.5; opacity: 1; } 100% { scale: 1; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .scene .sc-float, .sc-tie *, .sc-lit { animation: none !important; } }
+
+/* ───────── «Наше дерево»: a living scene — depth layers follow the pointer and drift like a slow camera, the tree
+   sways, and when it grew the two of you walk up with a watering can, water it, and it grows (≈4.2 s) ───────── */
+.tree-scene .depth { transform: translate(calc(var(--px, 0) * var(--d) * 16px), calc(var(--py, 0) * var(--d) * 7px)); transition: transform .8s var(--ease-out); }
+.tree-scene .drift { animation: tree-drift 13s ease-in-out infinite alternate; }
+@keyframes tree-drift { from { translate: calc(var(--d) * -6px) 0; } to { translate: calc(var(--d) * 6px) calc(var(--d) * -1px); } }
+.tree-scene .cloud { animation: tree-cloud var(--t, 40s) linear infinite; animation-delay: var(--delay, 0s); }
+@keyframes tree-cloud { from { translate: -70px 0; } to { translate: 400px 0; } }
+.tree-scene .sway { transform-box: view-box; transform-origin: 160px 207px; animation: tree-sway 6.5s ease-in-out infinite alternate; }
+@keyframes tree-sway { from { rotate: -1.1deg; } to { rotate: 1.3deg; } }
+.tree-scene .grow { transform-box: view-box; transform-origin: 160px 207px; }
+.tree-scene.watering .grow { animation: tree-grow 1.3s var(--ease-spring) 2.5s both; }
+@keyframes tree-grow { from { scale: var(--from, .6); } to { scale: 1; } }
+.tree-scene .leaf-new { transform-box: fill-box; transform-origin: center; animation: pop-in .6s var(--ease-spring) both; animation-delay: calc(3.1s + var(--k, 0) * 90ms); }
+.tree-scene.watering .walk-a { animation: tree-walk-a 4.2s var(--ease-out) both; }
+.tree-scene.watering .walk-b { animation: tree-walk-b 4.2s var(--ease-out) both; }
+@keyframes tree-walk-a { 0% { translate: 0 0; } 24%, 76% { translate: 46px 0; } 100% { translate: 0 0; } }
+@keyframes tree-walk-b { 0% { translate: 0 0; } 24%, 76% { translate: -42px 0; } 100% { translate: 0 0; } }
+.tree-scene.watering .bob { animation: tree-bob .26s ease-in-out 4 alternate; }
+@keyframes tree-bob { to { translate: 0 -4px; } }
+.tree-scene .can, .tree-scene .drop { opacity: 0; }
+.tree-scene.watering .can { transform-box: fill-box; transform-origin: 15% 70%; animation: tree-can 4.2s ease-in-out both; }
+@keyframes tree-can { 0%, 18% { opacity: 0; rotate: 0deg; } 26% { opacity: 1; rotate: 0deg; } 36%, 62% { opacity: 1; rotate: -36deg; } 72% { opacity: 1; rotate: 0deg; } 86%, 100% { opacity: 0; } }
+.tree-scene.watering .drop { animation: tree-drop .65s ease-in 2 both; animation-delay: calc(1.55s + var(--k) * 120ms); }
+@keyframes tree-drop { 0% { opacity: 0; translate: 0 0; } 20% { opacity: 1; } 100% { opacity: 0; translate: 8px 30px; } }
+.tree-scene .wet { opacity: 0; }
+.tree-scene.watering .wet { animation: tree-wet 2.4s ease-out 2.1s both; }
+@keyframes tree-wet { 40% { opacity: .55; } 100% { opacity: .22; } }
+@media (prefers-reduced-motion: reduce) { .tree-scene * { animation: none !important; transition: none !important; } }
 @media (prefers-reduced-motion: reduce) { .scene * { transition: none !important; } }
 
 /* ───────── aligning loader ("сверяем планеты") ───────── */
@@ -479,6 +517,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
     background: var(--color-paper); border: 1px solid var(--color-line); transform-origin: 1.5rem top;
     box-shadow: 0 1px 0 rgb(255 255 255 / .7) inset, 0 2px 6px -2px rgb(60 40 20 / .08), 0 28px 60px -24px rgb(60 40 20 / .32);
     font: 600 .875rem/1.4 var(--font-sans); letter-spacing: 0; color: var(--color-ink); text-align: left; white-space: normal; vertical-align: top; }
+  /* an open picker lifts the card it sits in: revealed cards each paint in their own layer (translate), so a later card
+     would cover the calendar */
+  :is([data-reveal], .card, .sticker, details):has(.dp input[aria-expanded="true"]) { position: relative; z-index: 45; }
   .dp-pop.dp-up { top: auto; bottom: calc(100% + .6rem); transform-origin: 1.5rem bottom; }
   .dp-up.dp-t-from { transform: translateY(6px) scale(.94); }
   .dp-t-in { transition: opacity .22s ease-out, transform .42s var(--ease-spring); }

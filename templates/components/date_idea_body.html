@@ -4,5 +4,5 @@
 {% if plus %}
 <ol class="mt-4 space-y-2 text-sm">{% for s in date_idea.steps %}<li class="flex gap-3 rounded-2xl bg-sand/70 p-3"><b>{{ forloop.counter }}.</b><span>{{ s }}</span></li>{% endfor %}</ol>
 {% else %}
-<a href="{% url 'pricing' %}" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-ink-3 hover:text-ink">{% icon 'lock' 'size-4' %}Пошаговый план свидания — в «Паре+»</a>
+{% include "components/plus_lock.html" with title="Пошаговый план свидания" text="Три шага: с чего начать и чем закончить вечер." cls="mt-4" %}
 {% endif %}

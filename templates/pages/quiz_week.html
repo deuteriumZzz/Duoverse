@@ -8,12 +8,7 @@
   <p class="mt-2 text-ink-2">Каждый отвечает про себя и угадывает ответ партнёра. Когда ответите оба, увидите, где вы совпадаете и кто кого знает лучше.</p>
 
   {% if not plus %}
-    <div class="card mt-8 p-6 text-center">
-      <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
-      <p class="mt-4 font-bold">Квизы — в «Паре+»</p>
-      <p class="mt-1 text-sm text-ink-2">Новый квиз каждую неделю, история ответов на вопросы дня и полные разборы всех ваших пар. Действует и для партнёра.</p>
-      <form method="post" action="{% url 'checkout' 'plus' %}" class="mt-5">{% csrf_token %}<button class="btn btn-primary">Подключить за {{ price_plus }} ₽ на 30 дней</button></form>
-    </div>
+    {% include "components/plus_lock.html" with title="Квиз недели" text="Новый каждую неделю: где вы совпадаете и кто кого знает лучше." cls="mt-8" %}
   {% elif results %}
     <div class="mt-8 grid gap-3 {% if i_guessed is not None %}sm:grid-cols-2{% endif %}">
       <div class="sticker bg-synergy-soft p-6 text-center">
@@ -30,10 +25,10 @@
     <ul class="mt-5 space-y-3">
       {% for r in results %}
       <li class="card p-5 {% if not r.same %}border-attention/40{% endif %}">
-        <p class="font-bold">{{ r.q }}</p>
+        <p class="font-bold">{{ r.q|agree:me_g }}</p>
         <div class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-          <p class="side-a rounded-xl t-bg p-3"><b class="t-ink">{{ me_name }}:</b> {{ r.mine }}</p>
-          <p class="side-b rounded-xl t-bg p-3"><b class="t-ink">{{ partner_name }}:</b> {{ r.theirs }}</p>
+          <p class="side-a rounded-xl t-bg p-3"><b class="t-ink">{{ me_name }}:</b> {{ r.mine|agree:me_g }}</p>
+          <p class="side-b rounded-xl t-bg p-3"><b class="t-ink">{{ partner_name }}:</b> {{ r.theirs|agree:partner_g }}</p>
         </div>
         {% if i_guessed is not None %}<p class="mt-2 text-xs text-ink-3">{% if r.i_guessed %}Вы угадали{% else %}Вы не угадали{% endif %} · {{ partner_name }} {% if r.they_guessed %}угадывает вас{% else %}не угадывает вас{% endif %}</p>{% endif %}
         {% if not r.same %}<p class="mt-2 text-xs font-bold text-attention-ink">Разные ответы — хороший повод спросить друг друга «почему?»</p>{% endif %}
@@ -48,18 +43,18 @@
       {% if not has_partner %}<a href="{% url 'pair_invite' %}" class="btn btn-primary btn-sm mt-4">Пригласить</a>{% endif %}
     </div>
   {% else %}
-    {% if partner_done %}<p class="mt-6 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">{{ partner_name }} уже прошёл(ла) квиз — ответьте, и откроется результат.</p>{% endif %}
+    {% if partner_done %}<p class="mt-6 rounded-2xl bg-b-soft p-4 text-sm text-b-ink">{{ partner_name }} уже {{ partner_g|gv:"прошёл|прошла|прошёл(ла)" }} квиз — ответьте, и откроется результат.</p>{% endif %}
     <form method="post" class="mt-8 space-y-4">
       {% csrf_token %}
       {% for item in quiz.items %}
       <fieldset class="card p-5">
-        <legend class="sr-only">{{ item.q }}</legend>
-        <p class="font-bold">{{ forloop.counter }}. {{ item.q }}</p>
+        <legend class="sr-only">{{ item.q|agree:me_g }}</legend>
+        <p class="font-bold">{{ forloop.counter }}. {{ item.q|agree:me_g }}</p>
         <div class="mt-3 grid gap-2 sm:grid-cols-2">
           {% with qi=forloop.counter0 %}
           {% for opt in item.options %}
           <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-line p-3 text-sm has-[:checked]:border-ink has-[:checked]:bg-sand">
-            <input type="radio" name="q{{ qi }}" value="{{ forloop.counter0 }}" required class="accent-[var(--color-ink)]">{{ opt }}
+            <input type="radio" name="q{{ qi }}" value="{{ forloop.counter0 }}" required class="accent-[var(--color-ink)]">{{ opt|agree:me_g }}
           </label>
           {% endfor %}
         </div>
@@ -68,7 +63,7 @@
         <div class="mt-2 flex flex-wrap gap-2">
           {% for opt in item.options %}
           <label class="side-b cursor-pointer rounded-full border border-line px-3 py-1.5 text-xs font-semibold has-[:checked]:border-b has-[:checked]:bg-b-soft">
-            <input type="radio" name="g{{ qi }}" value="{{ forloop.counter0 }}" required class="sr-only">{{ opt }}
+            <input type="radio" name="g{{ qi }}" value="{{ forloop.counter0 }}" required class="sr-only">{{ opt|agree:partner_g }}
           </label>
           {% endfor %}
         </div>

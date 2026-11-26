@@ -64,6 +64,7 @@ class Person(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE, related_name="people")
     name = models.CharField(max_length=80)
+    gender = models.CharField(max_length=1, blank=True, default="")  # "f" она, "m" он, "" не указано — optional, any pair
     birth = EncryptedJSONField()  # {"date": "1996-03-14", "time": "07:40" | null, "place": "Казань" | null}
     answers = EncryptedJSONField(null=True, blank=True)  # questionnaire item → 1..5
     answered_at = models.DateTimeField(null=True, blank=True)
@@ -89,6 +90,7 @@ class Pair(models.Model):
     plan = models.JSONField(default=dict, blank=True)  # weekly micro-habits, see compatibility/plan.py
     dates = EncryptedJSONField(default=list, blank=True)  # «Календарь пары»: the day you met and your own dates, see dates.py
     wishes = EncryptedJSONField(default=list, blank=True)  # «Карта желаний»: gift ideas, quiet reservations, dreams, see wishes.py
+    notes = EncryptedJSONField(default=list, blank=True)  # «Вдвоём»: «Думаю о тебе» and «Спасибо за…», newest last
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

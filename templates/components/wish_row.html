@@ -1,7 +1,18 @@
-{# One gift idea in «Карта желаний»: kind icon, title, hint and link; the caller adds its own buttons. #}
-<span class="grid size-10 shrink-0 place-items-center rounded-2xl {% if w.kind == 'experience' %}bg-b-soft{% elif w.kind == 'place' %}bg-sage-soft{% else %}bg-a-soft{% endif %}" title="{% if w.kind == 'experience' %}Впечатление{% elif w.kind == 'place' %}Место{% else %}Вещь{% endif %}">
+{% comment %} One gift idea in «Карта желаний»: kind icon — or, once you reserved it, a box that ties itself (`tied`) — title,
+   hint and link; the caller adds its own buttons. Only the giver's list ever has `taken` set.
+{% endcomment %}
+{% if w.taken %}
+<span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-synergy-soft" title="Забронировано вами">
+  <svg class="scene size-8 {% if tied == w.id %}sc-tie{% endif %}" viewBox="-18 -24 36 42" aria-hidden="true">
+    <rect x="-14" y="-4" width="28" height="18" rx="3" fill="var(--color-a)"/><path d="M0-4v18" fill="none"/>
+    <g class="lid"><rect x="-16" y="-11" width="32" height="8" rx="2" fill="var(--color-a)"/><path d="M0-11v8" fill="none"/></g>
+    <path class="bow" d="M0-11q-9-10-11-2q3 3 11 2q9-10 11-2q-3 3-11 2z" fill="var(--color-pair)"/>
+  </svg>
+</span>
+{% else %}<span class="grid size-10 shrink-0 place-items-center rounded-2xl {% if w.kind == 'experience' %}bg-b-soft{% elif w.kind == 'place' %}bg-sage-soft{% else %}bg-a-soft{% endif %}" title="{% if w.kind == 'experience' %}Впечатление{% elif w.kind == 'place' %}Место{% else %}Вещь{% endif %}">
   {% if w.kind == 'experience' %}{% icon 'sparkles' 'size-4' %}{% elif w.kind == 'place' %}{% icon 'map-pin' 'size-4' %}{% else %}{% icon 'gift' 'size-4' %}{% endif %}
 </span>
+{% endif %}
 <div class="min-w-[9rem] flex-1">
   <p class="break-words font-bold">{{ w.title }}</p>
   {% if w.note %}<p class="text-sm text-ink-2">{{ w.note }}</p>{% endif %}

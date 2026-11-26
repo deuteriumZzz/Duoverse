@@ -205,11 +205,26 @@
   const WEEK = [...Array(7)].map((_, i) => fmt({ weekday: "short" }).format(Date.UTC(2024, 0, 1 + i)));  // 2024-01-01 is a Monday
   const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // Put an open picker where it fits: inside the screen, above the field when there's no room below (tab bar included).
+  const placePop = (root, pop, focusGrid) => {
+    const box = root.getBoundingClientRect();  // pop is mid-animation (scaled): use offset sizes
+    const over = box.left + pop.offsetWidth - (innerWidth - 12);
+    pop.style.left = over > 0 ? `${-over}px` : "0px";
+    const h = pop.offsetHeight, bar = document.querySelector(".tabbar")?.offsetHeight || 0;
+    const below = innerHeight - box.bottom - bar - 24, above = box.top - (document.querySelector("header")?.offsetHeight || 0) - 24;
+    const up = below < h && above >= h;
+    pop.classList.toggle("dp-up", up);
+    if (!up && below < h) scrollBy({ top: h - below, behavior: calm() ? "auto" : "smooth" });
+    if (focusGrid) (pop.querySelector('[tabindex="0"]') || pop.querySelector(".dp-cell:not(:disabled), .dp-day:not(:disabled)"))?.focus();
+  };
+
   const datePicker = () => ({
     value: "", text: "", open: false, view: "days", y: 1995, m: 5, focused: "",
-    min: "1900-01-01", max: localToday(), months: MONTHS, monthsShort: MONTHS_SHORT, week: WEEK,
+    min: "1900-01-01", max: localToday(), today: localToday(), start: "", months: MONTHS, monthsShort: MONTHS_SHORT, week: WEEK,
     init() {
-      this.value = this.value || this.$el.dataset.value || "";
+      const d = this.$el.dataset;  // birth dates by default; the pair calendar passes its own range and starts on today
+      this.min = d.min || this.min; this.max = d.max || this.max; this.start = d.start || "";
+      this.value = this.value || d.value || "";
       this.text = toText(this.value);
       this.$watch("value", (v) => { if (v !== fromText(this.text)) this.text = toText(v); this.check(); });
       this.$nextTick(() => this.check());
@@ -220,7 +235,8 @@
     inRange(iso) { return iso >= this.min && iso <= this.max; },
     check() {
       const el = this.$refs.text;
-      if (el) el.setCustomValidity(this.text && !this.value ? "Укажите дату между 1900 годом и сегодняшним днём" : "");
+      const why = this.start ? "Выберите дату в календаре" : "Укажите дату между 1900 годом и сегодняшним днём";
+      if (el) el.setCustomValidity(this.text && !this.value ? why : "");
     },
     typed(e) {
       const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
@@ -235,20 +251,11 @@
     openPicker(focusGrid = false) {
       if (!this.open) {
         if (this.value) { this.go(this.value); this.view = "days"; this.focused = this.value; }
+        else if (this.start === "today") { this.go(this.today <= this.max ? this.today : this.max); this.view = "days"; this.focused = ""; }
         else { this.y = 1995; this.view = "years"; this.focused = ""; }  // birth dates are decades back: start with years
       }
       this.open = true;
-      this.$nextTick(() => {
-        const pop = this.$refs.pop, box = this.$el.getBoundingClientRect();  // pop is mid-animation (scaled): use offset sizes
-        const over = box.left + pop.offsetWidth - (innerWidth - 12);
-        pop.style.left = over > 0 ? `${-over}px` : "0px";
-        const h = pop.offsetHeight, bar = document.querySelector(".tabbar")?.offsetHeight || 0;
-        const below = innerHeight - box.bottom - bar - 24, above = box.top - (document.querySelector("header")?.offsetHeight || 0) - 24;
-        const up = below < h && above >= h;
-        pop.classList.toggle("dp-up", up);
-        if (!up && below < h) scrollBy({ top: h - below, behavior: calm() ? "auto" : "smooth" });
-        if (focusGrid) (pop.querySelector('[tabindex="0"]') || pop.querySelector(".dp-cell:not(:disabled), .dp-day:not(:disabled)"))?.focus();
-      });
+      this.$nextTick(() => placePop(this.$el, this.$refs.pop, focusGrid));
     },
     close(refocus = false) { this.open = false; if (refocus) this.$refs.text.focus(); },
     get days() {
@@ -262,9 +269,9 @@
     get years() { const start = 1900 + Math.floor((this.y - 1900) / 12) * 12; return [...Array(12)].map((_, i) => start + i); },
     monthOk(i) { return isoOf(this.y, i, 1) <= this.max && isoOf(this.y, i, 28) >= this.min; },
     canStep(dir) {
-      const maxY = +this.max.slice(0, 4);
-      if (this.view === "years") return dir < 0 ? this.years[0] > 1900 : this.years[11] < maxY;
-      if (this.view === "months") return dir < 0 ? this.y > 1900 : this.y < maxY;
+      const minY = +this.min.slice(0, 4), maxY = +this.max.slice(0, 4);
+      if (this.view === "years") return dir < 0 ? this.years[0] > minY : this.years[11] < maxY;
+      if (this.view === "months") return dir < 0 ? this.y > minY : this.y < maxY;
       const first = isoOf(this.y, this.m, 1);
       return dir < 0 ? first > this.min : isoOf(this.y, this.m + 1, 1) <= this.max;
     },
@@ -302,6 +309,47 @@
         const from = kind === "slide" ? { opacity: 0, transform: `translateX(${dir * 22}px)` } : { opacity: 0, transform: `scale(${dir > 0 ? 1.06 : 0.94})` };
         this.$refs.grid.animate([from, { opacity: 1, transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
       });
+    },
+  });
+
+  /* ── Birth time (templates/components/time_field.html): the date picker's look — pick the hour, then the minutes
+     (every 5); an exact time like 07:43 is typed. Posts HH:MM like <input type="time"> did. ── */
+  const timePicker = () => ({
+    value: "", text: "", open: false, view: "hours", h: null,
+    hours: [...Array(24)].map((_, i) => pad(i)), minutes: [...Array(12)].map((_, i) => pad(i * 5)),
+    init() {
+      this.value = this.value || this.$el.dataset.value || "";
+      this.text = this.value;
+      this.$watch("value", (v) => { if (v !== this.parse(this.text)) this.text = v || ""; this.check(); });
+    },
+    parse(t) { const m = /^(\d{2}):(\d{2})$/.exec(t || ""); return m && +m[1] < 24 && +m[2] < 60 ? t : ""; },
+    check() { this.$refs.text?.setCustomValidity(this.text && !this.value ? "Укажите время от 00:00 до 23:59" : ""); },
+    typed(e) {
+      const d = e.target.value.replace(/\D/g, "").slice(0, 4);
+      this.text = d.length > 2 ? `${d.slice(0, 2)}:${d.slice(2)}` : d;
+      e.target.value = this.text;
+      this.value = this.parse(this.text);
+      if (this.value) this.h = this.value.slice(0, 2);
+      this.check();
+    },
+    get hh() { return this.h ?? (this.value ? this.value.slice(0, 2) : "--"); },
+    get mm() { return this.value && (this.h === null || this.h === this.value.slice(0, 2)) ? this.value.slice(3) : "--"; },
+    openPicker(focusGrid = false) {
+      if (this.$refs.text.disabled) return;
+      if (!this.open) { this.h = this.value ? this.value.slice(0, 2) : null; this.view = "hours"; }
+      this.open = true;
+      this.$nextTick(() => placePop(this.$el, this.$refs.pop, focusGrid));
+    },
+    close(refocus = false) { this.open = false; if (refocus) this.$refs.text.focus(); },
+    setView(v) {
+      if (v === "minutes" && this.h === null) return;
+      this.view = v;
+      if (!calm()) this.$nextTick(() => this.$refs.grid.animate([{ opacity: 0, transform: `translateX(${v === "minutes" ? 22 : -22}px)` }, { opacity: 1, transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" }));
+    },
+    pickHour(h) { this.h = h; this.setView("minutes"); },
+    pickMinute(m) {
+      this.value = `${this.h}:${m}`;
+      setTimeout(() => this.close(true), calm() ? 0 : 260);  // let the selection pop land first
     },
   });
 
@@ -541,6 +589,7 @@
 
   document.addEventListener("alpine:init", () => {
     Alpine.data("datePicker", datePicker);
+    Alpine.data("timePicker", timePicker);
     Alpine.data("placeField", placeField);
     Alpine.store("toasts", {
       items: [],
