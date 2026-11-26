@@ -87,6 +87,8 @@ class Pair(models.Model):
     joined_at = models.DateTimeField(null=True, blank=True)  # when the partner joined (the pair's story)
     invite_code = models.CharField(max_length=6, unique=True, null=True, blank=True)  # shown as K7M-2QX
     plan = models.JSONField(default=dict, blank=True)  # weekly micro-habits, see compatibility/plan.py
+    dates = EncryptedJSONField(default=list, blank=True)  # «Календарь пары»: the day you met and your own dates, see dates.py
+    wishes = EncryptedJSONField(default=list, blank=True)  # «Карта желаний»: gift ideas, quiet reservations, dreams, see wishes.py
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -4,7 +4,7 @@ import hashlib
 import json
 import secrets
 import uuid
-from datetime import date, time
+from datetime import date, time, timedelta
 
 from django.conf import settings
 from django.core.cache import cache
@@ -25,10 +25,12 @@ from django.views.decorators.http import require_POST
 from apps.astrology.domain.chart import BirthData
 from apps.astrology.domain.weather import weather as sky_weather
 from apps.astrology.infrastructure.ephemeris import SkyfieldEphemeris
+from apps.compatibility import date_ideas, places, story
+from apps.compatibility import dates as pair_dates
 from apps.compatibility import intimacy as intimacy_wishes
-from apps.compatibility import places, story
 from apps.compatibility import plan as habit_plan
 from apps.compatibility import week as pair_week
+from apps.compatibility import wishes as pair_wishes
 from apps.compatibility.access import grant_trial, mark_paid, open_gift, plus_for_pair, plus_until, redeem_gift, unlocked
 from apps.compatibility.domain.archetypes import DYNAMICS, ELEMENTS, MODES, ROLES, dynamic_for, pair_name
 from apps.compatibility.domain.report import Report, ReportUnavailable
@@ -661,11 +663,16 @@ def intimacy(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         if request.POST.get("action") == "clear":
             IntimacyAnswer.objects.filter(pair=pair, side=side).delete()
+        elif request.POST.get("action") == "date18":  # «Свидание недели» may suggest 18+ only once both switched this on
+            on = pair.plan.get("date18", [])
+            pair.plan = {**pair.plan, "date18": [s for s in on if s != side] if side in on else [*on, side]}
+            pair.save(update_fields=["plan"])
         else:
             picks = intimacy_wishes.clean({k: request.POST.get(k, "") for k in intimacy_wishes.TITLES})
             IntimacyAnswer.objects.update_or_create(pair=pair, side=side, defaults={"picks": picks})
         return redirect("intimacy")
     mine, theirs = rows.get(side) or {}, rows.get("b" if side == "a" else "a") or {}
+    on = pair.plan.get("date18", [])
     ctx = {
         "state": "ready",
         "themes": intimacy_wishes.THEMES,
@@ -674,8 +681,102 @@ def intimacy(request: HttpRequest) -> HttpResponse:
         "partner_done": bool(theirs),
         "partner_name": pair.b.name if side == "a" else pair.a.name,
         "result": intimacy_wishes.matches(mine, theirs) if mine and theirs else None,
+        "date18_mine": side in on,
+        "date18_both": set(on) == {"a", "b"},  # the partner's switch alone is never shown
     }
     return render(request, "pages/intimacy.html", ctx)
+
+
+def _date_idea(pair: Pair, report: Report) -> dict:
+    """«Свидание недели»: weak spheres from the report, openness from both questionnaires, and 18+ only when both
+    switched it on — then only from wishes both said «да» to (date_ideas.py)."""
+    rows = {r.side: r.picks for r in IntimacyAnswer.objects.filter(pair=pair)}
+    mutual = intimacy_wishes.both_yes(rows.get("a") or {}, rows.get("b") or {})
+    close_on = bool(pair.partner_id) and set(pair.plan.get("date18", [])) == {"a", "b"}
+
+    def open_to_new(person: Person) -> bool:
+        try:
+            return bool(person.answers) and psy.profile(person.answers).ocean["O"] >= date_ideas.OPEN
+        except psy.IncompleteAnswers:
+            return False
+
+    weak = [s.key for s in sorted(report.spheres, key=lambda s: s.score)[:4]]
+    week = date_ideas.week_no(timezone.localdate())
+    return date_ideas.pick(week, str(pair.id), weak, open_to_new(pair.a) and open_to_new(pair.b), mutual, close_on)
+
+
+def pair_calendar(request: HttpRequest) -> HttpResponse:
+    """«Календарь пары»: birthdays, the day you met and its milestones, your own dates with notes — both of you see
+    them, and the evening job reminds a week and a day before (dates.py)."""
+    owner = get_owner(request)
+    if not owner or not owner.is_account:
+        return _to_login(request, "save")
+    pair = pairs_of(owner).order_by("-created_at").first()
+    if not pair:
+        return render(request, "pages/calendar.html", {"state": "nopair"})
+    side, today, error = side_of(owner, pair), timezone.localdate(), False
+    if request.method == "POST":
+        deleting = request.POST.get("action") == "delete"
+        entry = None if deleting else pair_dates.clean(request.POST.dict(), today, side)
+        if deleting or entry:
+            with transaction.atomic():  # both partners edit one list: lock it so neither loses the other's date
+                pair = Pair.objects.select_for_update().get(id=pair.id)
+                entries = [e for e in pair.dates if e["id"] != request.POST.get("id")] if deleting else list(pair.dates)
+                if entry and entry["kind"] == "met":
+                    entries = [e for e in entries if e["kind"] != "met"]
+                if entry and len(entries) < pair_dates.MAX_ENTRIES:
+                    entries.append(entry)
+                pair.dates = entries
+                pair.save(update_fields=["dates"])
+            return redirect("pair_calendar")
+        error = True
+    ctx = {
+        "state": "ready",
+        "events": pair_dates.upcoming(today, pair_dates.people(pair), pair.dates),
+        "together": (days := pair_dates.together(today, pair.dates)),
+        "together_word": pair_dates.plural(days or 0, "день", "дня", "дней"),
+        "met": pair_dates.met_day(pair.dates),
+        "side": side,
+        "today": today.isoformat(),
+        "max_day": (today + timedelta(days=365)).isoformat(),
+        "error": error,
+    }
+    return render(request, "pages/calendar.html", ctx, status=422 if error else 200)
+
+
+def wish_map(request: HttpRequest) -> HttpResponse:
+    """«Карта желаний»: your gift ideas, your partner's (reserve one quietly — they never see it), dreams for two.
+    Adding is free; the quiet reservation is part of «Пара+» (wishes.py)."""
+    owner = get_owner(request)
+    if not owner or not owner.is_account:
+        return _to_login(request, "save")
+    pair = pairs_of(owner).order_by("-created_at").first()
+    if not pair:
+        return render(request, "pages/wishes.html", {"state": "nopair"})
+    side, plus, error = side_of(owner, pair), plus_for_pair(pair), False
+    if request.method == "POST":
+        action = request.POST.get("action", "add")
+        new = pair_wishes.clean(request.POST.dict(), side) if action == "add" else None
+        if action != "add" or new:
+            if action != "reserve" or plus:
+                with transaction.atomic():  # both partners edit one list: lock it so neither loses the other's change
+                    pair = Pair.objects.select_for_update().get(id=pair.id)
+                    pair.wishes = pair_wishes.apply(pair.wishes, side, action, request.POST.get("id", ""), new)
+                    pair.save(update_fields=["wishes"])
+            anchor = "#dreams" if request.POST.get("kind") == "dream" or action == "done" else "#theirs" if action == "reserve" else "#mine"
+            return redirect(reverse("wish_map") + anchor)
+        error = True
+    ctx = {
+        "state": "ready",
+        **pair_wishes.view(pair.wishes, side),
+        "kinds": {k: v for k, v in pair_wishes.KINDS.items() if k != "dream"},
+        "partner_name": pair.b.name if side == "a" else pair.a.name,
+        "has_partner": bool(pair.partner_id),
+        "plus": plus,
+        "price_plus": settings.PRICE_PLUS,
+        "error": error,
+    }
+    return render(request, "pages/wishes.html", ctx, status=422 if error else 200)
 
 
 @require_POST
@@ -717,6 +818,12 @@ def daily(request: HttpRequest) -> HttpResponse:
         extra |= _week_ctx(pair, report, side)
         talk = pair.plan.get("talk", {}).get(_talk_week(), [])
         extra |= {"weather": _weather(pair), "talk_mine": side in talk, "talk_partner": ("b" if side == "a" else "a") in talk}
+        extra |= {
+            "dates_soon": pair_dates.upcoming(today, pair_dates.people(pair), pair.dates, horizon=45)[:3],
+            "met_set": bool(pair_dates.met_day(pair.dates)),
+            "date_idea": _date_idea(pair, report),
+            "wish_count": len(pair_wishes.view(pair.wishes, side)["theirs"]),
+        }
         return _render_report(request, report, "pages/daily.html", reverse("stored_report", args=[stored.id]), extra)
     demo = report_provider().get_report(_scenario(request))
     demo_ctx = {"daily_question": question_of_day(demo, "demo", today), **_week_ctx(None, demo, "a")}
@@ -1304,8 +1411,11 @@ def unlink_partner(request: HttpRequest, pair_id) -> HttpResponse:
         DailyAnswer.objects.filter(pair=pair, side="b").delete()
         QuizAnswer.objects.filter(pair=pair, side="b").delete()
         IntimacyAnswer.objects.filter(pair=pair, side="b").delete()
+        pair.dates = [e for e in pair.dates if e.get("by") != "b"]  # the partner's calendar dates go too
+        pair.wishes = pair_wishes.leave(pair.wishes, "b")  # their ideas and dreams, and their quiet reservations
+        pair.plan = {**pair.plan, "date18": [s for s in pair.plan.get("date18", []) if s != "b"]}
         pair.partner = None
-        pair.save(update_fields=["partner"])
+        pair.save(update_fields=["partner", "dates", "wishes", "plan"])
         invite_code(pair, fresh=True)
         if had_answers:
             pair.reports.all().delete()
@@ -1763,6 +1873,9 @@ def export_data(request: HttpRequest) -> HttpResponse:
         "reports": [s.snapshot for s in StoredReport.objects.filter(pair__in=pairs_of(owner), status="ready")],
         "plans": [{"pair": str(p.id), **p.plan} for p in pairs_of(owner) if p.plan],
         "intimacy": [{"pair": str(p.id), "mine": r.picks} for p in pairs_of(owner) for r in p.intimacy.filter(side=side_of(owner, p))],
+        "dates": [{"pair": str(p.id), "entries": p.dates} for p in pairs_of(owner) if p.dates],
+        # as you see it on the page: your own ideas never say whether they were reserved
+        "wishes": [{"pair": str(p.id), **pair_wishes.view(p.wishes, side_of(owner, p))} for p in pairs_of(owner) if p.wishes],
     }
     resp = HttpResponse(json.dumps(data, ensure_ascii=False, indent=2, default=str), content_type="application/json; charset=utf-8")
     resp["Content-Disposition"] = 'attachment; filename="duoverse-data.json"'

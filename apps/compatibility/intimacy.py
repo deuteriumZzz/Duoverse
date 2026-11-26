@@ -44,6 +44,11 @@ def clean(form: dict[str, str]) -> dict[str, str]:
     return {k: v for k, v in form.items() if k in TITLES and v in CHOICES}
 
 
+def both_yes(mine: dict[str, str], theirs: dict[str, str]) -> list[str]:
+    """Wish keys both of you said «да» to — the only ones «Свидание недели» may ever suggest."""
+    return [k for k in TITLES if mine.get(k) == YES and theirs.get(k) == YES]
+
+
 def matches(mine: dict[str, str], theirs: dict[str, str]) -> dict[str, list[str]]:
     """{"both": titles you both said «да» to, "talk": both at least «может быть» (not both «да»)}; nothing else leaks."""
     both, talk = [], []

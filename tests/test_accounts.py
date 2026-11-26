@@ -410,3 +410,123 @@ def test_intimacy_shows_only_what_both_chose_and_leaves_with_the_partner():
     assert IntimacyAnswer.objects.get(side="a").picks["hug"] == "yes"
     misha.post(f"/p/{stored.pair_id}/unlink/")
     assert not IntimacyAnswer.objects.filter(side="b").exists()  # leaves with the partner
+
+
+def test_pair_calendar_is_shared_and_a_birthday_is_told_only_to_the_partner(settings, monkeypatch):
+    import json
+    from datetime import datetime, timedelta
+
+    from django.core.management import call_command
+
+    from apps.compatibility.infrastructure import telegram
+    from apps.compatibility.models import Person
+
+    anya, misha, stored = _linked_pair()
+    today = timezone.localdate()
+    assert anya.post("/calendar/", {"kind": "met", "day": (today - timedelta(days=993)).isoformat()}).status_code == 302
+    misha.post("/calendar/", {"title": "Поездка в Казань", "day": (today + timedelta(days=30)).isoformat(), "note": "билеты в почте"})
+    assert misha.post("/calendar/", {"title": "Слишком далеко", "day": (today + timedelta(days=400)).isoformat()}).status_code == 422
+    page = anya.get("/calendar/").content.decode()
+    assert "993" in page and "Поездка в Казань" in page and "билеты в почте" in page and "День рождения Миши" in page
+    assert "Календарь пары" in anya.get("/daily/").content.decode()
+
+    pair = Pair.objects.get(id=stored.pair_id)
+    misha_person = Person.objects.get(id=pair.b_id)
+    born = today + timedelta(days=7)
+    misha_person.birth = {**misha_person.birth, "date": born.replace(year=born.year - 28).isoformat()}
+    misha_person.save()
+    Owner.objects.filter(id=pair.owner_id).update(telegram_chat_id=1)
+    Owner.objects.filter(id=pair.partner_id).update(telegram_chat_id=2)
+    sent = []
+    monkeypatch.setattr(telegram, "send_message", lambda chat, text, url="": sent.append((chat, text)) or True)
+    evening = timezone.make_aware(datetime.combine(today, datetime.min.time()).replace(hour=settings.REMINDER_HOUR))
+    monkeypatch.setattr(timezone, "localtime", lambda *a: evening)
+    call_command("scheduled_jobs")
+    call_command("scheduled_jobs")
+    assert [c for c, t in sent if "день рождения у Миши" in t] == [1]  # only Anya hears, and only once
+    assert sorted(c for c, t in sent if "1000 дней со знакомства" in t) == [1, 2]  # the milestone is for both
+
+    assert json.loads(anya.get("/account/export/").content)["dates"][0]["entries"]
+    misha.post(f"/p/{stored.pair_id}/unlink/")
+    left = Pair.objects.get(id=stored.pair_id).dates
+    assert [e["kind"] for e in left] == ["met"]  # Misha's trip left with him, Anya's day stays
+
+
+def test_wish_map_reservation_stays_hidden_from_the_owner_and_feeds_the_birthday_reminder(settings, monkeypatch):
+    import json
+    from datetime import datetime, timedelta
+
+    from django.core.management import call_command
+
+    from apps.compatibility.access import mark_paid
+    from apps.compatibility.infrastructure import telegram
+    from apps.compatibility.models import Person
+
+    anya, misha, stored = _linked_pair()
+    anya.post("/wishes/", {"kind": "experience", "title": "Мастер-класс по керамике", "link": "https://example.com/clay"})
+    assert anya.post("/wishes/", {"title": "x", "link": "javascript:alert(1)"}).status_code == 422
+    misha.post("/wishes/", {"kind": "dream", "title": "Поехать в Японию"})
+    wish_id = Pair.objects.get(id=stored.pair_id).wishes[0]["id"]
+    Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())  # the joining week of «Пара+» is over
+    misha.post("/wishes/", {"action": "reserve", "id": wish_id})
+    assert not Pair.objects.get(id=stored.pair_id).wishes[0]["taken"]  # the quiet reservation is «Пара+»
+    mark_paid(Purchase.objects.create(owner=stored.pair.partner, kind="plus", amount=249))
+    misha.post("/wishes/", {"action": "reserve", "id": wish_id})
+    assert "Забронировано вами" in misha.get("/wishes/").content.decode()
+    page = anya.get("/wishes/").content.decode()
+    assert "Мастер-класс по керамике" in page and "Поехать в Японию" in page and "Забронировано" not in page
+    assert json.loads(anya.get("/account/export/").content)["wishes"][0]["mine"][0]["taken"] == ""  # not even in her export
+
+    pair = Pair.objects.get(id=stored.pair_id)
+    anya_person = Person.objects.get(id=pair.a_id)
+    born = timezone.localdate() + timedelta(days=7)
+    anya_person.birth = {**anya_person.birth, "date": born.replace(year=born.year - 28).isoformat()}
+    anya_person.save()
+    Owner.objects.filter(id=pair.partner_id).update(telegram_chat_id=2)
+    sent = []
+    monkeypatch.setattr(telegram, "send_message", lambda chat, text, url="": sent.append(text) or True)
+    evening = timezone.make_aware(datetime.combine(timezone.localdate(), datetime.min.time()).replace(hour=settings.REMINDER_HOUR))
+    monkeypatch.setattr(timezone, "localtime", lambda *a: evening)
+    call_command("scheduled_jobs")
+    assert any("день рождения у Ани" in t and "В карте желаний 1 идея, одну вы уже забронировали" in t for t in sent)
+
+    misha.post(f"/p/{stored.pair_id}/unlink/")
+    left = Pair.objects.get(id=stored.pair_id).wishes
+    assert [w["title"] for w in left] == ["Мастер-класс по керамике"] and left[0]["taken"] == ""  # his dream and reservation go
+
+
+def test_date_of_the_week_offers_18_plus_only_from_mutual_yes_after_both_switch_it_on(settings, monkeypatch):
+    from datetime import datetime, timedelta
+
+    from django.core.management import call_command
+
+    from apps.compatibility import date_ideas
+    from apps.compatibility.infrastructure import telegram
+
+    anya, misha, stored = _linked_pair()
+    assert "свидание недели" in anya.get("/daily/").content.decode()
+    anya.post("/intimacy/", {"hug": "yes", "trip": "yes"})
+    misha.post("/intimacy/", {"hug": "yes", "trip": "no"})
+    anya.post("/intimacy/", {"action": "date18"})
+    calls = []
+    real = date_ideas.pick
+    monkeypatch.setattr(date_ideas, "pick", lambda *a: calls.append(a) or real(*a))
+    assert "Вы согласились" in anya.get("/intimacy/").content.decode()
+    anya.get("/daily/")
+    assert calls[-1][4] == ["hug"] and calls[-1][5] is False  # only the mutual «да»; off until Misha agrees too
+    misha.post("/intimacy/", {"action": "date18"})
+    anya.get("/daily/")
+    assert calls[-1][5] is True
+
+    sent = []
+    monkeypatch.setattr(telegram, "send_message", lambda chat, text, url="": sent.append(text) or True)
+    pair = Pair.objects.get(id=stored.pair_id)
+    Owner.objects.filter(id__in=[pair.owner_id, pair.partner_id]).update(telegram_chat_id=1)
+    today = timezone.localdate()
+    monday = today - timedelta(days=today.weekday())
+    evening = timezone.make_aware(datetime.combine(monday, datetime.min.time()).replace(hour=settings.REMINDER_HOUR))
+    monkeypatch.setattr(timezone, "localtime", lambda *a: evening)
+    call_command("scheduled_jobs")
+    call_command("scheduled_jobs")
+    ideas = [t for t in sent if "идея на эту неделю" in t]
+    assert len(ideas) == 2 and not any("18" in t or "Близост" in t for t in ideas)  # both, once, in neutral words

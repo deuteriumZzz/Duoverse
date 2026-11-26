@@ -200,6 +200,37 @@
     </form>
   </section>
 
+  <a href="{% url 'pair_calendar' %}" class="card mt-5 block p-5 transition hover:border-ink fade-up" style="--i:1">
+    <span class="flex items-center gap-4">
+      <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'calendar-days' 'size-5' %}</span>
+      <span class="min-w-0 flex-1"><span class="block font-extrabold">Календарь пары</span>
+        <span class="block text-sm text-ink-2">{% if dates_soon %}{% with e=dates_soon.0 %}{{ e.title }} — {% if e.in == 0 %}сегодня{% elif e.in == 1 %}завтра{% else %}через {{ e.in }} дн.{% endif %}{% endwith %}{% elif not met_set %}Добавьте день знакомства — посчитаем, сколько дней вы знакомы.{% else %}Дни рождения, годовщины и ваши даты.{% endif %}</span></span>
+      {% icon 'arrow-right' 'size-4' %}
+    </span>
+    {% if dates_soon|length > 1 %}<span class="mt-3 flex flex-wrap gap-2 sm:pl-15">{% for e in dates_soon|slice:"1:" %}<span class="chip bg-sand text-xs">{{ e.title }} · {{ e.day|date:"j E" }}</span>{% endfor %}</span>{% endif %}
+  </a>
+
+  <a href="{% url 'wish_map' %}" class="card mt-3 flex items-center gap-4 p-5 transition hover:border-ink fade-up" style="--i:1">
+    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-a-soft">{% icon 'gift' 'size-5' %}</span>
+    <span class="min-w-0 flex-1"><span class="block font-extrabold">Карта желаний</span>
+      <span class="block text-sm text-ink-2">{% if wish_count %}Идей в карте у {{ partner_name|gen }}: {{ wish_count }} — можно тихо забронировать подарок.{% else %}Идеи подарков друг другу и мечты на двоих.{% endif %}</span></span>
+    {% icon 'arrow-right' 'size-4' %}
+  </a>
+
+  {% if date_idea %}
+  <section id="date-idea" class="card mt-5 scroll-mt-24 p-6 sm:p-8 fade-up" style="--i:1">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <p class="eyebrow">свидание недели · {{ date_idea.theme_title|lower }}</p>
+      {% if date_idea.theme == 'close' %}<span class="rounded-md border border-ink px-1.5 text-[0.65rem] font-extrabold">18+</span>{% endif %}
+    </div>
+    {% if date_idea.theme == 'close' %}
+    <details class="mt-3"><summary class="btn btn-soft btn-sm cursor-pointer list-none">{% icon 'eye' 'size-4' %}Показать идею для вас двоих</summary>
+      {% include "components/date_idea_body.html" %}</details>
+    {% else %}{% include "components/date_idea_body.html" %}{% endif %}
+    <p class="mt-4 text-xs text-ink-3">Новая идея каждый понедельник{% if pair.partner_id %} · идеи 18+ включаются в «Близости», если согласитесь оба{% endif %}.</p>
+  </section>
+  {% endif %}
+
   {% if pair.partner_id %}
   <a href="{% url 'intimacy' %}" class="card mt-5 flex items-center gap-4 p-5 transition hover:border-ink fade-up" style="--i:1">
     <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-a-soft">{% icon 'heart' 'size-5' %}</span>

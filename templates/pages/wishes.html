@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Карта желаний — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+  <p class="eyebrow">для вас двоих</p>
+  <h1 class="mt-1 text-3xl font-extrabold" data-split>Карта желаний</h1>
+  <p class="mt-2 text-ink-2">Отмечайте, что хотели бы получить. Партнёр может тихо забронировать идею — вы об этом не узнаете, и сюрприз останется сюрпризом.</p>
+
+  {% if state == "nopair" %}
+    <div class="card mt-8 p-6 text-center">
+      <p class="text-ink-2">Карта желаний появится, когда у вас будет пара.</p>
+      <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm mt-4">{% icon 'sparkles' 'size-4' %}Сделать разбор</a>
+    </div>
+  {% else %}
+
+  <section id="theirs" class="mt-8 scroll-mt-24" aria-labelledby="theirs-title">
+    <h2 id="theirs-title" class="flex items-center gap-2 text-xl font-extrabold">{% icon 'gift' 'size-5' %}Идеи для {{ partner_name|gen }}</h2>
+    {% if not has_partner %}
+      <div class="card mt-4 p-5 text-sm text-ink-2">Когда {{ partner_name }} присоединится к паре, здесь появятся идеи подарков от неё или от него.
+        <a href="{% url 'pair_invite' %}" class="btn btn-soft btn-sm mt-3">{% icon 'user-plus' 'size-4' %}Пригласить</a></div>
+    {% elif theirs %}
+      <ul class="mt-4 space-y-2">
+        {% for w in theirs %}
+        <li class="card flex flex-wrap items-start gap-3 p-4 {% if w.taken %}border-synergy{% endif %}">
+          {% include "components/wish_row.html" %}
+          {% if plus %}
+          <form method="post" class="ml-auto">{% csrf_token %}<input type="hidden" name="action" value="reserve"><input type="hidden" name="id" value="{{ w.id }}">
+            <button class="btn btn-sm {% if w.taken %}bg-synergy-soft text-synergy-ink{% else %}btn-soft{% endif %}">{% if w.taken %}{% icon 'check' 'size-4' %}Забронировано вами{% else %}{% icon 'lock' 'size-4' %}Забронировать{% endif %}</button>
+          </form>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if not plus %}
+      <div class="card mt-3 flex flex-wrap items-center gap-3 p-4">
+        <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'lock' 'size-4' %}</span>
+        <p class="min-w-0 flex-1 text-sm text-ink-2">Тихая бронь — в «Паре+»: отметьте подарок, и {{ partner_name }} не узнает, что выбрано.</p>
+        <form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn btn-primary btn-sm">«Пара+» за {{ price_plus }} ₽</button></form>
+      </div>
+      {% endif %}
+    {% else %}
+      <p class="card mt-4 p-5 text-sm text-ink-2">{{ partner_name }} пока ничего не добавил(а). Можно намекнуть: своей картой вы подаёте пример.</p>
+    {% endif %}
+  </section>
+
+  <section id="mine" class="mt-10 scroll-mt-24" aria-labelledby="mine-title">
+    <h2 id="mine-title" class="flex items-center gap-2 text-xl font-extrabold">{% icon 'heart' 'size-5' %}Моя карта</h2>
+    {% if mine %}
+    <ul class="mt-4 space-y-2">
+      {% for w in mine %}
+      <li class="card flex items-start gap-3 p-4">
+        {% include "components/wish_row.html" %}
+        <form method="post" onsubmit="return confirm('Убрать «{{ w.title|escapejs }}» из карты?')">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ w.id }}">
+          <button class="btn btn-ghost btn-icon btn-sm" aria-label="Убрать «{{ w.title }}»">{% icon 'x' 'size-4' %}</button></form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post" class="card mt-3 space-y-3 p-5">{% csrf_token %}
+      {% if error %}<p class="rounded-2xl bg-risk-soft p-3 text-sm text-risk-ink" role="alert">Проверьте название и ссылку: ссылка должна начинаться с https://</p>{% endif %}
+      <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Что это">
+        {% for key, label in kinds.items %}
+        <label class="cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-bold has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk">
+          <input type="radio" name="kind" value="{{ key }}" class="sr-only" {% if forloop.first %}checked{% endif %}>{{ label }}</label>
+        {% endfor %}
+      </div>
+      <input name="title" maxlength="80" required placeholder="Что бы вы хотели? Например, мастер-класс по керамике" class="field" aria-label="Желание">
+      <input name="link" type="url" maxlength="300" placeholder="Ссылка — по желанию" class="field" aria-label="Ссылка">
+      <input name="note" maxlength="200" placeholder="Подсказка: размер, цвет, где продаётся" class="field" aria-label="Подсказка">
+      <button class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}Добавить в карту</button>
+    </form>
+  </section>
+
+  <section id="dreams" class="mt-10 scroll-mt-24" aria-labelledby="dreams-title">
+    <h2 id="dreams-title" class="flex items-center gap-2 text-xl font-extrabold">{% icon 'mountain' 'size-5' %}Мечты на двоих</h2>
+    <p class="mt-1 text-sm text-ink-2">Поездка, квартира, собака — то, к чему идёте вместе. Видите оба.</p>
+    {% if dreams %}
+    <ul class="mt-4 space-y-2">
+      {% for w in dreams %}
+      <li class="card flex items-center gap-3 p-4 {% if w.done %}bg-synergy-soft{% endif %}">
+        <form method="post">{% csrf_token %}<input type="hidden" name="action" value="done"><input type="hidden" name="id" value="{{ w.id }}">
+          <button class="grid size-7 place-items-center rounded-full border-2 {% if w.done %}border-synergy bg-synergy text-white{% else %}border-line{% endif %}" aria-label="{% if w.done %}Вернуть в мечты{% else %}Отметить, что сбылось{% endif %}" aria-pressed="{{ w.done|yesno:'true,false' }}">{% if w.done %}{% icon 'check' 'size-4' %}{% endif %}</button></form>
+        <div class="min-w-0 flex-1"><p class="break-words font-bold {% if w.done %}line-through decoration-2{% endif %}">{{ w.title }}</p>{% if w.note %}<p class="text-sm text-ink-2">{{ w.note }}</p>{% endif %}</div>
+        {% if w.done %}<span class="chip bg-paper text-synergy-ink">сбылось</span>{% endif %}
+        <form method="post" onsubmit="return confirm('Убрать мечту «{{ w.title|escapejs }}»?')">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ w.id }}">
+          <button class="btn btn-ghost btn-icon btn-sm" aria-label="Убрать «{{ w.title }}»">{% icon 'x' 'size-4' %}</button></form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post" class="mt-3 flex flex-wrap gap-2">{% csrf_token %}<input type="hidden" name="kind" value="dream">
+      <input name="title" maxlength="80" required placeholder="Например, встретить рассвет в горах" class="field min-w-0 flex-1" aria-label="Мечта">
+      <button class="btn btn-soft btn-sm">{% icon 'plus' 'size-4' %}Добавить</button>
+    </form>
+  </section>
+
+  <p class="mt-8 text-xs text-ink-3">Бронь не видит тот, чья это идея. Перед днём рождения напомним, сколько идей в карте. Всё хранится зашифрованным.</p>
+  {% endif %}
+</div>
+{% endblock %}

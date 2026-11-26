@@ -1,0 +1,9 @@
+{# One gift idea in «Карта желаний»: kind icon, title, hint and link; the caller adds its own buttons. #}
+<span class="grid size-10 shrink-0 place-items-center rounded-2xl {% if w.kind == 'experience' %}bg-b-soft{% elif w.kind == 'place' %}bg-sage-soft{% else %}bg-a-soft{% endif %}" title="{% if w.kind == 'experience' %}Впечатление{% elif w.kind == 'place' %}Место{% else %}Вещь{% endif %}">
+  {% if w.kind == 'experience' %}{% icon 'sparkles' 'size-4' %}{% elif w.kind == 'place' %}{% icon 'map-pin' 'size-4' %}{% else %}{% icon 'gift' 'size-4' %}{% endif %}
+</span>
+<div class="min-w-[9rem] flex-1">
+  <p class="break-words font-bold">{{ w.title }}</p>
+  {% if w.note %}<p class="text-sm text-ink-2">{{ w.note }}</p>{% endif %}
+  {% if w.link %}<a href="{{ w.link }}" target="_blank" rel="noopener noreferrer nofollow" class="mt-1 inline-flex max-w-full items-center gap-1 text-xs font-bold text-b-ink hover:underline">{% icon 'link' 'size-3.5' %}<span class="truncate">{{ w.link }}</span></a>{% endif %}
+</div>

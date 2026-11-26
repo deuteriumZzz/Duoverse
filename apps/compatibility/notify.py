@@ -17,6 +17,9 @@ MESSAGES = {
         "account",
     ),
     "week": ("{name} начал(а) «Неделю пары»: семь коротких шагов из вашего разбора. Первый — уже сегодня.", "daily"),
+    "date": ("{text}", "pair_calendar"),  # built by dates.reminder_text
+    # neutral on purpose, whatever the theme: a preview shows on a locked screen, mail is read at work
+    "idea": ("Для вас двоих есть идея на эту неделю — загляните в «Сегодня».", "daily"),
 }
 
 

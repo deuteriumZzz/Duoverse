@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Календарь пары — Duoverse{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+  <p class="eyebrow">для вас двоих</p>
+  <h1 class="mt-1 text-3xl font-extrabold" data-split>Календарь пары</h1>
+  <p class="mt-2 text-ink-2">Дни рождения, день знакомства и ваши даты — видите оба. Напомним за неделю и за день.</p>
+
+  {% if state == "nopair" %}
+    <div class="card mt-8 p-6 text-center">
+      <p class="text-ink-2">Календарь появится, когда у вас будет пара: дни рождения возьмём из разбора.</p>
+      <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm mt-4">{% icon 'sparkles' 'size-4' %}Сделать разбор</a>
+    </div>
+  {% else %}
+
+    {% if together is not None %}
+    <section class="sticker mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 bg-pair-soft p-6" data-reveal>
+      <div class="min-w-0 flex-1">
+        <p class="eyebrow">вы знакомы</p>
+        <p class="mt-1 text-4xl font-extrabold"><span class="mono" data-count="{{ together }}">{{ together }}</span> {{ together_word }}</p>
+        <p class="mt-1 text-sm text-ink-2">с {{ met|date:"j E Y" }}</p>
+      </div>
+      <details class="text-sm">
+        <summary class="cursor-pointer font-bold text-ink-3 hover:text-ink">изменить</summary>
+        <form method="post" class="mt-2 flex gap-2">{% csrf_token %}
+          <input type="hidden" name="kind" value="met">
+          <input type="date" name="day" value="{{ met|date:'Y-m-d' }}" max="{{ today }}" required class="field" aria-label="День знакомства">
+          <button class="btn btn-soft btn-sm">Сохранить</button>
+        </form>
+      </details>
+    </section>
+    {% else %}
+    <form method="post" class="sticker mt-8 bg-pair-soft p-6" data-reveal>{% csrf_token %}
+      <input type="hidden" name="kind" value="met">
+      <label for="met-day" class="font-extrabold">Когда вы познакомились?</label>
+      <p class="mt-1 text-sm text-ink-2">Посчитаем, сколько дней вы знакомы, и напомним о годовщинах, 100, 500 и 1000 днях.</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <input type="date" id="met-day" name="day" max="{{ today }}" required class="field max-w-xs">
+        <button class="btn btn-primary btn-sm">{% icon 'heart' 'size-4' %}Сохранить</button>
+      </div>
+    </form>
+    {% endif %}
+
+    <section class="mt-8" aria-labelledby="soon-title">
+      <h2 id="soon-title" class="text-xl font-extrabold">Ближайший год</h2>
+      <ul class="mt-4 space-y-2">
+        {% for e in events %}
+        <li class="card flex items-center gap-3 p-3 sm:gap-4 sm:p-4" data-reveal style="--i: {{ forloop.counter }}">
+          <span class="grid w-14 shrink-0 place-items-center rounded-2xl py-2 text-center leading-none
+            {% if e.kind == 'birthday' %}bg-a-soft{% elif e.kind == 'met' or e.kind == 'milestone' %}bg-pair-soft{% elif e.kind == 'custom' %}bg-b-soft{% else %}bg-sand{% endif %}">
+            <span class="text-xl font-extrabold">{{ e.day|date:"j" }}</span><span class="mt-1 text-[0.7rem] font-bold text-ink-3">{{ e.day|date:"b" }}</span>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="flex items-start gap-1.5 font-bold leading-snug">
+              <span class="mt-0.5 shrink-0">{% if e.kind == 'birthday' %}{% icon 'cake' 'size-4' %}{% elif e.kind == 'met' %}{% icon 'heart' 'size-4' %}{% elif e.kind == 'milestone' %}{% icon 'sparkles' 'size-4' %}{% elif e.kind == 'custom' %}{% icon 'star' 'size-4' %}{% else %}{% icon 'party-popper' 'size-4' %}{% endif %}</span>
+              <span class="min-w-0 break-words">{{ e.title }}</span>
+            </p>
+            <p class="mt-0.5 text-sm text-ink-2"><span class="{% if e.in <= 7 %}font-extrabold text-ink{% endif %}">{% if e.in == 0 %}сегодня{% elif e.in == 1 %}завтра{% else %}через {{ e.in }} дн.{% endif %}</span>{% if e.sub %} · {{ e.sub }}{% endif %}{% if e.note %} · {{ e.note }}{% endif %}</p>
+            {% if e.kind == 'birthday' and e.side != side %}<a href="{% url 'wish_map' %}#theirs" class="mt-1 inline-flex items-center gap-1 text-xs font-bold text-a-ink hover:underline">{% icon 'gift' 'size-3.5' %}Идеи подарков</a>{% endif %}
+          </div>
+          {% if e.id %}
+          <form method="post" onsubmit="return confirm('Удалить «{{ e.title|escapejs }}» из календаря?')">{% csrf_token %}
+            <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ e.id }}">
+            <button class="btn btn-ghost btn-icon btn-sm" aria-label="Удалить «{{ e.title }}»">{% icon 'x' 'size-4' %}</button>
+          </form>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <form id="add" method="post" class="card mt-8 scroll-mt-24 space-y-3 p-6">{% csrf_token %}
+      <h2 class="text-lg font-extrabold">Добавить дату</h2>
+      <p class="text-sm text-ink-2">Свадьба, первый поцелуй, переезд, поездка — то, что важно вам двоим. Прошедшие даты повторяются каждый год.</p>
+      {% if error %}<p class="rounded-2xl bg-risk-soft p-3 text-sm text-risk-ink" role="alert">Проверьте название и дату: дата — не дальше чем через год.</p>{% endif %}
+      <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
+        <input name="title" maxlength="60" required placeholder="Например, наша свадьба" class="field" aria-label="Название">
+        <input type="date" name="day" max="{{ max_day }}" required class="field" aria-label="Дата">
+      </div>
+      <input name="note" maxlength="200" placeholder="Заметка для вас двоих — по желанию" class="field" aria-label="Заметка">
+      <button class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}Добавить</button>
+    </form>
+    <p class="mt-4 text-xs text-ink-3">Даты и заметки хранятся зашифрованными. О дне рождения напоминаем только партнёру — чтобы сюрприз остался сюрпризом. 23 февраля и 8 марта показываем, но не напоминаем.</p>
+  {% endif %}
+</div>
+{% endblock %}
