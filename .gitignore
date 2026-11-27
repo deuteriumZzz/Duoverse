@@ -10,4 +10,5 @@ staticfiles/
 .serena/
 .claude/
 backups/
-data/*.bsp
+# ephemeris files and local data, never committed
+data/
