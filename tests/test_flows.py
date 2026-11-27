@@ -192,6 +192,8 @@ def test_report_nav_hides_layers_behind_one_tab_and_factors_link_into_them(clien
     assert "Все слои" in astro and 'id="asp-' in astro
     razbor = client.get("/report/razbor/").content.decode()
     assert 'href="/report/astrology/#asp-' in razbor and "Венера (Аня)" not in razbor
+    # a {# … #} that spans lines is printed by Django as text, not hidden
+    assert not [u for u, html in (("/report/", overview), ("/report/razbor/", razbor), ("/report/layers/", layers)) if "{#" in html]
 
 
 @pytest.mark.parametrize("url", ["/privacy/", "/consent/", "/terms/"])

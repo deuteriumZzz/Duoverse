@@ -1,6 +1,5 @@
 {% extends "report/_layout.html" %}
 {% block report %}
-{% if locked and unlock_items %}{% include "components/unlock_preview.html" with where="razbor" cls="mb-8" %}{% endif %}
 <div class="grid gap-8 lg:grid-cols-[14rem_1fr]" x-data="{ read: [], toggle(k) { this.read.includes(k) ? this.read = this.read.filter(x => x !== k) : this.read.push(k); try { localStorage.setItem('read-{{ r.id }}', JSON.stringify(this.read)) } catch (e) {} } }"
      x-init="(() => { try { read = JSON.parse(localStorage.getItem('read-{{ r.id }}') || '[]') } catch (e) {} })()">
 
@@ -27,12 +26,15 @@
     {# 01 — who you are together #}
     <section id="type" class="scroll-mt-40">
       <p class="chapter" data-reveal><b>01</b>тип пары</p>
-      <div class="mt-4 grid gap-6 md:grid-cols-[12rem_1fr] md:items-center">
-        <div class="sticker overflow-hidden" data-reveal="scale"><div class="aspect-[4/4.4]">{% pair_poster r.pair_type.role_a r.pair_type.role_b "h-full w-full" %}</div></div>
+      {# a small poster beside the name on a phone; the description runs full width under both #}
+      <div class="mt-4 grid grid-cols-[6.5rem_1fr] items-center gap-x-4 gap-y-3 md:grid-cols-[12rem_1fr]">
+        <div class="sticker overflow-hidden md:row-span-2" data-reveal="scale"><div class="aspect-[4/4.4]">{% pair_poster r.pair_type.role_a r.pair_type.role_b "h-full w-full" %}</div></div>
         <div>
-          <h2 class="text-3xl font-extrabold leading-tight" data-split>{{ r.pair_type.name }}</h2>
-          <p class="accent mt-1 text-lg text-ink-2">{{ r.pair_type.tagline }}</p>
-          <p class="mt-4 leading-relaxed">{{ r.pair_type.description }}</p>
+          <h2 class="text-2xl font-extrabold leading-tight sm:text-3xl" data-split>{{ r.pair_type.name }}</h2>
+          <p class="accent mt-1 text-ink-2 sm:text-lg">{{ r.pair_type.tagline }}</p>
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <p class="leading-relaxed">{{ r.pair_type.description }}</p>
           <p class="mt-3 text-sm text-ink-3"><b class="text-ink-2">{{ dynamic.title }}.</b> {{ dynamic.text }}</p>
         </div>
       </div>
@@ -41,7 +43,7 @@
     {# 02 — each of you #}
     <section id="you" class="scroll-mt-40">
       <p class="chapter" data-reveal><b>02</b>каждый из вас</p>
-      <div class="mt-4 grid gap-4 md:grid-cols-2">
+      <div class="mt-4 grid grid-cols-2 gap-3 md:gap-4">
         {% include "components/role_card.html" with person=a role=role_a why=r.pair_type.why_a side="a" i=0 %}
         {% include "components/role_card.html" with person=b role=role_b why=r.pair_type.why_b side="b" i=1 %}
       </div>
@@ -51,21 +53,21 @@
     <section id="spheres" class="scroll-mt-40">
       <p class="chapter" data-reveal><b>03</b>сферы жизни</p>
       <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Где вам хорошо — и где нужна договорённость</h2>
-      <div class="mt-6 space-y-3">
+      {# rows: glyph, title, one line, score — the reading opens on tap, nothing is open by default #}
+      <div class="mt-5 space-y-2">
         {% for s in r.spheres %}
         <article id="sphere-{{ s.key }}" class="card tone-{{ s.tone }} scroll-mt-40 overflow-hidden" data-reveal style="--i: {{ forloop.counter }}"
-                 x-data="{ open: {% if forloop.first %}true{% else %}false{% endif %}, adult: {{ s.adult|yesno:'true,false' }}, ok: false }" x-init="(() => { try { ok = localStorage.getItem('adult-ok') === '1' } catch (e) {} })()">
-          <button class="flex w-full items-center gap-4 p-4 text-left sm:p-5" @click="if (adult && !ok) { if (confirm('Глава 18+: о сексуальности и телесной близости, без откровенных описаний. Вам есть 18 лет?')) { ok = true; try { localStorage.setItem('adult-ok', '1') } catch (e) {} } else return } open = !open" :aria-expanded="open">
-            <span class="shrink-0 self-start">{% glyph s.icon 'size-10' %}</span>
+                 x-data="{ open: false, adult: {{ s.adult|yesno:'true,false' }}, ok: false }" x-init="(() => { try { ok = localStorage.getItem('adult-ok') === '1' } catch (e) {} })()">
+          <button class="flex w-full items-center gap-3 p-3 pr-4 text-left sm:p-4" @click="if (adult && !ok) { if (confirm('Глава 18+: о сексуальности и телесной близости, без откровенных описаний. Вам есть 18 лет?')) { ok = true; try { localStorage.setItem('adult-ok', '1') } catch (e) {} } else return } open = !open" :aria-expanded="open">
+            <span class="grid size-12 shrink-0 place-items-center rounded-2xl t-bg">{% glyph s.icon 'size-9' %}</span>
             <span class="min-w-0 flex-1">
-              <span class="flex items-center gap-2"><span class="font-display text-lg font-extrabold leading-tight">{{ s.title }}</span>{% if s.adult %}<span class="chip h-6 shrink-0 border border-ink bg-paper text-[0.68rem]">18+</span>{% endif %}</span>
-              <span class="mt-1.5 flex flex-wrap gap-1.5">{% include "components/tone_badge.html" with tone=s.tone %}<span x-show="read.includes('{{ s.key }}')" x-cloak class="chip bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3.5' %}прочитано</span></span>
-              <span class="mt-1.5 block text-sm text-ink-2">{{ s.summary }}</span>
+              <span class="flex items-center gap-1.5"><b class="leading-tight">{{ s.title }}</b>{% if s.adult %}<span class="chip h-5 shrink-0 border border-ink bg-paper px-1.5 text-[0.62rem]">18+</span>{% endif %}<span x-show="read.includes('{{ s.key }}')" x-cloak class="shrink-0 text-synergy-ink" title="прочитано">{% icon 'check' 'size-4' %}</span><span class="sr-only"> — {{ s.tone|label }}</span></span>
+              <span class="mt-0.5 block text-xs leading-snug text-ink-2">{{ s.summary }}</span>
             </span>
-            <span class="shrink-0 font-display text-2xl font-extrabold tabular-nums">{{ s.score }}</span>
-            <span class="text-ink-3 transition duration-300" :class="open && 'rotate-180'">{% icon 'chevron-down' %}</span>
+            <span class="shrink-0 font-display text-xl font-extrabold tabular-nums t-ink">{{ s.score }}</span>
+            <span class="shrink-0 text-ink-3 transition duration-300" :class="open && 'rotate-180'">{% icon 'chevron-down' 'size-4' %}</span>
           </button>
-          <div x-show="open" x-collapse {% if not forloop.first %}x-cloak{% endif %}>
+          <div x-show="open" x-collapse x-cloak>
             {% if locked and not forloop.first %}
             <div class="border-t border-line p-5 sm:p-6">
               <p class="leading-relaxed">{{ s.story.0 }}</p>
@@ -185,12 +187,6 @@
     </details>
   </div>
 </div>
-
-{# mobile chapter drawer #}
-<div class="no-print fixed bottom-24 right-4 z-30 lg:hidden" x-data="{ open: false }">
-  <button class="btn btn-primary btn-icon h-12 w-12 shadow-lift" @click="open = !open" aria-label="Главы">{% icon 'list' 'size-5' %}</button>
-  <div x-show="open" x-cloak x-transition.origin.bottom.right class="card absolute bottom-14 right-0 w-60 p-2" @click.outside="open = false">
-    {% for n, anchor, title in chapters %}<a href="#{{ anchor }}" @click="open = false" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-sand"><span class="accent w-6">{{ n }}</span>{{ title }}</a>{% endfor %}
-  </div>
-</div>
+{# what the full report adds — after the content, the pinned button (_layout) brings you here #}
+{% if locked and unlock_items %}{% include "components/unlock_preview.html" with where="razbor" cls="mt-12" %}{% endif %}
 {% endblock %}

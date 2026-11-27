@@ -4,17 +4,31 @@
 <div class="scroll-progress no-print" aria-hidden="true"></div>
 <div class="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
   {# report header #}
-  <div class="vt-report-head flex flex-wrap items-center gap-4">
-    {% include "components/pair_avatars.html" %}
+  {# one row: who, and «⋯» for the rest (weights, PDF, share, the chapters of «Разбор») — the content starts right under the tabs #}
+  <div class="vt-report-head relative z-[35] flex items-center gap-3 sm:gap-4">{# above the sticky tabs (30) so «⋯» opens over them, under the site header (40) #}
+    <div class="hidden sm:block">{% include "components/pair_avatars.html" %}</div>
     {% if invite %}{% include "components/invite_sheet.html" %}{% endif %}
-    <div class="min-w-0">
-      <h1 class="text-xl font-extrabold sm:text-2xl">{{ a.name }} <span class="text-ink-3">и</span> {{ b.name }}</h1>
-      <p class="mono mt-0.5 text-xs text-ink-3">{{ a.sun_sign }} × {{ b.sun_sign }} · {{ r.created_at|date:"j E Y" }}</p>
+    <div class="min-w-0 flex-1">
+      <h1 class="truncate text-xl font-extrabold sm:text-2xl">{{ a.name }} <span class="text-ink-3">и</span> {{ b.name }}</h1>
+      <p class="mono mt-0.5 truncate text-xs text-ink-3">{{ a.sun_sign }} × {{ b.sun_sign }} · {{ r.created_at|date:"j E Y" }}</p>
     </div>
-    <div class="no-print ml-auto flex flex-wrap gap-2">
-      <a href="{{ rbase }}weights/" class="btn btn-ghost btn-sm">{% icon 'sliders-horizontal' 'size-4' %}<span class="hidden sm:inline">Веса</span></a>
-      <a href="{{ rbase }}pdf/" class="btn btn-ghost btn-sm">{% icon 'file-down' 'size-4' %}<span class="hidden sm:inline">PDF</span></a>
+    <div class="no-print hidden shrink-0 gap-2 lg:flex">
+      <a href="{{ rbase }}weights/" class="btn btn-ghost btn-sm">{% icon 'sliders-horizontal' 'size-4' %}Веса</a>
+      <a href="{{ rbase }}pdf/" class="btn btn-ghost btn-sm">{% icon 'file-down' 'size-4' %}PDF</a>
       <a href="{{ rbase }}share/" class="btn btn-primary btn-sm">{% icon 'share-2' 'size-4' %}Поделиться</a>
+    </div>
+    <div class="no-print relative shrink-0 lg:hidden" x-data="{ open: false }" @keydown.escape.window="open = false">
+      <button type="button" class="btn btn-ghost btn-icon" @click="open = !open" :aria-expanded="open" aria-label="Ещё: веса, PDF, поделиться">{% icon 'ellipsis' 'size-5' %}</button>
+      <div x-show="open" x-cloak x-transition.origin.top.right @click.outside="open = false" class="card absolute right-0 top-12 z-40 max-h-[70vh] w-60 overflow-y-auto p-2">
+        {% if tab == 'razbor' %}
+        <p class="eyebrow px-3 pb-1 pt-2">Главы</p>
+        {% for n, anchor, title in chapters %}<a href="#{{ anchor }}" @click="open = false" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-sand"><span class="accent w-6">{{ n }}</span>{{ title }}</a>{% endfor %}
+        <hr class="my-1 border-line">
+        {% endif %}
+        <a href="{{ rbase }}weights/" class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold hover:bg-sand">{% icon 'sliders-horizontal' 'size-4' %}Свои веса</a>
+        <a href="{{ rbase }}pdf/" class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold hover:bg-sand">{% icon 'file-down' 'size-4' %}Скачать PDF</a>
+        <a href="{{ rbase }}share/" class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold hover:bg-sand">{% icon 'share-2' 'size-4' %}Поделиться</a>
+      </div>
     </div>
   </div>
 
@@ -47,6 +61,15 @@
   {% endif %}
 
   <div class="pt-4">{% block report %}{% endblock %}</div>
+
+  {% if locked and unlock_items and tab == 'overview' or locked and unlock_items and tab == 'razbor' %}
+  {# the one action of a locked report, always in reach on a phone; it steps aside once the unlock block itself is on screen #}
+  <div class="no-print pointer-events-none fixed inset-x-3 bottom-[5.6rem] z-30 md:hidden" x-data="{ near: false }"
+       x-init="const t = document.getElementById('unlock'); if (t) new IntersectionObserver(([e]) => near = e.isIntersecting).observe(t)"
+       x-show="!near" x-transition.opacity>
+    <a href="#unlock" class="btn btn-primary pointer-events-auto w-full shadow-lift">{% icon 'lock-open' 'size-4' %}{% if gift_code %}Открыть подарком{% else %}Открыть всё за {{ price_deep }} ₽{% endif %}</a>
+  </div>
+  {% endif %}
 
   <p class="mt-16 flex items-start gap-2 border-t border-line pt-6 text-xs leading-relaxed text-ink-3">{% icon 'info' 'size-4 shrink-0' %}<span>Астрология, числа и таро — для размышления, не наука. Психология — по исследованиям. Не медицинская и не терапевтическая услуга. <a href="{% url 'disclaimer' %}" class="whitespace-nowrap underline">О методе</a></span></p>
 </div>

@@ -48,13 +48,13 @@
   </div>
 </section>
 
-<section class="mt-5 grid gap-5 lg:grid-cols-[1fr_1fr_0.9fr]">
+<section class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-[1fr_1fr_0.9fr] lg:gap-5">
   {% include "components/role_card.html" with person=a role=role_a why=r.pair_type.why_a side="a" i=0 %}
   {% include "components/role_card.html" with person=b role=role_b why=r.pair_type.why_b side="b" i=1 %}
-  <article class="card flex flex-col p-6" data-reveal style="--i:2">
+  <article class="card col-span-2 flex flex-col p-5 lg:col-span-1 lg:p-6" data-reveal style="--i:2">
     <p class="chapter"><b>×</b>динамика</p>
-    <h3 class="mt-3 text-2xl font-extrabold">{{ dynamic.title }}</h3>
-    <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ dynamic.text }}</p>
+    <h3 class="mt-2 text-xl font-extrabold lg:text-2xl">{{ dynamic.title }}</h3>
+    <p class="mt-1 text-sm leading-relaxed text-ink-2">{{ dynamic.text }}</p>
   </article>
 </section>
 
@@ -77,7 +77,7 @@
 <section class="mt-14">
   <p class="chapter" data-reveal><b>01</b>категории</p>
   <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Где вам легко, а где нужна <span class="marker" style="--mk: var(--color-attention-soft)">договорённость</span></h2>
-  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="mt-5 grid gap-2 lg:grid-cols-2">
     {% for c in r.categories %}{% include "components/category_card.html" with c=c i=forloop.counter0 %}{% endfor %}
   </div>
 </section>
