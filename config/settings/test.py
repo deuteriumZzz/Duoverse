@@ -6,5 +6,5 @@ DEV_SCREENS = True  # pytest-django turns DEBUG off, the demo screens stay testa
 DATABASES = {"default": env.db("DATABASE_URL", default="sqlite://:memory:")}
 CELERY_TASK_ALWAYS_EAGER = True
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
-KB_ALLOWED_STATUSES = ["draft", "reviewed", "published"]
+KB_ALLOWED_STATUSES = ["published"]  # as in production: a text left a draft must fail a test, not vanish for users
 ANTHROPIC_API_KEY = ""  # tests never call the network

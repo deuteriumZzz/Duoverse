@@ -124,6 +124,19 @@ def test_every_sphere_has_a_year_of_questions_and_three_exercises():
         assert KnowledgeBlock.objects.filter(key__startswith=f"EXERCISE:{sphere}:", status="published").count() == 3
 
 
+def test_nothing_the_seed_publishes_is_left_a_draft():
+    """Production shows published blocks only: a seed block marked published must be published in the database too
+    (the loader once left statuses as first seeded, and four Gottman texts and three habits stayed hidden)."""
+    import json
+
+    from apps.knowledge.seeding import SEED_DIR
+
+    seeded = {b["key"]: b["status"] for f in SEED_DIR.glob("ru*.json") for b in json.loads(f.read_text(encoding="utf-8"))}
+    assert all(s == "published" for s in seeded.values())
+    drafts = set(KnowledgeBlock.objects.filter(status="draft").values_list("key", flat=True))
+    assert not drafts & set(seeded)
+
+
 def test_knowledge_base_is_complete_and_reports_have_no_raw_placeholders():
     import re
 

@@ -35,6 +35,7 @@
         {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
       </nav>
       <div class="ml-auto flex items-center gap-2">
+        {% if not me.account %}<a href="{% url 'pricing' %}" class="rounded-full px-3 py-2 text-sm font-semibold text-ink-2 transition hover:bg-sand md:hidden {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>{% endif %}{# a guest on a phone has no menu row: prices one tap away #}
         <a href="{% url 'wizard' %}" class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}<span class="hidden sm:inline">Новый разбор</span></a>
         {% if me.account %}
         <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">

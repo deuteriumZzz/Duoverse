@@ -98,11 +98,26 @@
 
 <script>
   function wizard(initial, prefill) {
-    const blank = () => ({ name: "", date: "", time: "", noTime: false, place: "" });
+    const blank = () => ({ name: "", date: "", time: "", noTime: false, place: "", gender: "" });
+    const person = (p) => ({ ...p, gSet: !!p.gender });  // gSet: chosen by hand (or known) — the name no longer guesses
     return {
       mode: ["quick", "extended", "deep"].includes(initial) ? initial : "quick",
       step: prefill && prefill.pair ? 1 : 0, touched: false, today: new Date().toISOString().slice(0, 10),
-      form: { a: { ...blank(), ...(prefill?.a || {}) }, b: { ...blank(), ...(prefill?.b || {}) } },
+      form: { a: person({ ...blank(), ...(prefill?.a || {}) }), b: person({ ...blank(), ...(prefill?.b || {}) }) },
+      // «Аня» → она, «Миша» → он, so the texts say «рада» / «рад»; names that are both (Саша, Женя, Валя) stay unsaid.
+      // Only a preselection: the choice is on screen and one tap changes it.
+      guess(name) {
+        const n = (name || "").trim().toLowerCase().replace(/ё/g, "е").split(/\s+/)[0];
+        const both = ["саша", "женя", "валя", "шура", "сеня"];
+        const he = ["миша", "дима", "илья", "никита", "лева", "вова", "петя", "коля", "паша", "гоша", "кузьма", "фома", "лука",
+          "яша", "сережа", "леша", "алеша", "гриша", "ваня", "федя", "толя", "тима", "степа", "костя", "боря", "юра", "слава",
+          "рома", "жора", "митя", "витя", "данила", "савва", "леня", "сема", "тема", "кирюша"];
+        if (!n || both.includes(n)) return "";
+        if (he.includes(n)) return "m";
+        if (/[ая]$/.test(n)) return "f";
+        if (/[бвгджзклмнпрстфхцчшщй]$/.test(n)) return "m";
+        return "";
+      },
       get steps() { return this.mode === "deep" ? ["Режим", "Вы", "Партнёр", "Анкеты", "Проверка"] : ["Режим", "Вы", "Партнёр", "Проверка"]; },
       validDate(d) { return !!d && d >= "1900-01-01" && d <= this.today; },
       canNext() {

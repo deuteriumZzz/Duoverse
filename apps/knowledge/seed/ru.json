@@ -419,7 +419,7 @@
    "why": "Короткое «как ты сегодня» снимает накопленное до того, как оно станет ссорой."
   },
   "evidence_level": "scientific",
-  "status": "draft"
+  "status": "published"
  },
  {
   "key": "HABIT:communication",
@@ -432,7 +432,7 @@
    "why": "Пауза снижает «затопление» эмоциями и помогает вернуться к разговору спокойно."
   },
   "evidence_level": "scientific",
-  "status": "draft"
+  "status": "published"
  },
  {
   "key": "HABIT:values",
@@ -458,7 +458,7 @@
    "why": "Как разговор начинается, так он обычно и заканчивается: начинайте с себя и конкретной ситуации."
   },
   "evidence_level": "scientific",
-  "status": "draft"
+  "status": "published"
  },
  {
   "key": "HABIT:home",

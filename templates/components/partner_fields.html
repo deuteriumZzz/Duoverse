@@ -5,10 +5,10 @@
     <div><p class="eyebrow">{% if who == 'a' %}Партнёр 1 · вы{% else %}Партнёр 2{% endif %}</p><p class="font-display text-xl font-extrabold" x-text="form.{{ who }}.name || '{% if who == 'a' %}Расскажите о себе{% else %}Теперь о партнёре{% endif %}'"></p></div>
   </div>
   <label class="block"><span class="label">Имя</span>
-    <input class="field" name="{{ who }}_name" x-model="form.{{ who }}.name" placeholder="{% if who == 'a' %}Аня{% else %}Миша{% endif %}" autocomplete="{% if who == 'a' %}given-name{% else %}off{% endif %}"></label>
+    <input class="field" name="{{ who }}_name" x-model="form.{{ who }}.name" @input="if (!form.{{ who }}.gSet) form.{{ who }}.gender = guess($event.target.value)" placeholder="{% if who == 'a' %}Аня{% else %}Миша{% endif %}" autocomplete="{% if who == 'a' %}given-name{% else %}off{% endif %}"></label>
   <fieldset><legend class="label">Пол <span class="font-normal text-ink-3">— по желанию</span></legend>
     <div class="flex flex-wrap gap-2">
-      {% for v, l in GENDERS %}<label class="cursor-pointer rounded-full border border-line px-3.5 py-1.5 text-sm font-bold transition has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk"><input type="radio" name="{{ who }}_gender" value="{{ v }}" class="sr-only" {% if not v %}checked{% endif %}>{{ l }}</label>{% endfor %}
+      {% for v, l in GENDERS %}<label class="cursor-pointer rounded-full border border-line px-3.5 py-1.5 text-sm font-bold transition has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk"><input type="radio" name="{{ who }}_gender" value="{{ v }}" class="sr-only" x-model="form.{{ who }}.gender" @change="form.{{ who }}.gSet = true" {% if not v %}checked{% endif %}>{{ l }}</label>{% endfor %}
     </div>
   </fieldset>
   <div><label class="label" for="{{ who }}_date">Дата рождения <span class="text-risk">*</span></label>
