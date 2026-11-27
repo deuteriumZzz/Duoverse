@@ -167,9 +167,9 @@ def ev(f: Factor) -> Evidence:
     return Evidence(source=f.source, detail=f.detail, weight=round(f.weight, 2), layer=f.layer)
 
 
-def arcana(n: int) -> Arcana:
+def arcana(n: int, text: str = "") -> Arcana:
     name, keyword, portrait = tarot.ARCANA[n - 1]
-    return Arcana(number=n, name=name, keyword=keyword, portrait=portrait)
+    return Arcana(number=n, name=name, keyword=keyword, portrait=portrait, text=text)
 
 
 def _cap(s: str) -> str:
@@ -474,6 +474,15 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
     else:
         psychology = PsychologySection(available=False)
 
+    def num_text(key: str, default: str, who: str = "") -> str:
+        return kb.text(key, default, **person_names("name", who)) if who else kb.text(key, default)
+
+    def rel_text(x: int, y: int) -> str:
+        return num_text(f"NUM:relation:{num.relation_kind(x, y)}", _cap(num.relation(x, y)[1]) + ".")
+
+    def symbolic(source: str, detail: str) -> list[Evidence]:
+        return [Evidence(source=source, detail=detail, weight=0.0, layer="symbolic")]
+
     rel = num.relation(pa.life_path, pb.life_path)
     numbers = [
         NumberPair(
@@ -481,8 +490,18 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             a=pa.life_path,
             b=pb.life_path,
             tone=tone_of(rel[0]),
-            meaning=f"{pa.life_path} — {num.KEYWORDS[pa.life_path]}; {pb.life_path} — {num.KEYWORDS[pb.life_path]}. {_cap(rel[1])}.",
+            meaning=f"{pa.life_path} — {num.KEYWORDS[pa.life_path]}; {pb.life_path} — {num.KEYWORDS[pb.life_path]}. "
+            + rel_text(pa.life_path, pb.life_path),
         )
+    ]
+    num_insights = [
+        Insight(
+            title=f"Число пути {p.life_path} · {who.name}",
+            tone="neutral",
+            text=num_text(f"NUM:lifepath:{p.life_path}", f"{who.name}: {num.KEYWORDS[p.life_path]}.", who.name),
+            evidence=symbolic("Число жизненного пути", f"{who.name}: {p.life_path}"),
+        )
+        for p, who in ((pa, a), (pb, b))
     ]
     if pa.destiny and pb.destiny:
         rd = num.relation(pa.destiny, pb.destiny)
@@ -492,48 +511,75 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
                 a=pa.destiny,
                 b=pb.destiny,
                 tone=tone_of(rd[0]),
-                meaning=f"По имени: {num.KEYWORDS[pa.destiny]} и {num.KEYWORDS[pb.destiny]}. {_cap(rd[1])}.",
+                meaning=f"По имени: {pa.destiny} — {num.KEYWORDS[pa.destiny]}; {pb.destiny} — {num.KEYWORDS[pb.destiny]}. "
+                + rel_text(pa.destiny, pb.destiny),
+            )
+        )
+        num_insights.append(
+            Insight(
+                title="Числа имён",
+                tone="neutral",
+                text=" ".join(
+                    num_text(f"NUM:destiny:{p.destiny}", f"{who.name}: {num.KEYWORDS[p.destiny]}.", who.name)
+                    for p, who in ((pa, a), (pb, b))
+                    if p.destiny
+                ),
+                evidence=symbolic("Число судьбы", f"по имени: {pa.destiny} и {pb.destiny}"),
             )
         )
     py_f = numer.factors[-1]
+    years = " ".join(
+        f"{who.name} — {num_text(f'NUM:year:{p.personal_year}', num.KEYWORDS[p.personal_year])}." for p, who in ((pa, a), (pb, b))
+    )
     numbers.append(
         NumberPair(
             title="Личный год",
             a=pa.personal_year,
             b=pb.personal_year,
             tone=tone_of(round(py_f.weight * 30 + 65)),
-            meaning=_cap(py_f.detail) + ".",
+            meaning=f"{years} {_cap(py_f.detail)}.",
         )
     )
     pair_n = num.pair_number(pa, pb)
     rel_a, rel_b = pa.matrix["Отношения"], pb.matrix["Отношения"]
+
+    def closeness(who: str, n: int) -> str:
+        name, keyword, _ = tarot.ARCANA[n - 1]
+        return f"У {gen(who)} — {name}: " + (kb.data(f"TAROT:arcana:{n}").get("closeness") or keyword) + "."
+
+    num_insights.append(
+        Insight(
+            title="Точка «Отношения» в Матрице",
+            tone="neutral",
+            text=f"{closeness(a.name, rel_a)} {closeness(b.name, rel_b)} Так каждый из вас понимает близость, и об этом стоит поговорить вслух.",
+            evidence=symbolic("Матрица судьбы", f"точка «Отношения»: {rel_a} и {rel_b}"),
+        )
+    )
     numerology = NumerologySection(
         numbers=numbers,
         pair_number=pair_n,
-        pair_meaning=f"Число пары {pair_n} — {num.KEYWORDS[pair_n]}: вы сильнее всего, когда это общая тема.",
+        pair_meaning=num_text(
+            f"NUM:pair:{pair_n}", f"Число пары {pair_n} — {num.KEYWORDS[pair_n]}: вы сильнее всего, когда это общая тема."
+        ),
         matrix=[MatrixPoint(title=k, a=pa.matrix[k], b=pb.matrix[k]) for k in pa.matrix],
-        insights=[
-            Insight(
-                title="Точка «Отношения» в Матрице",
-                tone="neutral",
-                text=f"У {gen(a.name)} — {tarot.ARCANA[rel_a - 1][0]} ({tarot.ARCANA[rel_a - 1][1]}), у {gen(b.name)} — {tarot.ARCANA[rel_b - 1][0]} ({tarot.ARCANA[rel_b - 1][1]}). Так каждый из вас понимает близость, и об этом стоит поговорить вслух.",
-                evidence=[Evidence(source="Матрица судьбы", detail=f"точка «Отношения»: {rel_a} и {rel_b}", weight=0.0, layer="symbolic")],
-            )
-        ],
+        insights=num_insights,
     )
 
     a_arc, b_arc = tarot.arcana_of(a.birth_date), tarot.arcana_of(b.birth_date)
     p_arc, lk = tarot.pair_arcana(a_arc, b_arc), tarot.link(a_arc, b_arc)
     portrait_pair = tarot.ARCANA[p_arc - 1][2]
+    union = kb.data(f"TAROT:union:{p_arc}")
     tarot_section = TarotSection(
-        a=arcana(a_arc),
-        b=arcana(b_arc),
-        pair=arcana(p_arc),
+        a=arcana(a_arc, kb.text(f"TAROT:arcana:{a_arc}", "", **person_names("name", a.name))),
+        b=arcana(b_arc, kb.text(f"TAROT:arcana:{b_arc}", "", **person_names("name", b.name))),
+        pair=arcana(p_arc, kb.text(f"TAROT:union:{p_arc}")),
         link_type=lk.type,
         link_tone=lk.tone,  # type: ignore[arg-type]
-        reading=kb.text(f"TAROT:pair:{min(a_arc, b_arc)}+{max(a_arc, b_arc)}")
+        reading=" ".join(  # this pair of arcana, then what the link type means; the old portraits if neither exists
+            t for t in (kb.text(f"TAROT:pair:{min(a_arc, b_arc)}+{max(a_arc, b_arc)}"), kb.text(f"TAROT:link:{lk.type}")) if t
+        )
         or f"{tarot.ARCANA[a_arc - 1][2]} {tarot.ARCANA[b_arc - 1][2]} Вместе это {tarot.ARCANA[p_arc - 1][0]}: {portrait_pair[:1].lower()}{portrait_pair[1:]}",
-        questions=[kb.data(f"SPHERE:{s}").get("question", "") for s in ("plans", "talk", "growth")],
+        questions=[q for q in [union.get("question", "")] + [kb.data(f"SPHERE:{s}").get("question", "") for s in ("plans", "talk")] if q],
         how=tarot.how(a.name, a.birth_date, b.name, b.birth_date),
     )
 

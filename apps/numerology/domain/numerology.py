@@ -88,18 +88,30 @@ def pair_number(a: Profile, b: Profile) -> int:
     return reduce(base(a.life_path) + base(b.life_path), keep_master=False)
 
 
-def relation(x: int, y: int) -> tuple[int, str]:
-    """Score and wording for two numbers. Explicit tables, no hidden weights."""
+RELATION = {  # kind → score and short wording; the report reads the fuller NUM:relation:<kind> text
+    "same": (78, "одно число — похожий ритм, но и похожие слепые зоны"),
+    "harmony": (88, "гармоничная пара чисел — сильные стороны дополняют друг друга"),
+    "tension": (52, "напряжённая пара — разные скорости и приоритеты"),
+    "group": (74, "одна группа — общий темп"),
+    "other": (64, "разные группы — нужно договариваться о ритме"),
+}
+
+
+def relation_kind(x: int, y: int) -> str:
+    """Explicit tables, no hidden weights."""
     bx, by = base(x), base(y)
     if bx == by:
-        return 78, "одно число — похожий ритм, но и похожие слепые зоны"
+        return "same"
     if frozenset((bx, by)) in HARMONY:
-        return 88, "гармоничная пара чисел — сильные стороны дополняют друг друга"
+        return "harmony"
     if frozenset((bx, by)) in TENSION:
-        return 52, "напряжённая пара — разные скорости и приоритеты"
-    if GROUP[bx] == GROUP[by]:
-        return 74, "одна группа — общий темп"
-    return 64, "разные группы — нужно договариваться о ритме"
+        return "tension"
+    return "group" if GROUP[bx] == GROUP[by] else "other"
+
+
+def relation(x: int, y: int) -> tuple[int, str]:
+    """Score and wording for two numbers."""
+    return RELATION[relation_kind(x, y)]
 
 
 def score(a: Profile, b: Profile) -> ScoreResult:

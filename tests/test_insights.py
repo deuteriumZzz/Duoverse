@@ -6,7 +6,8 @@ from types import SimpleNamespace
 import pytest
 from django.core.cache import cache as django_cache
 
-from apps.insights.application.stitch import Stitcher, facts_of, validate
+from apps.insights.application.stitch import Stitcher, _allowed, facts_of, validate
+from apps.insights.domain.validator import PLANETS
 from apps.insights.infrastructure.anthropic_llm import AnthropicLLM
 from config.container import report_provider
 
@@ -58,14 +59,14 @@ def test_valid_output_replaces_summary_and_sphere_story(report):
 def test_validator_rejects_invented_facts_then_retry_succeeds(report):
     django_cache.clear()
     bad = good_payload(report)
-    # Нептун: a planet the demo report never mentions (Хирон is computed since the JPL table, so it's a fact now)
-    bad["summary"] = {"text": "Вам нельзя быть вместе: Нептун и 999 баллов.", "block_ids": ["made-up"]}
+    absent = next(p for p in PLANETS if p not in _allowed(facts_of(report))[2])  # a planet this report never mentions
+    bad["summary"] = {"text": f"Вам нельзя быть вместе: {absent} и 999 баллов.", "block_ids": ["made-up"]}
     errors = validate(bad, facts_of(report))
     assert (
         any("block_ids" in e for e in errors)
         and any("999" in e for e in errors)
         and any("запрещ" in e for e in errors)
-        and any("Нептун" in e for e in errors)
+        and any(absent in e for e in errors)
     )
     llm = FakeLLM([json.dumps(bad), json.dumps(good_payload(report))])
     out = Stitcher(llm, django_cache).stitch(report)
