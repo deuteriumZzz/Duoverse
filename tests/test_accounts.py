@@ -783,6 +783,15 @@ def test_the_library_shows_what_is_open_and_the_path_what_is_ahead():
     assert "квиз этой недели" in page and "На этапе «Глубже» — ещё 22 квиза" in page and "На этапе «Откровенно» — ещё 10 квизов" in page
     assert "Открыты сейчас" in page and page.count('class="w-40 shrink-0 snap-start"') == 19  # the rest of the light ones, in a row
     assert "Все темы" in page and "Быт и деньги" in page  # topics filter what is open and done, like couple apps do
+    assert "в «Паре+»" not in page and "Пройти" in page  # the free week after linking opens them
+    # once it ends: every quiz says «Пара+» before the tap, none offers «Пройти»; one partner's «Пара+» opens them for both
+    Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())
+    page = anya.get("/library/").content.decode()
+    assert page.count("в «Паре+»") >= 19 and "Пройти" not in page  # each card, and the blocks above and below
+    from apps.compatibility.access import mark_paid
+
+    mark_paid(Purchase.objects.create(owner=pair.partner, kind="plus", amount=249))
+    assert "в «Паре+»" not in anya.get("/library/").content.decode()
     week = _quiz_of_week(pair, timezone.localdate())
     light = next(q for q in KnowledgeRepository().series("QUIZ:") if q.get("level") == 1 and q["key"] != week["key"])
     deep = next(q for q in KnowledgeRepository().series("QUIZ:") if q.get("level") == 3)

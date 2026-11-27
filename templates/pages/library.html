@@ -19,12 +19,15 @@ hasn't reached yet (so nothing comes as a surprise). «Сегодня» gives on
   is ahead as one line per stage — 52 quizzes, never a wall of cards.{% endcomment %}
   <section class="mt-5" x-show="tab === 'quizzes'" role="tabpanel" x-data="{ more: false, topic: 'all' }">
     <p class="text-sm text-ink-3">Пройдено вдвоём {{ done_count }} из {{ open_count }} открытых · всего {{ quizzes|length }}</p>
+    {# free: say it before the first tap, not after it — the cards below carry the lock too #}
+    {% if not plus %}{% include "components/plus_lock.html" with title="Квизы" text="Отвечайте вдвоём и смотрите, где вы совпадаете." cls="mt-3" %}{% endif %}
     {% if week_quiz %}
     <a href="{% url 'quiz_week' %}?q={{ week_quiz.key|urlencode }}" class="sticker mt-3 flex items-center gap-3 bg-pair-soft p-4 transition hover:-translate-y-0.5">
       <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-paper">{% glyph 'gem' 'size-8' %}</span>
       <span class="min-w-0 flex-1"><span class="block text-[0.7rem] font-bold uppercase tracking-wide text-ink-2">квиз этой недели</span>
         <b class="block font-display text-lg leading-tight">{{ week_quiz.title }}</b>{% if week_quiz.sphere %}<span class="block text-xs text-ink-2">про «{{ week_quiz.sphere }}»</span>{% endif %}</span>
-      <span class="btn btn-primary btn-sm shrink-0">{% if week_quiz.mine %}Ответы{% else %}Пройти{% endif %}</span>
+      {% if plus %}<span class="btn btn-primary btn-sm shrink-0">{% if week_quiz.mine %}Ответы{% else %}Пройти{% endif %}</span>
+      {% else %}<span class="btn btn-soft btn-sm shrink-0">{% icon 'lock' 'size-4' %}Пара+</span>{% endif %}
     </a>
     {% endif %}
 
@@ -41,7 +44,7 @@ hasn't reached yet (so nothing comes as a surprise). «Сегодня» gives on
       <li class="w-40 shrink-0 snap-start" x-show="topic === 'all' || topic === '{{ q.topic }}'"><a href="{% url 'quiz_week' %}?q={{ q.key|urlencode }}" class="card flex h-full flex-col p-3.5 transition hover:-translate-y-0.5 hover:border-ink">
         <span class="grid size-9 place-items-center rounded-xl bg-lilac-soft">{% glyph 'gem' 'size-6' %}</span>
         <b class="mt-2 text-sm leading-snug">{{ q.title }}</b>
-        <span class="mt-auto pt-3 text-xs font-bold {% if q.mine %}text-ink-3{% else %}text-ink{% endif %}">{% if q.mine %}ждём {{ partner_name|acc }}{% else %}Пройти →{% endif %}</span>
+        <span class="mt-auto pt-3 text-xs font-bold {% if q.mine %}text-ink-3{% else %}text-ink{% endif %}">{% if not plus %}<span class="inline-flex items-center gap-1 text-ink-3">{% icon 'lock' 'size-3.5' %}в «Паре+»</span>{% elif q.mine %}ждём {{ partner_name|acc }}{% else %}Пройти →{% endif %}</span>
       </a></li>
       {% endfor %}
     </ul>
@@ -73,7 +76,6 @@ hasn't reached yet (so nothing comes as a surprise). «Сегодня» gives on
       {% endfor %}
     </ul>
     {% endif %}
-    {% if not plus %}{% include "components/plus_lock.html" with title="Квизы" text="Отвечайте вдвоём и смотрите, где вы совпадаете." cls="mt-5" %}{% endif %}
   </section>
 
   {# ── date ideas by theme: one theme at a time, five at first — the steps with «Пара+»; 18+ ideas live in «Близость» ── #}
