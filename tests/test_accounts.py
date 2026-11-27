@@ -634,7 +634,7 @@ def test_gender_is_optional_and_gives_the_right_endings_and_hair(settings, monke
     misha.post("/daily/answer/", {"text": "Поездка в горы"})
     assert any(t.startswith("Миша ответил на вопрос дня") for t in sent)  # not «ответил(а)»
     page = anya.get("/daily/").content.decode()
-    assert "Миша уже ответил —" in page and "ответил(а)" not in page
+    assert "Миша уже ответил." in page and "ответил(а)" not in page
     together = anya.get("/pair/").content.decode()
     assert "#sc-hair-f" in together and "#sc-hair-m" in together  # her hair on the peach figure, his on the cobalt one
 
@@ -661,14 +661,14 @@ def test_a_couple_opens_on_together_with_their_path_and_todays_line():
     assert "Вопрос дня ждёт вас" not in page and "из 100 ·" not in page  # one next step on the home; the score is in «Отчёт»
     assert "Быстрый старт" not in page and "Быстрый старт" in Client().get("/").content.decode()  # no site footer inside the app
     misha.post("/daily/answer/", {"text": "Поездка в горы"})
-    assert "уже ответил(а) — ответьте" in anya.get("/daily/").content.decode()
+    assert "уже ответил(а). Ответьте" in anya.get("/daily/").content.decode()
 
 
 def test_a_guest_has_one_home_and_today_says_it_is_a_sample():
     visitor = Client()
     assert visitor.get("/pair/")["Location"] == "/#pair"  # no pair yet: home tells what a couple gets
     home = visitor.get("/").content.decode()
-    assert 'id="pair"' in home and "Ваше пространство" in home and "Разбор — это" in home  # not only a report
+    assert 'id="pair"' in home and "Ваше пространство" in home and "Как это <span" in home and "Позовите партнёра" in home  # not only a report
     tabs = home.split('aria-label="Нижнее меню"')[1].split("</nav>")[0]
     assert tabs.count("<li>") == 4 and "Вдвоём" not in tabs  # Главная, Сегодня, Отчёт, Профиль — the same four as a couple's
     assert 'href="/report/"' in tabs  # no report of your own yet: «Отчёт» is the sample

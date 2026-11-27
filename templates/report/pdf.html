@@ -1,53 +1,371 @@
 {% extends "base.html" %}
-{% block title %}PDF — {{ a.name }} и {{ b.name }}{% endblock %}
+{% block title %}Разбор пары — {{ a.name }} и {{ b.name }}{% endblock %}
 {% block header %}{% endblock %}{% block footer %}{% endblock %}
-{% block main_class %}bg-sand py-8 print:bg-white print:py-0{% endblock %}
+{% block main_class %}bg-sand py-6 sm:py-10 print:bg-white print:py-0{% endblock %}
 {% block content %}
-<div class="no-print sticky top-0 z-30 mx-auto mb-6 flex max-w-[210mm] items-center gap-2 rounded-full bg-paper/90 p-2 shadow-soft backdrop-blur">
+{% comment %}The full report as one document in the app's own look: a cover, then chapters that flow over A4 pages
+(the browser numbers them). Everything a paid report holds, nothing animates or hides, colours survive printing.{% endcomment %}
+<style>
+  .doc .part { break-before: page; }
+  .doc .keep { break-inside: avoid; }
+  .doc h2, .doc h3 { break-after: avoid; }
+  @media print {
+    @page {
+      size: A4; margin: 15mm 14mm 17mm;
+      @bottom-left { content: "Duoverse · {{ a.name }} и {{ b.name }}"; font: 600 7.5pt Manrope, sans-serif; color: #847a70; }
+      @bottom-right { content: counter(page); font: 700 7.5pt Manrope, sans-serif; color: #847a70; }
+    }
+    @page :first { margin: 0; @bottom-left { content: none; } @bottom-right { content: none; } }
+    html, body { background: #fff !important; }
+    .doc, .doc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .doc { max-width: none !important; box-shadow: none !important; border-radius: 0 !important; }
+    .doc .body { padding: 0 !important; }
+    .doc .cover { min-height: 297mm; padding: 14mm 14mm 12mm !important; }
+    .doc .part { padding-top: 0 !important; }
+  }
+</style>
+
+<div class="no-print sticky top-3 z-30 mx-auto mb-6 flex max-w-[210mm] items-center gap-2 rounded-full bg-paper/90 p-2 shadow-soft backdrop-blur">
   <a href="{{ rbase }}" class="btn btn-ghost btn-sm">{% icon 'arrow-left' 'size-4' %}К отчёту</a>
-  <span class="mono hidden text-xs text-ink-3 sm:inline">A4 · 3 страницы · вёрстка для WeasyPrint</span>
-  <button class="btn btn-primary btn-sm ml-auto" onclick="window.print()">{% icon 'printer' 'size-4' %}Сохранить PDF</button>
+  <span class="hidden text-xs font-semibold text-ink-3 sm:inline">Полный разбор · формат A4</span>
+  <button type="button" class="btn btn-primary btn-sm ml-auto" onclick="window.print()">{% icon 'printer' 'size-4' %}Сохранить PDF</button>
 </div>
 
-<article class="print-page mx-auto flex flex-col bg-paper p-[16mm] shadow-lift print:shadow-none" style="break-after: page">
-  <div class="flex items-center gap-2 font-display font-extrabold"><span class="block h-7 w-9" aria-hidden="true">{% mark "h-full w-full" %}</span>Duoverse</div>
-  <p class="mono mt-[30mm] text-xs uppercase tracking-widest text-ink-3">Отчёт о совместимости · {{ r.created_at|date:"j E Y" }}</p>
-  <h1 class="mt-3 text-5xl font-extrabold leading-tight">{{ a.name }} и {{ b.name }}</h1>
-  <p class="mt-3 text-lg text-ink-2">{{ a.sun_sign }} × {{ b.sun_sign }}</p>
-  <div class="mt-12 flex items-center gap-8">
-    {% include "components/score_ring.html" with value=r.total_score size=150 stroke=9 label="из 100" %}
-    <div><p class="eyebrow">Тип пары</p><p class="mt-2 font-display text-3xl font-extrabold">{{ r.pair_type.name }}</p><p class="mt-1 text-ink-2">{{ r.pair_type.tagline }}</p></div>
-  </div>
-  <p class="mt-12 text-[1.05rem] leading-relaxed">{{ r.summary }}</p>
-  <div class="mt-auto grid grid-cols-4 gap-3">
-    {% for u in r.universes %}<div class="rounded-2xl border border-line p-3"><p class="text-xs font-bold">{{ u.title }}</p><p class="font-display text-2xl font-extrabold">{{ u.score|default:"—" }}</p><p class="mono text-[0.6rem] text-ink-3">{{ u.layer|label }}</p></div>{% endfor %}
-  </div>
-</article>
+<div class="doc mx-auto max-w-[210mm] bg-paper shadow-lift sm:rounded-[1.75rem]">
 
-<article class="print-page mx-auto mt-8 bg-paper p-[16mm] shadow-lift print:mt-0 print:shadow-none" style="break-after: page">
-  <h2 class="text-2xl font-extrabold">Категории</h2>
-  <div class="mt-6 grid grid-cols-2 gap-4">
-    {% for c in r.categories %}
-    <div class="tone-{{ c.tone }} rounded-2xl border border-line p-4">
-      <div class="flex items-center justify-between"><p class="flex items-center gap-2 font-bold"><span class="t-ink">{% glyph c.icon 'size-4' %}</span>{{ c.title }}</p><span class="mono font-semibold">{{ c.score }}</span></div>
-      <div class="bar in mt-2" style="--v: {{ c.score }}"><i class="t-fill"></i></div>
-      <p class="mt-2 text-sm text-ink-2">{{ c.verdict }}</p>
-      <p class="mono mt-2 text-[0.65rem] text-ink-3">{% for e in c.evidence %}{{ e.source }} ({{ e.detail }}){% if not forloop.last %} · {% endif %}{% endfor %}</p>
+  {# ─── cover ─── #}
+  <section class="cover flex flex-col px-6 pb-8 pt-6 sm:px-[14mm] sm:pt-[12mm]">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2 font-display text-lg font-extrabold"><span class="block h-7 w-9" aria-hidden="true">{% mark "h-full w-full" %}</span>Duoverse</div>
+      <p class="text-xs font-semibold text-ink-3">{{ r.created_at|date:"j E Y" }}</p>
     </div>
-    {% endfor %}
-  </div>
-  <h2 class="mt-10 text-2xl font-extrabold">Зоны трения</h2>
-  <div class="mt-4 space-y-3">{% for f in r.friction %}<div class="rounded-2xl bg-attention-soft p-4"><p class="font-bold">{{ f.title }}</p><p class="mt-1 text-sm text-ink-2">{{ f.text }}</p></div>{% endfor %}</div>
-</article>
+    <p class="mt-10 text-sm font-bold text-ink-3">Полный разбор пары</p>
+    <h1 class="mt-1 text-5xl font-extrabold leading-[1.05]">{{ a.name }} <span class="accent">и</span> {{ b.name }}</h1>
+    <div class="sticker keep mt-8">
+      <div class="aspect-[16/10] border-b-2 border-ink">{% pair_poster r.pair_type.role_a r.pair_type.role_b "h-full w-full" %}</div>
+      <div class="flex items-center gap-5 p-5">
+        {% include "components/score_ring.html" with value=r.total_score size=104 stroke=9 label="из 100" %}
+        <div class="min-w-0">
+          <p class="text-xs font-bold text-ink-3">Тип пары</p>
+          <p class="font-display text-[1.75rem] font-extrabold leading-tight">{{ r.pair_type.name }}</p>
+          <p class="accent mt-1 text-ink-2">{{ r.pair_type.tagline }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="mt-auto grid grid-cols-2 gap-3 pt-8 text-xs">
+      {% for p in r.partners %}
+      <div class="side-{{ p.side }} t-bg rounded-2xl p-3">
+        <p class="font-bold t-ink">{{ p.name }} · {{ p.sun_sign }}</p>
+        <p class="mt-0.5 text-ink-2">{{ p.birth_date|date:"j E Y" }}{% if p.birth_time %}, {{ p.birth_time|time:"H:i" }}{% endif %}{% if p.birth_place %}, {{ p.birth_place }}{% endif %}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
 
-<article class="print-page mx-auto mt-8 flex flex-col bg-paper p-[16mm] shadow-lift print:mt-0 print:shadow-none">
-  <h2 class="text-2xl font-extrabold">Риски и что с ними делать</h2>
-  <table class="mt-6 w-full text-left text-sm">
-    <thead><tr class="border-b-2 border-ink"><th class="py-2">Риск</th><th>Вероятность</th><th>Влияние</th><th class="w-1/2">Что делать</th></tr></thead>
-    <tbody>{% for k in r.risks %}<tr class="border-b border-line align-top"><td class="py-3 pr-3 font-bold">{{ k.title }}</td><td class="py-3">{{ k.likelihood|label }}</td><td class="py-3">{{ k.impact|label }}</td><td class="py-3 text-ink-2">{{ k.mitigation }}</td></tr>{% endfor %}</tbody>
-  </table>
-  <h2 class="mt-10 text-2xl font-extrabold">План микропривычек</h2>
-  <ol class="mt-4 space-y-3">{% for h in r.habits %}<li class="flex gap-3"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-sand font-display text-sm font-extrabold">{{ forloop.counter }}</span><div><p class="font-bold">{{ h.title }} <span class="mono text-xs font-normal text-ink-3">· {{ h.cadence }}{% if h.duration %} · {{ h.duration }}{% endif %}</span></p><p class="text-sm text-ink-2">{{ h.why }}</p></div></li>{% endfor %}</ol>
-  <p class="mt-auto border-t border-line pt-4 text-[0.7rem] leading-relaxed text-ink-3">Астрология, нумерология и таро — символический слой для размышления, не научно доказанные методы. Психологический слой основан на исследованиях (Большая пятёрка, теория привязанности, работы Дж. Готтмана). Отчёт не является медицинской или терапевтической услугой. Алгоритм {{ r.algorithm_version }} · отчёт {{ r.id }}.</p>
-</article>
+  <div class="body px-6 pb-12 sm:px-[14mm]">
+
+    {# ─── the whole picture ─── #}
+    <section class="part pt-10">
+      <h2 class="text-3xl font-extrabold">Главное о вашей паре</h2>
+      <p class="mt-4 text-[1.05rem] leading-relaxed">{{ r.summary }}</p>
+      <div class="mt-6 grid items-center gap-6 sm:grid-cols-[15rem_minmax(0,1fr)]">
+        <div class="keep mx-auto w-full max-w-[15rem]">{% radar_svg r.categories %}</div>
+        <ul class="space-y-3">
+          {% for c in r.categories %}
+          <li class="keep tone-{{ c.tone }}">
+            <div class="flex items-center gap-2"><span class="t-ink">{% glyph c.icon 'size-5' %}</span><b class="flex-1 text-sm">{{ c.title }}</b><span class="font-display font-extrabold t-ink">{{ c.score }}</span></div>
+            <div class="bar in mt-1" style="--v: {{ c.score }}"><i class="t-fill"></i></div>
+            <p class="mt-1 text-xs leading-snug text-ink-2">{{ c.verdict }}</p>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="mt-8 grid gap-6 sm:grid-cols-2">
+        <div>
+          <h3 class="flex items-center gap-2 text-lg font-extrabold"><span class="grid size-7 place-items-center rounded-full bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-4' %}</span>На чём вы держитесь</h3>
+          {% for i in r.synergy %}<div class="keep mt-3 rounded-2xl bg-synergy-soft/70 p-4"><p class="font-bold">{{ i.title }}</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ i.text }}</p></div>{% endfor %}
+        </div>
+        <div>
+          <h3 class="flex items-center gap-2 text-lg font-extrabold"><span class="grid size-7 place-items-center rounded-full bg-attention-soft text-attention-ink">{% icon 'eye' 'size-4' %}</span>Где нужна договорённость</h3>
+          {% for i in r.friction %}<div class="keep mt-3 rounded-2xl bg-attention-soft/70 p-4"><p class="font-bold">{{ i.title }}</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ i.text }}</p></div>{% endfor %}
+        </div>
+      </div>
+      <div class="keep mt-8 rounded-3xl border border-line p-5">
+        <div class="flex items-center justify-between gap-3"><h3 class="text-lg font-extrabold">Как сходятся системы</h3><span class="chip bg-synergy-soft font-bold text-synergy-ink">{{ r.agreement_index }}/100</span></div>
+        <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {% for u in r.universes %}
+          <div class="rounded-2xl p-3 {% if u.layer == 'scientific' %}bg-sage-soft text-[#2f6243]{% else %}bg-lilac-soft text-[#5b45a8]{% endif %}">
+            <p class="flex items-center gap-1.5 text-xs font-bold">{% glyph u.icon 'size-4' %}{{ u.title }}</p>
+            <p class="mt-1 font-display text-2xl font-extrabold text-ink">{{ u.score|default:"—" }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-ink-2">{{ r.agreement_note }}</p>
+        {% if r.accuracy.missing %}<p class="mt-2 text-xs text-ink-3">Точность разбора {{ r.accuracy.value }}%. Точнее станет, если добавить: {{ r.accuracy.missing|join:", " }}.</p>{% endif %}
+      </div>
+    </section>
+
+    {# ─── the type and the two roles: follows the summary on the same page when it fits ─── #}
+    <section class="pt-12">
+      <h2 class="text-3xl font-extrabold">{{ r.pair_type.name }}</h2>
+      <p class="accent mt-1 text-lg text-ink-2">{{ r.pair_type.tagline }}</p>
+      <div class="mt-5 grid items-start gap-6 sm:grid-cols-[minmax(0,1fr)_12rem]">
+        <div>
+          <p class="leading-relaxed">{{ r.pair_type.description }}</p>
+          {% if r.pair_type.traits %}<div class="mt-4 flex flex-wrap gap-1.5">{% for t in r.pair_type.traits %}<span class="chip bg-pair-soft">{{ t }}</span>{% endfor %}</div>{% endif %}
+          <p class="mt-4 text-sm leading-relaxed text-ink-2"><b class="text-ink">{{ dynamic.title }}.</b> {{ dynamic.text }}</p>
+        </div>
+        <div class="sticker keep overflow-hidden"><div class="aspect-[4/4.4]">{% pair_poster r.pair_type.role_a r.pair_type.role_b "h-full w-full" %}</div></div>
+      </div>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+        <div class="keep side-a t-bg rounded-3xl p-5">
+          <div class="flex items-center gap-3">{% role_emblem role_a.key "a" "size-14" %}<div><p class="text-xs font-bold text-ink-3">{{ a.name }}</p><p class="text-xl font-extrabold leading-tight">{{ role_a.name }}</p><p class="text-sm font-semibold t-ink">{{ role_a.verb|capfirst }}</p></div></div>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="chip bg-paper">{{ elements|get_item:role_a.element }}</span><span class="chip bg-paper">{{ modes|get_item:role_a.mode }}</span></div>
+          <ul class="mt-3 space-y-1 text-xs leading-relaxed text-ink-2">{% for e in r.pair_type.why_a %}<li><b class="text-ink">{{ e.source }}:</b> {{ e.detail }}</li>{% endfor %}</ul>
+        </div>
+        <div class="keep side-b t-bg rounded-3xl p-5">
+          <div class="flex items-center gap-3">{% role_emblem role_b.key "b" "size-14" %}<div><p class="text-xs font-bold text-ink-3">{{ b.name }}</p><p class="text-xl font-extrabold leading-tight">{{ role_b.name }}</p><p class="text-sm font-semibold t-ink">{{ role_b.verb|capfirst }}</p></div></div>
+          <div class="mt-3 flex flex-wrap gap-1.5"><span class="chip bg-paper">{{ elements|get_item:role_b.element }}</span><span class="chip bg-paper">{{ modes|get_item:role_b.mode }}</span></div>
+          <ul class="mt-3 space-y-1 text-xs leading-relaxed text-ink-2">{% for e in r.pair_type.why_b %}<li><b class="text-ink">{{ e.source }}:</b> {{ e.detail }}</li>{% endfor %}</ul>
+        </div>
+      </div>
+    </section>
+
+    {# ─── every sphere in full ─── #}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">Сферы вашей жизни</h2>
+      <p class="mt-2 text-ink-2">{{ r.spheres|length }} {{ r.spheres|length|ru_plural:"сфера,сферы,сфер" }}: что у вас получается, где непросто и что с этим делать.</p>
+      {% for s in r.spheres %}{% with pros=s.strengths cons=s.challenges %}
+      <article class="tone-{{ s.tone }} {% if forloop.first %}mt-6{% else %}mt-8 border-t border-line pt-7{% endif %}">
+        <div class="keep [break-after:avoid]">{# the title never stays alone at the foot of a page #}
+        <div class="flex items-center gap-3">
+          <span class="grid size-11 shrink-0 place-items-center rounded-2xl t-bg">{% glyph s.icon 'size-7' %}</span>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-xl font-extrabold leading-tight">{{ s.title }}{% if s.adult %} <span class="chip h-5 border border-ink bg-paper px-1.5 align-middle text-[0.62rem]">18+</span>{% endif %}</h3>
+            <p class="text-sm font-semibold t-ink">{{ s.tone|label }}</p>
+          </div>
+          <span class="font-display text-3xl font-extrabold t-ink">{{ s.score }}</span>
+        </div>
+        <p class="mt-3 font-semibold leading-relaxed">{{ s.summary }}</p>
+        {% for p in s.story %}<p class="mt-2 text-sm leading-relaxed text-ink-2">{{ p }}</p>{% endfor %}
+        </div>
+        {% if pros or cons %}
+        <div class="mt-4 grid items-start gap-3 sm:grid-cols-2">
+          {% if pros %}<div class="keep rounded-2xl bg-synergy-soft/60 p-4"><p class="text-sm font-extrabold text-synergy-ink">Что получается</p><ul class="mt-2 space-y-2.5">{% for f in pros %}{% include "components/pdf_point.html" %}{% endfor %}</ul></div>{% endif %}
+          {% if cons %}<div class="keep rounded-2xl bg-attention-soft/60 p-4"><p class="text-sm font-extrabold text-attention-ink">Где непросто</p><ul class="mt-2 space-y-2.5">{% for f in cons %}{% include "components/pdf_point.html" %}{% endfor %}</ul></div>{% endif %}
+        </div>
+        {% endif %}
+        {% if s.actions %}<div class="keep mt-4"><p class="text-sm font-extrabold">Что делать</p><ul class="mt-1.5 space-y-1.5">{% for x in s.actions %}<li class="flex gap-2 text-sm leading-relaxed"><span class="mt-0.5 shrink-0 t-ink">{% icon 'arrow-right' 'size-4' %}</span><span>{{ x }}</span></li>{% endfor %}</ul></div>{% endif %}
+        {% if s.exercise %}<div class="keep mt-4 rounded-2xl border-2 border-dashed border-line p-4"><p class="flex items-center gap-2 text-sm font-extrabold">{% icon 'timer' 'size-4' %}Упражнение</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ s.exercise }}</p></div>{% endif %}
+        {% if s.question %}<p class="keep mt-4 rounded-2xl bg-pair-soft p-4 text-sm"><b>Вопрос друг другу:</b> <span class="accent text-[1.02rem]">«{{ s.question }}»</span></p>{% endif %}
+        {% if s.science %}<p class="mt-3 text-xs leading-relaxed text-ink-3"><b class="text-ink-2">Что говорят исследования.</b> {{ s.science }}{% if s.science_sources %} ({{ s.science_sources|join:"; " }}){% endif %}</p>{% endif %}
+      </article>
+      {% endwith %}{% endfor %}
+    </section>
+
+    {# ─── the plan ─── #}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">План пары</h2>
+      <p class="mt-2 text-ink-2">Привычки из вашего разбора: маленькие, но регулярные.</p>
+      <ol class="mt-5 grid gap-3 sm:grid-cols-2">
+        {% for h in r.habits %}
+        <li class="keep rounded-2xl border border-line p-4">
+          <div class="flex items-center gap-3"><span class="grid size-8 shrink-0 place-items-center rounded-full bg-pair font-display text-sm font-extrabold">{{ forloop.counter }}</span><b class="leading-tight">{{ h.title }}</b></div>
+          <p class="mt-2 text-xs font-semibold text-ink-3">{{ h.cadence }}{% if h.duration %} · {{ h.duration }}{% endif %}</p>
+          <p class="mt-1 text-sm leading-relaxed text-ink-2">{{ h.why }}</p>
+        </li>
+        {% endfor %}
+      </ol>
+      <h3 class="mt-9 text-xl font-extrabold">Где может быть трудно и что делать</h3>
+      <div class="mt-3 space-y-3">
+        {% for k in r.risks %}
+        <div class="keep grid gap-3 rounded-2xl bg-sand/70 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div><p class="font-bold">{{ k.title }}</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ k.note }}</p></div>
+          <p class="rounded-xl bg-paper p-3 text-sm leading-relaxed"><b class="text-synergy-ink">Что делать.</b> {{ k.mitigation }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    {# ─── astrology ─── #}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">Астрология</h2>
+      <p class="mt-2 leading-relaxed text-ink-2">{{ r.astrology.summary }}</p>
+      <div class="keep mx-auto mt-5 max-w-[23rem]">{% bi_wheel_svg r.astrology %}</div>
+      <p class="mt-2 text-center text-xs text-ink-3">{{ a.name }}: внутренний круг · {{ b.name }}: внешний круг · линии: мажорные аспекты</p>
+      {% if r.astrology.insights %}
+      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        {% for i in r.astrology.insights %}<div class="keep tone-{{ i.tone }} rounded-2xl t-bg p-4"><p class="font-bold t-ink">{{ i.title }}</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ i.text }}</p></div>{% endfor %}
+      </div>
+      {% endif %}
+      <h3 class="mt-9 text-xl font-extrabold">Главные связи между вашими картами</h3>
+      <ul class="mt-4 space-y-4">
+        {% for asp in r.astrology.aspects %}
+        <li class="keep tone-{{ asp.tone }} flex gap-3">
+          <span class="grid size-9 shrink-0 place-items-center rounded-full border-2 border-current font-bold t-ink">{{ asp.symbol }}</span>
+          <div><p class="text-sm font-bold">{{ asp.planet_a }} и {{ asp.planet_b }} <span class="font-normal text-ink-3">· {{ asp.aspect }}, орб {{ asp.orb }}°</span></p><p class="mt-0.5 text-sm leading-relaxed text-ink-2">{{ asp.text|default:asp.meaning }}</p></div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% if r.astrology.composite %}
+      <h3 class="mt-9 text-xl font-extrabold">Ваша пара как отдельная карта</h3>
+      <p class="mt-1 text-sm text-ink-3">Композит: середины между вашими планетами описывают сам союз.</p>
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        {% for cp in r.astrology.composite %}
+        <div class="keep side-pair rounded-2xl t-bg p-4">
+          <div class="flex items-center gap-2.5">
+            <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-paper t-ink {% if cp.point == 'Асцендент' or cp.point == 'MC' %}text-[0.6rem] font-extrabold{% else %}astro text-2xl leading-none{% endif %}">{{ cp.point|astro_glyph }}</span>
+            <div class="min-w-0"><p class="text-sm font-bold leading-tight">{{ cp.point }} в {{ cp.sign|sign_in }}</p><p class="text-xs text-ink-3">{{ cp.point|planet_role|capfirst }}{% if cp.house %} · {{ cp.house }} дом{% endif %}</p></div>
+          </div>
+          <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ cp.text }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if balance_rows %}
+      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        {% for title, rows in balance_rows %}
+        <div class="keep rounded-2xl border border-line p-4">
+          <p class="font-bold">{{ title }}</p>
+          <div class="mt-3 space-y-2">
+            {% for label, va, vb in rows %}
+            <div class="grid grid-cols-[5.75rem_minmax(0,1fr)] items-center gap-2 text-xs">
+              <span class="font-semibold">{{ label }}</span>
+              <div class="space-y-1">
+                <div class="side-a flex items-center gap-2"><div class="bar in flex-1" style="--v: {{ va }}"><i class="t-fill"></i></div><span class="mono w-8 text-right">{{ va }}%</span></div>
+                <div class="side-b flex items-center gap-2"><div class="bar in flex-1" style="--v: {{ vb }}"><i class="t-fill"></i></div><span class="mono w-8 text-right">{{ vb }}%</span></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+
+    {# ─── numbers ─── #}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">Числа</h2>
+      <div class="keep mt-5 flex items-center gap-5 rounded-3xl bg-lilac-soft p-5">
+        <span class="grid size-20 shrink-0 place-items-center rounded-full border-2 border-ink bg-paper font-display text-4xl font-extrabold shadow-sticker">{{ r.numerology.pair_number }}</span>
+        <div><p class="text-xs font-bold text-ink-3">Число пары</p><p class="mt-1 leading-relaxed">{{ r.numerology.pair_meaning }}</p></div>
+      </div>
+      <div class="mt-5 grid gap-3 sm:grid-cols-2">
+        {% for n in r.numerology.numbers %}
+        <div class="keep tone-{{ n.tone }} rounded-2xl border border-line p-4">
+          <div class="flex items-center justify-between gap-3"><p class="font-bold">{{ n.title }}</p><p class="font-display text-lg font-extrabold"><span class="text-a-ink">{{ n.a }}</span> <span class="text-sm text-ink-3">и</span> <span class="text-b-ink">{{ n.b }}</span></p></div>
+          <p class="mt-1 text-sm leading-relaxed text-ink-2">{{ n.meaning }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% if r.numerology.matrix %}
+      <div class="keep mt-5 rounded-2xl bg-sand/70 p-4">
+        <p class="font-bold">Матрица судьбы</p>
+        <div class="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-3">{% for m in r.numerology.matrix %}<p class="flex justify-between gap-2"><span class="text-ink-2">{{ m.title }}</span><b><span class="text-a-ink">{{ m.a }}</span> · <span class="text-b-ink">{{ m.b }}</span></b></p>{% endfor %}</div>
+      </div>
+      {% endif %}
+      {% for i in r.numerology.insights %}<p class="keep mt-4 text-sm leading-relaxed"><b>{{ i.title }}.</b> <span class="text-ink-2">{{ i.text }}</span></p>{% endfor %}
+    </section>
+
+    {# ─── tarot ─── #}
+    {% if r.tarot.available and r.tarot.a and r.tarot.b and r.tarot.pair %}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">Таро</h2>
+      <div class="keep mt-5 grid grid-cols-3 items-end gap-4">
+        {% include "components/pdf_arcana.html" with card=r.tarot.a side="a" who=a.name %}
+        {% include "components/pdf_arcana.html" with card=r.tarot.pair side="pair" who="Аркан пары" %}
+        {% include "components/pdf_arcana.html" with card=r.tarot.b side="b" who=b.name %}
+      </div>
+      {% if r.tarot.link_type %}<p class="mt-5 text-center"><span class="chip tone-{{ r.tarot.link_tone }} t-bg t-ink">{{ r.tarot.link_type }}</span></p>{% endif %}
+      <div class="mt-5 space-y-3 text-sm leading-relaxed">
+        <p class="keep"><b>{{ a.name }}: {{ r.tarot.a.name }}.</b> <span class="text-ink-2">{{ r.tarot.a.portrait }}</span></p>
+        <p class="keep"><b>{{ b.name }}: {{ r.tarot.b.name }}.</b> <span class="text-ink-2">{{ r.tarot.b.portrait }}</span></p>
+        <p class="keep"><b>Аркан пары: {{ r.tarot.pair.name }}.</b> <span class="text-ink-2">{{ r.tarot.pair.portrait }}</span></p>
+      </div>
+      {% if r.tarot.reading %}<p class="mt-4 leading-relaxed">{{ r.tarot.reading }}</p>{% endif %}
+      {% if r.tarot.questions %}<div class="keep mt-5 rounded-2xl bg-pair-soft p-4"><p class="font-bold">Вопросы от карт</p><ul class="mt-2 space-y-1.5 text-sm">{% for q in r.tarot.questions %}<li class="flex gap-2"><span class="shrink-0 t-ink">{% icon 'arrow-right' 'size-4' %}</span><span>{{ q }}</span></li>{% endfor %}</ul></div>{% endif %}
+    </section>
+    {% endif %}
+
+    {# ─── psychology ─── #}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">Психология</h2>
+      {% with p=r.psychology %}
+      {% if p.available %}
+        {% if p.attachment_a %}
+        <h3 class="mt-5 text-xl font-extrabold">Привязанность</h3>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <div class="keep side-a t-bg rounded-2xl p-4"><p class="text-xs font-bold text-ink-3">{{ a.name }}</p><p class="font-display text-lg font-extrabold">{{ p.attachment_a }}</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ p.attachment_a_text }}</p></div>
+          <div class="keep side-b t-bg rounded-2xl p-4"><p class="text-xs font-bold text-ink-3">{{ b.name }}</p><p class="font-display text-lg font-extrabold">{{ p.attachment_b }}</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ p.attachment_b_text }}</p></div>
+        </div>
+        {% if p.attachment_note %}<p class="keep mt-3 text-sm leading-relaxed">{{ p.attachment_note }}</p>{% endif %}
+        {% endif %}
+        {% if p.ocean %}
+        <h3 class="mt-8 text-xl font-extrabold">Черты характера</h3>
+        <div class="mt-3 space-y-4">
+          {% for t in p.ocean %}
+          <div class="keep">
+            <p class="font-bold">{{ t.title }}</p>
+            <div class="mt-1.5 space-y-1">
+              <div class="side-a flex items-center gap-2 text-xs"><span class="w-16 truncate font-semibold">{{ a.name }}</span><div class="bar in flex-1" style="--v: {{ t.a }}"><i class="t-fill"></i></div><span class="mono w-7 text-right">{{ t.a }}</span></div>
+              <div class="side-b flex items-center gap-2 text-xs"><span class="w-16 truncate font-semibold">{{ b.name }}</span><div class="bar in flex-1" style="--v: {{ t.b }}"><i class="t-fill"></i></div><span class="mono w-7 text-right">{{ t.b }}</span></div>
+            </div>
+            <p class="mt-1.5 text-sm leading-relaxed text-ink-2">{{ t.note }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if p.gottman %}
+        <h3 class="mt-8 text-xl font-extrabold">Как вы спорите</h3>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          {% for g in p.gottman %}{% if g.level != 'low' %}
+          <div class="keep rounded-2xl bg-sand/70 p-4 sm:last:odd:col-span-2 {% if g.level == 'high' %}tone-risk{% else %}tone-attention{% endif %}"><p class="font-bold">{{ g.title }} <span class="text-xs font-semibold t-ink">· {{ g.level|label }}</span></p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ g.note }}</p>{% if g.antidote %}<p class="mt-2 rounded-xl bg-paper p-3 text-sm leading-relaxed"><b class="text-synergy-ink">Что помогает.</b> {{ g.antidote }}</p>{% endif %}</div>
+          {% endif %}{% endfor %}
+        </div>
+        {% if p.repair_note %}<p class="keep mt-3 rounded-2xl bg-synergy-soft p-4 text-sm leading-relaxed"><b class="text-synergy-ink">Индекс восстановления {{ p.repair_index }}/100.</b> {{ p.repair_note }}</p>{% endif %}
+        {% endif %}
+        {% if p.scenarios %}
+        <h3 class="mt-8 text-xl font-extrabold">Ваши повторяющиеся сценарии</h3>
+        <div class="mt-3 space-y-3">{% for sc in p.scenarios %}<div class="keep tone-{{ sc.tone }} rounded-2xl t-bg p-4"><p class="font-bold t-ink">{{ sc.title }}</p><p class="mt-1 text-sm leading-relaxed text-ink-2">{{ sc.text }}</p></div>{% endfor %}</div>
+        {% endif %}
+      {% else %}
+        <div class="keep mt-5 rounded-3xl border-2 border-dashed border-line p-6">
+          <p class="text-lg font-extrabold">Научный слой появится после анкет</p>
+          <p class="mt-2 text-sm leading-relaxed text-ink-2">Когда вы оба ответите на вопросы о характере, привязанности и спорах, здесь появятся черты каждого по модели «Большой пятёрки», стиль привязанности и разбор ваших споров по Готтману. Анкета занимает около 8 минут, отчёт пересчитается сам.</p>
+        </div>
+      {% endif %}
+      {% endwith %}
+    </section>
+
+    {# ─── questions to each other ─── #}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">Вопросы друг другу</h2>
+      <p class="mt-2 text-ink-2">По одному на каждую сферу. Задавайте по очереди и слушайте без советов.</p>
+      <ol class="mt-5 space-y-3">
+        {% for s in r.spheres %}{% if s.question %}
+        <li class="keep tone-{{ s.tone }} flex gap-3 rounded-2xl border border-line p-4">
+          <span class="shrink-0 t-ink">{% glyph s.icon 'size-6' %}</span>
+          <div><p class="text-xs font-bold text-ink-3">{{ s.title }}</p><p class="accent mt-0.5 text-[1.05rem] leading-snug">«{{ s.question }}»</p></div>
+        </li>
+        {% endif %}{% endfor %}
+      </ol>
+    </section>
+
+    {# ─── method and sources ─── #}
+    <section class="part pt-12">
+      <h2 class="text-3xl font-extrabold">Как устроен разбор</h2>
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div class="keep rounded-3xl border-2 border-dashed border-lilac bg-lilac-soft/50 p-5"><p class="font-extrabold">Астрология, числа, таро</p><p class="mt-2 text-sm leading-relaxed text-ink-2">Символические системы, не наука. Мы используем их как язык для размышления и разговора, считаем детерминированно и показываем, из чего сложился каждый вывод.</p></div>
+        <div class="keep rounded-3xl border-2 border-sage bg-sage-soft/60 p-5"><p class="font-extrabold">Психология отношений</p><p class="mt-2 text-sm leading-relaxed text-ink-2">Большая пятёрка, теория привязанности и исследования Готтмана. Этот слой всегда показан отдельно, чтобы символика его не перекрывала.</p></div>
+      </div>
+      <p class="mt-5 text-sm leading-relaxed text-ink-2">Мы не ставим диагнозов, не предсказываем события и не говорим «вам нельзя быть вместе». Разбор не заменяет работу с психологом и не является медицинской или терапевтической услугой.</p>
+      {% if r.psychology.bibliography %}
+      <h3 class="mt-8 text-lg font-extrabold">Источники</h3>
+      <ol class="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-ink-2">{% for c in r.psychology.bibliography %}<li>{{ c.full }}</li>{% endfor %}</ol>
+      {% endif %}
+      <p class="mt-8 border-t border-line pt-4 text-[0.7rem] text-ink-3">Отчёт {{ r.id }} · алгоритм {{ r.algorithm_version }} · {{ r.created_at|date:"j E Y" }}</p>
+    </section>
+  </div>
+</div>
 {% endblock %}

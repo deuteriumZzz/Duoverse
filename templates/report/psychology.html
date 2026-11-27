@@ -85,9 +85,9 @@
       <div><h2 class="text-xl font-extrabold">Четыре всадника Готтмана</h2><p class="mt-1 text-sm text-ink-3">Паттерны, которые чаще всего разрушают отношения</p></div>
       {% include "components/score_ring.html" with value=p.repair_index size=88 stroke=11 label="индекс" %}
     </div>
-    <ul class="mt-5 grid grid-cols-2 gap-3">
+    <ul class="mt-5 grid gap-3 sm:grid-cols-2">
       {% for g in p.gottman %}{% if g.level != 'low' %}
-      <li class="rounded-3xl bg-sand/70 p-4 {% if g.level == 'high' %}tone-risk{% elif g.level == 'mid' %}tone-attention{% else %}tone-synergy{% endif %}">
+      <li class="rounded-3xl bg-sand/70 p-4 sm:last:odd:col-span-2 {% if g.level == 'high' %}tone-risk{% elif g.level == 'mid' %}tone-attention{% else %}tone-synergy{% endif %}">
         <div class="flex items-center justify-between"><p class="font-bold">{{ g.title }}</p>
           <span class="flex gap-1" aria-label="уровень {{ g.level|label }}">{% for lv in "lmh" %}<i class="size-2 rounded-full {% if lv == 'l' or lv == 'm' and g.level != 'low' or g.level == 'high' %}t-fill{% else %}bg-sand-2{% endif %}"></i>{% endfor %}</span></div>
         <p class="mono mt-0.5 text-xs t-ink">{{ g.level|label }}</p>

@@ -135,7 +135,7 @@ def reminder_text(event: dict, ideas: tuple[int, int] | None = None) -> str:
     if kind == "holiday" and event["name"]:
         return f"{when} {event['title']} — порадуйте {acc(event['name'])}."
     if event["title"] == "День всех влюблённых":
-        return f"{when} День всех влюблённых. Можно подарить друг другу полный разбор пары — или придумать что-нибудь для двоих."
+        return f"{when} День всех влюблённых. Можно подарить друг другу полный разбор пары или придумать что-нибудь для двоих."
     if kind == "met":
         return f"{when} годовщина вашего знакомства — {event['sub']}."
     if kind == "milestone":

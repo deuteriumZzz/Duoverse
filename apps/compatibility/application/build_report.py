@@ -107,12 +107,12 @@ UNIVERSES: dict[UniverseKey, tuple[str, str, EvidenceLayer]] = {
 TRAIT_NOTE = {
     "O": ("Обоим нравится новое — хорошая почва для совместных приключений.", "Одному нужно новое, другому — проверенное: чередуйте."),
     "C": (
-        "Похожее отношение к порядку и планам — меньше бытовых трений.",
-        "Один держит структуру — важно, чтобы это не превращалось в контроль.",
+        "К порядку и планам вы относитесь похоже, поэтому бытовых трений меньше.",
+        "Один держит структуру. Следите, чтобы это не превращалось в контроль.",
     ),
     "E": ("Похожая потребность в людях — легко планировать досуг.", "Разный «заряд» от людей: договоритесь о тихих вечерах и выходах."),
     "A": ("Оба склонны уступать и заботиться — сильная сторона пары.", "Одному уступать сложнее — не принимайте это лично."),
-    "N": ("Похожая реакция на стресс — вы понимаете тревоги друг друга.", "Один острее переживает стресс, другой — стабилизатор."),
+    "N": ("На стресс вы реагируете похоже и понимаете тревоги друг друга.", "Один острее переживает стресс, другой — стабилизатор."),
 }
 LEVELS: dict[str, int] = {"low": 0, "mid": 1, "high": 2}
 ATTACHMENT_KEY = {"Надёжный": "secure", "Тревожный": "anxious", "Избегающий": "avoidant", "Тревожно-избегающий": "fearful"}
@@ -261,7 +261,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             Evidence(
                 source=f"Стихия: {ELEMENTS[element]}",
                 detail=f"{counts[element]} из 5 личных планет · "
-                + ", ".join(f"{p} в {c.sign(p)}" for p in ("Солнце", "Луна", "Венера", "Марс")),
+                + ", ".join(f"{p} в {astro_chart.SIGN_IN[c.sign(p)]}" for p in ("Солнце", "Луна", "Венера", "Марс")),
                 weight=0.8,
                 layer="symbolic",
             ),
@@ -516,7 +516,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             Insight(
                 title="Точка «Отношения» в Матрице",
                 tone="neutral",
-                text=f"У {gen(a.name)} — {tarot.ARCANA[rel_a - 1][0]} ({tarot.ARCANA[rel_a - 1][1]}), у {gen(b.name)} — {tarot.ARCANA[rel_b - 1][0]} ({tarot.ARCANA[rel_b - 1][1]}). Так каждый из вас понимает близость — об этом стоит поговорить вслух.",
+                text=f"У {gen(a.name)} — {tarot.ARCANA[rel_a - 1][0]} ({tarot.ARCANA[rel_a - 1][1]}), у {gen(b.name)} — {tarot.ARCANA[rel_b - 1][0]} ({tarot.ARCANA[rel_b - 1][1]}). Так каждый из вас понимает близость, и об этом стоит поговорить вслух.",
                 evidence=[Evidence(source="Матрица судьбы", detail=f"точка «Отношения»: {rel_a} и {rel_b}", weight=0.0, layer="symbolic")],
             )
         ],
@@ -621,6 +621,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             other[sp].append((f, "numerology"))
 
     spheres = []
+    told: set[str] = set()  # links already shown in an earlier sphere's lists
     for key in SPHERES:
         d = kb.data(f"SPHERE:{key}")
         if not d:
@@ -673,16 +674,30 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             )
             for o in sphere_overlays
         ]
-        items += [
+        # psychology, numbers and tarot add their calculation («Экстраверсия: 75 и 25»), not a reading: they explain the
+        # sphere («Почему так»), they don't go into «Что получается» / «Где непросто»
+        calc = [
             SphereFactor(title=f.source, text=f"{_cap(f.detail)}.", tone=tone_of(65 + round(f.weight * 30)), layer=f.layer, universe=u)  # type: ignore[arg-type]
             for f, u in other[key][:3]
         ]
+        pros = [factor for factor in items if factor.tone == "synergy"]
+        cons = [factor for factor in items if factor.tone in {"attention", "risk"}]
         tense = [
             h for h in hits if key in h.spheres and h.effect < -2 and h.planet_a in interpret.PLANET and h.planet_b in interpret.PLANET
         ]
         evidence = sorted((f for f in factors if f.category == cat), key=lambda f: -abs(f.weight))[:3]
-        # one honest reading per sphere: its first sentence is the one-line summary, the rest opens with the sphere
-        first, _, rest = (d["strong"] if score >= 75 else d["weak"]).partition(". ")
+        # one honest reading per sphere, agreeing with the lists under it: strong from 75, the hard side below 60, and in
+        # between whichever side the sphere's own links lean to (a 71 with five pluses doesn't open with «у вас разные»)
+        # what the lists show: a link between the charts is told once, in the first sphere it fits, three per list —
+        # the same «Венера △ Сатурн» in five spheres reads like a template
+        # (by its text too: a double link reads the same both ways once it says «вы»)
+        shown_pros = _fresh(pros, told)
+        shown_cons = _fresh(cons, told)
+        # the summary agrees with the lists right under it (all of the sphere's links when none are left to show)
+        lean_pros, lean_cons = (len(shown_pros), len(shown_cons)) if shown_pros or shown_cons else (len(pros), len(cons))
+        good = score >= 75 or (score >= 60 and lean_pros > lean_cons)
+        pros, cons = shown_pros, shown_cons
+        first, _, rest = (d["strong"] if good else d["weak"]).partition(". ")
         spheres.append(
             Sphere(
                 key=key,
@@ -695,10 +710,10 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
                 evidence=[ev(f) for f in evidence],
                 actions=[d["do"]],
                 question=d["question"],
-                factors=items,
-                strengths=[factor for factor in items if factor.tone == "synergy"],
-                challenges=[factor for factor in items if factor.tone in {"attention", "risk"}],
-                context_factors=[factor for factor in items if factor.tone == "neutral"],
+                factors=items + calc,
+                strengths=pros,
+                challenges=cons,
+                context_factors=[factor for factor in items if factor.tone == "neutral"] + calc,
                 script=interpret.conflict_script(min(tense, key=lambda h: h.effect), a.name, b.name)
                 if key in TENSE_SPHERES and tense
                 else None,
@@ -752,7 +767,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         total_score=combined.total,
         agreement_index=combined.agreement,
         agreement_note=(
-            "Все вселенные видят пару похоже — выводам можно доверять больше."
+            "Все системы видят пару похоже, поэтому выводам можно доверять больше."
             if combined.agreement >= 75
             else f"Вселенные расходятся: сильнее всего у вас «{CATEGORIES[strong[0]][0].lower()}», слабее — «{CATEGORIES[weak[0]][0].lower()}». Научный слой смотрите отдельно."
         ),
@@ -783,6 +798,17 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
     )
     report = deps.stitcher.stitch(report) if deps.stitcher else report
     return report.model_copy(update={"kb_keys": sorted(set(kb.used))})
+
+
+def _fresh(factors: list[SphereFactor], told: set[str], limit: int = 3) -> list[SphereFactor]:
+    """Up to `limit` points not told yet in this report (by link and by wording), and mark them as told."""
+    out = []
+    for f in factors:
+        if len(out) == limit or f.ref in told or f.text in told:
+            continue
+        out.append(f)
+        told.update(x for x in (f.ref, f.text) if x)
+    return out
 
 
 def _exercise(items: list[dict], fallback: str) -> str:

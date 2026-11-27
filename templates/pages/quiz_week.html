@@ -39,7 +39,7 @@
     <div class="card mt-8 p-6 text-center">
       <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-b-soft text-b-ink">{% icon 'lock' %}</span>
       <p class="mt-4 font-bold">Ваши ответы сохранены</p>
-      <p class="mt-1 text-sm text-ink-2">{% if has_partner %}Результат откроется, когда {{ partner_name }} пройдёт квиз — мы напишем.{% else %}Пригласите партнёра — и сравните ответы.{% endif %}</p>
+      <p class="mt-1 text-sm text-ink-2">{% if has_partner %}Результат откроется, когда {{ partner_name }} пройдёт квиз — мы напишем.{% else %}Пригласите партнёра и сравните ответы.{% endif %}</p>
       {% if not has_partner %}<a href="{% url 'pair_invite' %}" class="btn btn-primary btn-sm mt-4">Пригласить</a>{% endif %}
     </div>
   {% else %}

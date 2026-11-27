@@ -1,0 +1,12 @@
+{# One arcana face-up for the document: no flip, nothing that needs a script. card: Arcana, side: a|b|pair, who: caption #}
+<figure class="keep flex flex-col items-center gap-2 side-{{ side }}">
+  <div class="sticker flex w-full flex-col overflow-hidden t-bg {% if side == 'pair' %}max-w-[11rem]{% else %}max-w-[9.5rem]{% endif %}">
+    <div class="flex items-center justify-between px-3 pt-2.5"><span class="mono text-sm font-semibold">{{ card.number|roman }}</span><span class="mono text-[0.6rem] text-ink-2">{{ card.number }}/22</span></div>
+    <div class="mx-auto my-2 w-[78%]">{% arcana_art card.number side %}</div>
+    <div class="border-t-2 border-ink bg-paper px-2 py-2 text-center">
+      <p class="font-display text-[0.8rem] font-extrabold leading-tight">{{ card.name }}</p>
+      <p class="mono mt-0.5 text-[0.6rem] uppercase tracking-wider text-ink-3">{{ card.keyword }}</p>
+    </div>
+  </div>
+  <figcaption class="text-xs font-bold text-ink-2">{{ who }}</figcaption>
+</figure>

@@ -9,7 +9,7 @@
       <p class="eyebrow mb-3">Главы</p>
       {% for n, anchor, title in chapters %}
       <a href="#{{ anchor }}" class="flex items-center gap-2 rounded-xl px-3 py-2 font-semibold text-ink-2 transition hover:bg-sand hover:text-ink">
-        <span class="accent w-6 text-base text-ink">{{ n }}</span>{{ title }}
+        {{ title }}
       </a>
       {% endfor %}
       <div class="mt-4 rounded-2xl bg-sand/70 p-3">
@@ -25,7 +25,7 @@
 
     {# 01 — who you are together #}
     <section id="type" class="scroll-mt-40">
-      <p class="chapter" data-reveal><b>01</b>тип пары</p>
+      <p class="chapter" data-reveal>тип пары</p>
       {# a small poster beside the name on a phone; the description runs full width under both #}
       <div class="mt-4 grid grid-cols-[6.5rem_1fr] items-center gap-x-4 gap-y-3 md:grid-cols-[12rem_1fr]">
         <div class="sticker overflow-hidden md:row-span-2" data-reveal="scale"><div class="aspect-[4/4.4]">{% pair_poster r.pair_type.role_a r.pair_type.role_b "h-full w-full" %}</div></div>
@@ -42,7 +42,7 @@
 
     {# 02 — each of you #}
     <section id="you" class="scroll-mt-40">
-      <p class="chapter" data-reveal><b>02</b>каждый из вас</p>
+      <p class="chapter" data-reveal>каждый из вас</p>
       <div class="roles mt-4 grid grid-cols-2 gap-3 md:gap-4">
         {% include "components/role_card.html" with person=a role=role_a why=r.pair_type.why_a side="a" i=0 %}
         {% include "components/role_card.html" with person=b role=role_b why=r.pair_type.why_b side="b" i=1 %}
@@ -51,7 +51,7 @@
 
     {# 03 — life spheres #}
     <section id="spheres" class="scroll-mt-40">
-      <p class="chapter" data-reveal><b>03</b>сферы жизни</p>
+      <p class="chapter" data-reveal>сферы жизни</p>
       <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Где вам хорошо — и где нужна договорённость</h2>
       {# rows: glyph, title, one line, score — the reading opens on tap, nothing is open by default #}
       <div class="mt-5 space-y-2">
@@ -151,13 +151,13 @@
 
     {# 04 — where you diverge #}
     <section id="diverge" class="scroll-mt-40">
-      <p class="chapter" data-reveal><b>04</b>где вы расходитесь</p>
+      <p class="chapter" data-reveal>где вы расходитесь</p>
       <div class="mt-5 grid gap-4 md:grid-cols-2">{% for ins in r.friction %}{% include "components/insight.html" with ins=ins i=forloop.counter %}{% endfor %}</div>
     </section>
 
     {# 05 — plan #}
     <section id="plan" class="scroll-mt-40">
-      <p class="chapter" data-reveal><b>05</b>план</p>
+      <p class="chapter" data-reveal>план</p>
       <ol class="mt-4 space-y-2">
         {% for h in r.habits %}
         <li class="card flex items-start gap-4 p-4" data-reveal style="--i: {{ forloop.counter }}">
@@ -169,10 +169,10 @@
       <a href="{% url 'daily' %}#habits" class="btn btn-ghost btn-sm mt-4">Выбрать 2–3 в «Сегодня» {% icon 'arrow-right' 'size-4' %}</a>
     </section>
 
-    {# 06 — questions #}
+    {# questions #}
     <details id="questions" class="group scroll-mt-40">
       <summary class="card flex cursor-pointer list-none items-center gap-3 p-4 pr-5 hover:border-ink [&::-webkit-details-marker]:hidden" data-reveal>
-        <span class="accent w-6 text-ink-3">06</span>
+        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-lilac-soft">{% icon 'message-circle-question-mark' 'size-4' %}</span>
         <span class="flex-1"><b class="block leading-tight">Вопросы друг другу</b><span class="block text-xs text-ink-3">{{ r.spheres|length }} {{ r.spheres|length|ru_plural:"вопрос,вопроса,вопросов" }} — по одному на каждую сферу</span></span>
         <span class="text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
       </summary>

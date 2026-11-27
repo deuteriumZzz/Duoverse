@@ -18,37 +18,34 @@
   </article>
 </section>
 
-<section class="mt-12">
-  <h2 class="text-2xl font-extrabold" data-split>Ваши карты как <span class="marker">созвездия</span></h2>
-  <p class="mt-1 text-sm text-ink-3" data-reveal>Две карты сходятся в одну — линии показывают аспекты, а точки их пересечения складываются в созвездие пары.</p>
-  {# the picture alone: the strongest aspects it draws are the first rows of «Все аспекты» below, each with its full text #}
-  <div class="mx-auto mt-6 max-w-xl">
-    <div class="card overflow-hidden p-4 sm:p-6"
-         x-data="{ phase: 0, play() { this.phase = 0; setTimeout(() => this.phase = 1, 900); setTimeout(() => this.phase = 2, 2500); setTimeout(() => this.phase = 3, 2500 + {{ r.astrology.aspects|length }} * 260 + 900) } }"
-         x-init="new IntersectionObserver((e, o) => { if (e[0].isIntersecting) { play(); o.disconnect() } }, { threshold: .4 }).observe($el)"
-         :class="'syn-' + phase + (phase >= 1 ? ' syn-1' : '') + (phase >= 2 ? ' syn-2' : '') + (phase >= 3 ? ' syn-3' : '') + ' syn-0'">
-      <div class="mx-auto max-w-md">{% synastry_svg r.astrology %}</div>
-      <div class="mt-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
-        <span class="side-a chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ a.name }} · внутренний круг</span>
-        <span class="side-b chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ b.name }} · внешний круг</span>
-        <span class="chip bg-pair-soft transition duration-500" :class="phase >= 3 ? 'opacity-100' : 'opacity-0'">✦ созвездие пары</span>
-        <button class="chip border border-line bg-paper hover:bg-sand draw-icon" @click="play()">{% icon 'rotate-ccw' 'size-3.5' %}Собрать заново</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-{# ─── both charts ─── #}
-<section class="mt-14">
-  <p class="chapter" data-reveal><b>01</b>две карты</p>
-  <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl" data-split>Карты {{ a.name|gen }} и {{ b.name|gen }} целиком</h2>
+{# ─── the two charts: one card, two views (the constellation draws itself, the wheel is the full picture) ─── #}
+<section class="mt-12" x-data="{ view: 'sky' }">
+  <h2 class="text-2xl font-extrabold sm:text-3xl" data-split>Карты {{ a.name|gen }} и {{ b.name|gen }}</h2>
   <div class="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-    <div class="card p-4 sm:p-6" data-reveal="scale">
-      <div class="mx-auto max-w-md">{% bi_wheel_svg r.astrology %}</div>
-      <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs font-bold">
-        <span class="side-a chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ a.name }} · внутренний круг{% if r.astrology.houses_a %} · дома{% endif %}</span>
-        <span class="side-b chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ b.name }} · внешний круг</span>
-        <span class="chip bg-sand">линии — мажорные аспекты</span>
+    <div class="card overflow-hidden p-4 sm:p-6" data-reveal="scale">
+      <div class="mx-auto flex w-fit rounded-full bg-sand p-1 text-sm font-bold" role="tablist" aria-label="Вид карты">
+        <button type="button" role="tab" class="rounded-full px-4 py-1.5 transition" :class="view === 'sky' ? 'bg-ink text-milk' : 'text-ink-2'" :aria-selected="view === 'sky'" @click="view = 'sky'">Созвездие</button>
+        <button type="button" role="tab" class="rounded-full px-4 py-1.5 transition" :class="view === 'wheel' ? 'bg-ink text-milk' : 'text-ink-2'" :aria-selected="view === 'wheel'" @click="view = 'wheel'">Колесо</button>
+      </div>
+      <div x-show="view === 'sky'"
+           x-data="{ phase: 0, play() { this.phase = 0; setTimeout(() => this.phase = 1, 900); setTimeout(() => this.phase = 2, 2500); setTimeout(() => this.phase = 3, 2500 + {{ r.astrology.aspects|length }} * 260 + 900) } }"
+           x-init="new IntersectionObserver((e, o) => { if (e[0].isIntersecting) { play(); o.disconnect() } }, { threshold: .4 }).observe($el)"
+           :class="'syn-' + phase + (phase >= 1 ? ' syn-1' : '') + (phase >= 2 ? ' syn-2' : '') + (phase >= 3 ? ' syn-3' : '') + ' syn-0'">
+        <div class="mx-auto mt-4 max-w-md">{% synastry_svg r.astrology %}</div>
+        <p class="mt-2 text-center text-xs text-ink-3">Линии показывают аспекты, а их пересечения складываются в созвездие пары.</p>
+        <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
+          <span class="side-a chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ a.name }} · внутренний круг</span>
+          <span class="side-b chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ b.name }} · внешний круг</span>
+          <button type="button" class="chip border border-line bg-paper hover:bg-sand draw-icon" @click="play()">{% icon 'rotate-ccw' 'size-3.5' %}Собрать заново</button>
+        </div>
+      </div>
+      <div x-show="view === 'wheel'" x-cloak>
+        <div class="mx-auto mt-4 max-w-md">{% bi_wheel_svg r.astrology %}</div>
+        <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs font-bold">
+          <span class="side-a chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ a.name }} · внутренний круг{% if r.astrology.houses_a %} · дома{% endif %}</span>
+          <span class="side-b chip t-bg t-ink"><i class="size-2 rounded-full t-fill"></i>{{ b.name }} · внешний круг</span>
+          <span class="chip bg-sand">линии: мажорные аспекты</span>
+        </div>
       </div>
     </div>
     <div class="space-y-4" x-data="{ who: 'a' }">
@@ -61,7 +58,7 @@
         {% for p in rows %}
         <li x-data="{ open: false }">
           <button class="grid w-full grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-2.5 text-left text-sm hover:bg-sand/50" @click="open = !open" :aria-expanded="open">
-            <span class="text-center text-lg leading-none {% if side == 'a' %}text-a-ink{% else %}text-b-ink{% endif %}">{{ p.glyph }}</span>
+            <span class="text-center leading-none {% if p.glyph|length > 1 %}text-[0.62rem] font-extrabold tracking-tight{% else %}astro text-xl{% endif %} {% if side == 'a' %}text-a-ink{% else %}text-b-ink{% endif %}">{{ p.glyph }}</span>
             <span class="min-w-0">
               <span class="block font-bold leading-tight">{{ p.name }}</span>
               <span class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-ink-2"><span class="whitespace-nowrap">{{ p.sign }} <span class="mono text-ink-3">{{ p.degree }}</span></span>{% if p.retro %}<span class="chip h-5 bg-attention-soft px-1.5 text-[0.65rem] text-attention-ink">R</span>{% endif %}{% if p.dignity %}<span class="chip h-5 px-1.5 text-[0.65rem] {% if p.dignity == 'обитель' or p.dignity == 'экзальтация' %}bg-synergy-soft text-synergy-ink{% else %}bg-sand text-ink-3{% endif %}">{{ p.dignity }}</span>{% endif %}</span>
@@ -80,7 +77,7 @@
 {# ─── aspect grid ─── #}
 <section class="mt-14" x-data="{ minor: false }">
   <div class="flex flex-wrap items-end justify-between gap-3">
-    <div><p class="chapter" data-reveal><b>02</b>сетка аспектов</p><h2 class="mt-2 text-2xl font-extrabold" data-split>Где ваши планеты пересекаются</h2></div>
+    <div><p class="chapter" data-reveal>сетка аспектов</p><h2 class="mt-2 text-2xl font-extrabold" data-split>Где ваши планеты пересекаются</h2></div>
     <label class="flex cursor-pointer items-center gap-2 text-sm font-bold text-ink-2"><input type="checkbox" class="size-4 accent-[var(--color-ink)]" x-model="minor">показать минорные</label>
   </div>
   {% aspect_matrix r.astrology as grid %}
@@ -108,7 +105,7 @@
 
 {# ─── every aspect with its reading ─── #}
 <section class="mt-14" x-data="{ sphere: 'all', minor: location.hash.startsWith('#asp-'), more: location.hash.startsWith('#asp-') }">
-  <p class="chapter" data-reveal><b>03</b>все аспекты</p>
+  <p class="chapter" data-reveal>все аспекты</p>
   <h2 class="mt-2 text-2xl font-extrabold" data-split>Что каждая связь значит для вас</h2>
   <div class="scroll-x mt-4 gap-2 pb-1">
     <button class="chip h-9 px-4" :class="sphere === 'all' ? 'bg-ink text-milk' : 'bg-sand'" @click="sphere = 'all'">все · {{ r.astrology.all_aspects|length }}</button>
@@ -119,17 +116,19 @@
     {% for asp in r.astrology.all_aspects %}
     <li id="asp-{{ asp.key }}" class="card tone-{{ asp.tone }} scroll-mt-48 target:ring-2 target:ring-pair" x-data="{ open: decodeURIComponent(location.hash) === '#asp-{{ asp.key|escapejs }}' }" data-hover-link="asp-{{ asp.key }}"
         x-show="(sphere === 'all' || {{ asp.spheres|safe_json }}.includes(sphere)) && ({% if asp.major %}true{% else %}minor{% endif %}) && (more || sphere !== 'all' || {{ forloop.counter }} <= 10)">
-      <button class="flex w-full items-center gap-2 p-3 text-left sm:p-4" @click="open = !open" :aria-expanded="open">
-        <span class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <span class="side-a t-bg t-ink chip h-7">{{ asp.planet_a }}</span>
-          <span class="grid size-7 shrink-0 place-items-center rounded-full border-2 border-current bg-paper font-bold t-ink" title="{{ asp.aspect }}">{{ asp.symbol }}</span>
-          <span class="side-b t-bg t-ink chip h-7">{{ asp.planet_b }}</span>
-          <span class="mono hidden text-xs text-ink-3 sm:inline">{{ asp.aspect }} · орб {{ asp.orb }}°</span>
-          {% if asp.double %}<span class="chip h-6 bg-pair-soft text-[0.68rem]">двойная связь</span>{% endif %}
+      {# a list row: the aspect symbol leads (always in one place), the two planets and «трин · орб» read left to right #}
+      <button class="flex w-full items-center gap-3 p-3 text-left sm:p-4" @click="open = !open" :aria-expanded="open">
+        <span class="grid size-9 shrink-0 place-items-center rounded-full border-2 border-current bg-paper text-base font-bold t-ink{% if asp.double %} ring-2 ring-pair ring-offset-2{% endif %}" aria-hidden="true">{{ asp.symbol }}</span>
+        <span class="min-w-0 flex-1">
+          <span class="flex flex-wrap items-center gap-1.5">
+            <span class="side-a t-bg t-ink chip h-7">{{ asp.planet_a }}</span>
+            <span class="side-b t-bg t-ink chip h-7">{{ asp.planet_b }}</span>
+          </span>
+          <span class="mono mt-1 block text-xs text-ink-3">{{ asp.aspect }} · орб {{ asp.orb }}°{% if asp.double %} · <span class="font-bold text-ink-2">двойная связь</span>{% endif %}</span>
         </span>
-        <span class="shrink-0">{% include "components/tone_badge.html" with tone=asp.tone %}</span>
+        <span class="chip tone-{{ asp.tone }} t-bg t-ink h-8 shrink-0 px-2 min-[420px]:px-3">{% icon asp.tone|tone_icon 'size-3.5' %}<span class="sr-only min-[420px]:not-sr-only">{{ asp.tone|label }}</span></span>
       </button>
-      <p x-show="open" x-collapse x-cloak class="px-4 pb-4 text-sm leading-relaxed text-ink-2">{{ asp.text }}</p>
+      <p x-show="open" x-collapse x-cloak class="px-4 pb-4 text-sm leading-relaxed text-ink-2">{{ asp.text }}{% if asp.double %} Двойная связь: аспект работает в обе стороны.{% endif %}</p>
     </li>
     {% endfor %}
   </ul>
@@ -138,7 +137,7 @@
 
 {# ─── house overlays ─── #}
 <section class="mt-14">
-  <p class="chapter" data-reveal><b>04</b>наложение домов</p>
+  <p class="chapter" data-reveal>наложение домов</p>
   <h2 class="mt-2 text-2xl font-extrabold" data-split>В какие сферы жизни вы попадаете друг к другу</h2>
   {% if r.astrology.overlays %}
   {# one row per person, the twelve houses open on tap (a «Почему так» link to #ov-… opens the right one) #}
@@ -163,14 +162,20 @@
 
 {# ─── composite ─── #}
 <section class="mt-14">
-  <p class="chapter" data-reveal><b>05</b>композит</p>
+  <p class="chapter" data-reveal>композит</p>
   <h2 class="mt-2 text-2xl font-extrabold" data-split>Ваша пара как отдельная карта</h2>
   <p class="mt-2 max-w-2xl text-sm text-ink-3" data-reveal>Композит — середины между вашими планетами. Он описывает не каждого из вас, а сам союз: его характер, цели и уязвимости.</p>
   <div class="mt-5 grid gap-3 md:grid-cols-2">
     {% for cp in r.astrology.composite %}
     <div class="card side-pair p-4" data-reveal style="--i: {{ forloop.counter }}">
-      <p class="flex items-center gap-2 font-bold"><span class="mono rounded-lg t-bg px-2 py-0.5 text-xs">{{ cp.sign }}{% if cp.house %} · {{ cp.house }} дом{% endif %}</span>{{ cp.point }}</p>
-      <p class="mt-2 text-sm leading-relaxed text-ink-2">{{ cp.text }}</p>
+      <div class="flex items-center gap-3">
+        {% with g=cp.point|astro_glyph %}<span class="grid size-11 shrink-0 place-items-center rounded-2xl t-bg t-ink transition-transform hover:scale-110 {% if cp.point == 'Асцендент' or cp.point == 'MC' %}text-xs font-bold{% else %}astro text-[1.9rem] leading-none{% endif %}" aria-hidden="true">{{ g }}</span>{% endwith %}
+        <div class="min-w-0">
+          <p class="font-bold leading-tight">{{ cp.point }} в {{ cp.sign|sign_in }} <span class="astro text-lg leading-none text-ink-3" title="{{ cp.sign }}">{{ cp.sign|astro_glyph }}</span></p>
+          <p class="mt-0.5 text-xs leading-snug text-ink-3">{{ cp.point|planet_role|capfirst }}{% if cp.house %} · {{ cp.house }} дом: {{ cp.house|house_area }}{% endif %}</p>
+        </div>
+      </div>
+      <p class="mt-3 text-sm leading-relaxed text-ink-2">{{ cp.text }}</p>
     </div>
     {% endfor %}
   </div>
@@ -179,7 +184,7 @@
 
 {# ─── balance ─── #}
 <section class="mt-14">
-  <p class="chapter" data-reveal><b>06</b>баланс стихий</p>
+  <p class="chapter" data-reveal>баланс стихий</p>
   <div class="mt-5 grid gap-5 md:grid-cols-2">
     {% for title, rows in balance_rows %}
     <div class="card p-5" data-reveal data-observe>

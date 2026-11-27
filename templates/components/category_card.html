@@ -4,7 +4,7 @@ data-cat-card lights the matching axis of the radar above (app.js).{% endcomment
   <button type="button" class="flex w-full items-center gap-3 p-3 pr-4 text-left" @click="open = !open" :aria-expanded="open">
     <span class="anim-{{ c.icon }} grid size-12 shrink-0 place-items-center rounded-2xl t-bg">{% glyph c.icon 'size-9' %}</span>
     <span class="min-w-0 flex-1">
-      <b class="block leading-tight">{{ c.title }}<span class="sr-only"> — {{ c.tone|label }}</span></b>
+      <b class="block leading-tight">{{ c.title }}<span class="sr-only">: {{ c.tone|label|lower }}</span></b>
       <span class="mt-0.5 block text-xs leading-snug text-ink-2">{{ c.verdict }}</span>
     </span>
     <span class="shrink-0 font-display text-xl font-extrabold tabular-nums t-ink" data-count="{{ c.score }}">{{ c.score }}</span>

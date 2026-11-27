@@ -67,7 +67,7 @@ CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_TIME_LIMIT = 120
 
-ALGORITHM_VERSION = "0.3.1"
+ALGORITHM_VERSION = "0.3.4"  # 0.3.4: chart links without a reviewed text read in «вы»; older snapshots refresh on read
 
 FIELD_ENCRYPTION_KEY = env("FIELD_ENCRYPTION_KEY", default="")  # Fernet key; derived from SECRET_KEY when empty
 KB_ALLOWED_STATUSES = env.list("KB_ALLOWED_STATUSES", default=["published"])

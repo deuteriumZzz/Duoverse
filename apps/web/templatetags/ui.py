@@ -301,7 +301,7 @@ def bi_wheel_svg(astro) -> str:
         )
         parts.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="var(--color-ink)" stroke-width="1"/>')
         parts.append(
-            f'<text x="{gx:.1f}" y="{gy + 5:.1f}" text-anchor="middle" font-size="15" fill="var(--color-ink)">{SIGN_GLYPHS[k]}</text>'
+            f'<text x="{gx:.1f}" y="{gy + 5:.1f}" text-anchor="middle" font-size="15" fill="var(--color-ink)">{SIGN_GLYPHS[k]}\ufe0e</text>'
         )
     for i, cusp in enumerate(astro.houses_a):
         x1, y1 = xy(cusp, r_core)
@@ -367,6 +367,37 @@ def safe_json(value) -> str:
 @register.filter
 def universe_glyph(universe: str) -> str:
     return {"astrology": "orbit", "psychology": "brain", "numerology": "hash", "tarot": "layers"}.get(universe, "sparkles")
+
+
+@register.filter
+def astro_glyph(name: str) -> str:
+    """«Луна» → ☽, «Весы» → ♎: the symbol of a point or a sign, as on the charts."""
+    from apps.astrology.domain.chart import POINTS, SIGN_GLYPH, SIGNS
+
+    g = POINTS[name].glyph if name in POINTS else SIGN_GLYPH[SIGNS.index(name)] if name in SIGNS else ""
+    return g + "\ufe0e" if len(g) == 1 else g  # U+FE0E: the text symbol; Apple shows ♈…♓ as purple emoji tiles otherwise
+
+
+@register.filter
+def sign_in(sign: str) -> str:
+    from apps.astrology.domain.chart import SIGN_IN
+
+    return SIGN_IN.get(sign, sign)
+
+
+@register.filter
+def house_area(house: int) -> str:
+    from apps.astrology.domain.chart import HOUSE_AREA
+
+    return HOUSE_AREA.get(house, "")
+
+
+@register.filter
+def planet_role(point: str) -> str:
+    """«Луна» → «чувства и привычки»: what a point stands for, in plain words."""
+    from apps.astrology.domain.interpret import PLANET
+
+    return PLANET[point][0] if point in PLANET else ""
 
 
 @register.filter(name="gv")

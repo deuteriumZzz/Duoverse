@@ -22,7 +22,7 @@
       <div x-show="open" x-cloak x-transition.origin.top.right @click.outside="open = false" class="card absolute right-0 top-12 z-40 max-h-[70vh] w-60 overflow-y-auto p-2">
         {% if tab == 'razbor' %}
         <p class="eyebrow px-3 pb-1 pt-2">Главы</p>
-        {% for n, anchor, title in chapters %}<a href="#{{ anchor }}" @click="open = false" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-sand"><span class="accent w-6">{{ n }}</span>{{ title }}</a>{% endfor %}
+        {% for n, anchor, title in chapters %}<a href="#{{ anchor }}" @click="open = false" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-sand">{{ title }}</a>{% endfor %}
         <hr class="my-1 border-line">
         {% endif %}
         <a href="{{ rbase }}weights/" class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold hover:bg-sand">{% icon 'sliders-horizontal' 'size-4' %}Свои веса</a>

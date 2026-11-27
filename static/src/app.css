@@ -98,10 +98,12 @@
   .chip { display: inline-flex; align-items: center; gap: .375rem; height: 1.75rem; padding-inline: .7rem; border-radius: 999px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
   .eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-ink-3); }
   .mono { font-family: var(--font-mono); font-feature-settings: "zero"; }
+  /* astrology symbols (☉ ☽ ♎…): Manrope has none, and the fallback draws them tiny */
+  .astro { font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif; font-weight: 400; }
+  /* the brand's play of type: an italic serif word inside the sans headline, taglines and questions in the same voice */
   .accent { font-family: var(--font-serif); font-style: italic; font-weight: 500; letter-spacing: -0.005em; }
   h1 .accent, h2 .accent, h3 .accent { font-weight: 600; letter-spacing: -0.02em; font-size: 1.08em; line-height: 0; }
-  .chapter { display: flex; align-items: baseline; gap: .55rem; font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-ink-3); }
-  .chapter b { font-family: var(--font-serif); font-style: italic; font-size: 1.55rem; line-height: 1; letter-spacing: 0; text-transform: none; color: var(--color-ink); font-weight: 600; }
+  .chapter { font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-ink-3); }
 
   /* mad-libs sentence form */
   .madlib { font-family: var(--font-display); font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 2.05; letter-spacing: -0.025em; font-weight: 700; }
@@ -353,6 +355,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
 
 @media print {
   .no-print { display: none !important; }
+  body::after { display: none; }  /* the film grain blends over everything: in print it turns every page into a bitmap (100+ MB) */
   body { background: #fff; }
   [data-reveal] { opacity: 1 !important; translate: none !important; }
   .bar > i { scale: calc(var(--v) / 100) 1 !important; }

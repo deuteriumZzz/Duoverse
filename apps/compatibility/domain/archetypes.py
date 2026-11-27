@@ -53,7 +53,7 @@ class Dynamic:
 DYNAMICS = {
     d.key: d
     for d in [
-        Dynamic("resonance", "Резонанс", "Одна стихия: вы усиливаете друг друга — и сильные стороны, и слабые."),
+        Dynamic("resonance", "Резонанс", "Одна стихия: вы усиливаете друг в друге и сильные стороны, и слабые."),
         Dynamic("complement", "Дополнение", "Стихии питают друг друга: то, чего не хватает одному, есть у другого."),
         Dynamic("contrast", "Контраст", "Противоположные стихии: сильное притяжение и необходимость договариваться."),
         Dynamic("friction", "Притирка", "Стихии не мешают, но и не подсказывают: общий ритм находится со временем."),
@@ -102,8 +102,8 @@ def pair_name(a: Role, b: Role) -> str:
 
 def pair_tagline(a: Role, b: Role, name_a: str, name_b: str) -> str:
     if a.key == b.key:
-        return f"{name_a} и {name_b}: каждый {a.verb.split(' и ')[0]} — вместе вдвое сильнее"  # «каждый» keeps the verb singular
-    return f"{name_a} {a.verb}, {name_b} — {b.verb}"
+        return f"{name_a} и {name_b}: каждый {a.verb.split(' и ')[0]}, и вместе вы вдвое сильнее"  # «каждый» keeps the verb singular
+    return f"{name_a} {a.verb}, а {name_b} {b.verb}"  # no dash before a verb: «Миша задаёт», not «Миша — задаёт»
 
 
 if __name__ == "__main__":

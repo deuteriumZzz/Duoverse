@@ -1,6 +1,6 @@
 {# What the full report adds for THIS pair, built from its own results (views._unlock_items). Context: unlock_items, stored, price_deep, a, b #}
 <section id="unlock" class="sticker relative scroll-mt-40 overflow-hidden bg-paper p-6 sm:p-8 {{ cls|default:'' }}" data-reveal aria-labelledby="unlock-title-{{ where|default:'x' }}">
-  <p class="chapter"><b>✦</b>полный разбор</p>
+  <p class="chapter">полный разбор</p>
   <h2 id="unlock-title-{{ where|default:'x' }}" class="mt-2 text-2xl font-extrabold">Что откроется для {{ a.name|gen }} и {{ b.name|gen }}</h2>
   <ul class="mt-5 grid gap-3 sm:grid-cols-2">
     {% for ic, title, detail in unlock_items %}

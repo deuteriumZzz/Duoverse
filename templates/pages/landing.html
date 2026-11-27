@@ -6,14 +6,14 @@
   <div class="pointer-events-none absolute -left-32 top-40 size-96 rounded-full bg-a-soft/80 blob" data-follow="-40" aria-hidden="true"></div>
   <div class="pointer-events-none absolute -right-24 top-10 size-[26rem] rounded-full bg-b-soft/80 blob" style="animation-delay:-6s" data-follow="55" aria-hidden="true"></div>
 
-  <div class="relative mx-auto max-w-6xl px-4 pt-12 sm:px-6 md:pt-16">
-    <span class="chip fade-up border border-line bg-paper/80 text-ink-2 backdrop-blur">{% glyph 'orbit' 'size-4' %}астрология · психология · каждый день вдвоём</span>
-    <h1 class="mt-6 max-w-5xl text-[clamp(2.1rem,6.4vw,5.1rem)] font-extrabold leading-[1.02]" data-split>
-      Поймите друг&nbsp;друга&nbsp;— и&nbsp;становитесь ближе <span class="accent text-[1.08em]">каждый день</span>
+  <div class="relative mx-auto max-w-6xl px-4 pt-10 sm:px-6 md:pt-12">
+    {# the headline is the first thing painted: no reveal on it, two lines on a laptop so the form is above the fold #}
+    <h1 class="max-w-5xl text-[clamp(2rem,4.6vw,3.75rem)] font-extrabold leading-[1.06]">
+      Поймите друг&nbsp;друга и&nbsp;становитесь ближе <span class="accent">каждый день</span>
     </h1>
-    <p class="mt-5 max-w-2xl text-lg leading-relaxed text-ink-2 fade-up" style="--i:2">Разбор пары — астрология, числа, таро и психологические тесты. А дальше общее пространство: вопрос дня, свидания, ваше дерево — всё по вашему разбору.</p>
+    <p class="mt-5 max-w-2xl text-lg leading-relaxed text-ink-2 fade-up" style="--i:2">Разбор пары по астрологии, числам, таро и психологии, без регистрации. Потом общее пространство: вопрос дня, свидания, ваше дерево.</p>
 
-    <div class="mt-10 grid items-center gap-10 pb-16 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
+    <div class="mt-8 grid items-center gap-10 pb-16 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
       {# sentence form #}
       <div class="fade-up" style="--i:3">
         <form class="madlib" hx-post="{% url 'quick_result' %}" hx-target="#quick" hx-swap="innerHTML swap:2400ms show:#quick:top" hx-indicator="this" hx-disabled-elt="find button" data-loader="aligning">
@@ -22,19 +22,14 @@
             а&nbsp;у&nbsp;моего человека —
             <span class="whitespace-nowrap">{% spaceless %}<label class="side-b inline"><span class="sr-only">Дата рождения партнёра</span>{% include "components/date_field.html" with name="date_b" value="1994-09-02" inline=True required=True %}</label>{% endspaceless %}.</span>
             Как мы&nbsp;устроены?</div>
-          <div class="mt-7 flex flex-wrap items-center gap-3">
+          <div class="mt-6 flex flex-wrap items-center gap-3">
             <button class="btn btn-primary h-14 px-7 text-base">
-              <span class="when-idle inline-flex items-center gap-2">{% icon 'sparkles' 'size-5' %}Узнать за 30 секунд</span>
+              <span class="when-idle inline-flex items-center gap-2">Узнать за 30 секунд{% icon 'arrow-right' 'size-5' %}</span>
               <span class="when-loading items-center gap-2"><span class="size-4 rounded-full border-2 border-milk/40 border-t-milk spin"></span>Сводим вселенные…</span>
             </button>
             <a href="{% url 'report' %}" class="btn btn-ghost h-14 bg-paper/70 backdrop-blur draw-icon">{% icon 'eye' 'size-4' %}Пример отчёта</a>
           </div>
         </form>
-        <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-ink-2">
-          <li class="flex items-center gap-2">{% icon 'lock-open' 'size-4 text-synergy' %}без регистрации</li>
-          <li class="flex items-center gap-2">{% icon 'heart-handshake' 'size-4 text-synergy' %}каждый день вдвоём — бесплатно</li>
-          <li class="flex items-center gap-2">{% icon 'flask-conical' 'size-4 text-synergy' %}психология — отдельно</li>
-        </ul>
       </div>
 
       {# live constellation stage #}
@@ -63,21 +58,21 @@
 
 {# ─────────── HOW IT GOES: the report is the way in, the pair space is where you stay ─────────── #}
 <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-  <p class="eyebrow" data-reveal>Как это устроено</p>
-  <h2 class="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Разбор — это <span class="marker" style="--mk: var(--color-a-soft)">только начало</span></h2>
-  <ol class="relative mt-10 grid gap-5 md:grid-cols-3">
-    {% for n, tint, when, title, text, url, cta in steps %}
-    <li class="card group relative flex flex-col p-6" data-reveal style="--i: {{ forloop.counter }}">
-      <div class="flex items-center justify-between">
-        <span class="grid size-11 place-items-center rounded-2xl font-display font-extrabold {{ tint }}">{{ n }}</span>
-        <span class="mono text-xs text-ink-3">{{ when }}</span>
-      </div>
-      <h3 class="mt-5 text-lg font-extrabold">{{ title }}</h3>
-      <p class="mt-2 flex-1 text-sm leading-relaxed text-ink-2">{{ text }}</p>
-      <a href="{{ url }}" class="mt-5 inline-flex items-center gap-1.5 text-sm font-bold transition-all hover:gap-2.5">{{ cta }} {% icon 'arrow-right' 'size-4' %}</a>
-    </li>
-    {% endfor %}
-  </ol>
+  {# not three equal cards: one path, top to bottom, joined by a dashed line #}
+  <div class="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+    <h2 class="max-w-md text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Как это <span class="marker" style="--mk: var(--color-a-soft)">устроено</span></h2>
+    <ol class="relative space-y-8 before:absolute before:bottom-8 before:left-[1.3125rem] before:top-8 before:border-l-2 before:border-dashed before:border-line">
+      {% for n, tint, when, title, text in steps %}
+      <li class="relative flex gap-5" data-reveal style="--i: {{ forloop.counter }}">
+        <span class="grid size-11 shrink-0 place-items-center rounded-2xl font-display font-extrabold {{ tint }}">{{ n }}</span>
+        <div class="pt-1.5">
+          <p class="flex flex-wrap items-baseline gap-x-3"><b class="text-lg font-extrabold leading-tight">{{ title }}</b><span class="mono text-xs text-ink-3">{{ when }}</span></p>
+          <p class="mt-1.5 max-w-[52ch] leading-relaxed text-ink-2">{{ text }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
 </section>
 
 {# ─────────── TOGETHER: what a couple gets after the report (their «Главная» once signed in) ─────────── #}
@@ -85,10 +80,9 @@
   {% include "components/scene_defs.html" %}
   <div class="grid items-center gap-8 lg:grid-cols-[1fr_1.1fr]">
     <div>
-      <p class="eyebrow" data-reveal>Каждый день</p>
-      <h2 class="mt-3 max-w-xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Ваше пространство <span class="marker">на двоих</span></h2>
-      <p class="mt-3 max-w-md text-ink-2" data-reveal style="--i:2">Вопросы и идеи подобраны по вашему разбору — по тем сферам, где вам важнее всего.</p>
-      <a href="{% url 'wizard' %}" class="btn btn-primary mt-6" data-reveal style="--i:3">{% icon 'sparkles' 'size-4' %}Начать с разбора</a>
+      <h2 class="max-w-xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Ваше пространство <span class="marker">на двоих</span></h2>
+      <p class="mt-3 max-w-md text-ink-2" data-reveal style="--i:2">Вопросы и идеи подобраны по тем сферам разбора, где вам важнее всего.</p>
+      <a href="{% url 'wizard' %}" class="btn btn-primary mt-6" data-reveal style="--i:3">Узнать за 30 секунд{% icon 'arrow-right' 'size-4' %}</a>
       <svg class="scene mx-auto mt-6 block h-40 w-auto lg:mx-0" viewBox="0 0 320 170" aria-hidden="true" data-reveal style="--i:3">
         <ellipse cx="160" cy="156" rx="140" ry="14" fill="var(--color-sage)" opacity=".45" stroke="none"/><path d="M30 156H290" fill="none"/>
         <path d="M160 156V112" fill="none" stroke-width="3"/>
@@ -103,8 +97,8 @@
       <li class="card flex gap-3 p-4" data-reveal>{% glyph 'message-circle' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">Вопрос дня</b>Один на двоих. Ответы открываются, когда ответили оба.</span></li>
       <li class="card flex gap-3 p-4" data-reveal style="--i:1">{% glyph 'star' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">Свидание недели</b>Идея из вашего разбора: о чём поговорить и чем заняться.</span></li>
       <li class="card flex gap-3 p-4" data-reveal style="--i:2">{% glyph 'sprout' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">Наше дерево</b>Растёт от того, что вы делаете вдвоём: ответы, свидания, мечты.</span></li>
-      <li class="card flex gap-3 p-4" data-reveal style="--i:3">{% glyph 'heart' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">«Думаю о тебе»</b>И «спасибо за…» — одним нажатием, без лишних слов.</span></li>
-      <li class="card flex gap-3 p-4" data-reveal style="--i:4">{% glyph 'calendar' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">Календарь пары</b>Годовщины, дни рождения и ваши даты — с напоминаниями.</span></li>
+      <li class="card flex gap-3 p-4" data-reveal style="--i:3">{% glyph 'heart' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">«Думаю о тебе»</b>И «спасибо за…» одним нажатием.</span></li>
+      <li class="card flex gap-3 p-4" data-reveal style="--i:4">{% glyph 'calendar' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">Календарь пары</b>Годовщины, дни рождения и ваши даты с напоминаниями.</span></li>
       <li class="card flex gap-3 p-4" data-reveal style="--i:5">{% glyph 'gift' 'size-9 shrink-0' %}<span class="text-sm"><b class="block text-base">Карта желаний</b>С тихой бронью подарков: сюрприз остаётся сюрпризом.</span></li>
     </ul>
   </div>
@@ -115,10 +109,10 @@
   <div class="mx-auto max-w-6xl px-4 sm:px-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="eyebrow" data-reveal>Разбор пары · пример: {{ a.name }} и {{ b.name }}</p>
-        <h2 class="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Не один процент, а <span class="marker" style="--mk: var(--color-b-soft)">понятная картина</span></h2>
+        <p class="eyebrow" data-reveal>Пример: {{ a.name }} и {{ b.name }}</p>
+        <h2 class="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Балл, тип пары и <span class="marker" style="--mk: var(--color-b-soft)">шесть сфер</span></h2>
       </div>
-      <a href="{% url 'report' %}" class="btn btn-ghost bg-paper" data-reveal style="--i:2">Открыть полный отчёт {% icon 'arrow-right' 'size-4' %}</a>
+      <a href="{% url 'report' %}" class="btn btn-ghost bg-paper" data-reveal style="--i:2">{% icon 'eye' 'size-4' %}Пример отчёта</a>
     </div>
     <div class="mt-10 grid gap-5 lg:grid-cols-[1fr_1.1fr]">
       <div class="card p-6 sm:p-8" data-reveal>
@@ -142,9 +136,8 @@
 {# ─────────── PAIR TYPES ─────────── #}
 <section class="py-20">
   <div class="mx-auto max-w-6xl px-4 sm:px-6">
-    <p class="eyebrow" data-reveal>Типы пар</p>
-    <h2 class="mt-3 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>У каждой пары есть <span class="marker">имя</span></h2>
-    <p class="mt-3 max-w-xl text-ink-2" data-reveal style="--i:2">Имя складывается из ваших ролей: у каждого — одна из 12, а их встреча даёт один из 78 типов пар. Вот несколько.</p>
+    <h2 class="max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>У каждой пары есть <span class="marker">имя</span></h2>
+    <p class="mt-3 max-w-xl text-ink-2" data-reveal style="--i:2">У каждого из вас одна из 12 ролей, вместе они дают один из 78 типов пар. Вот несколько.</p>
   </div>
   <div class="scroll-x mt-6 gap-5 px-4 pb-8 pt-4 sm:px-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))]">
     {% for p in pair_types %}
@@ -182,8 +175,7 @@
     </div>
 
     <div>
-      <p class="eyebrow" data-reveal>Принцип мультивселенной</p>
-      <h2 class="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Четыре вселенные отвечают на <span class="marker">один вопрос</span></h2>
+      <h2 class="text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Каждая система считает <span class="marker">отдельно</span></h2>
       <p class="mt-4 text-lg leading-relaxed text-ink-2" data-reveal style="--i:2">Каждая система даёт свой балл и вердикт. Мы показываем их рядом и считаем, насколько они сходятся.</p>
       <ul class="mt-8 space-y-3">
         {% for u in r.universes %}
@@ -203,20 +195,22 @@
   {# agreement index explainer #}
   <div class="card mt-14 grid gap-8 p-6 sm:p-10 md:grid-cols-[1fr_1.2fr]" data-reveal>
     <div>
-      <span class="chip bg-pair-soft">{% icon 'scale' 'size-3.5' %}Индекс согласия вселенных</span>
-      <h3 class="mt-4 text-2xl font-extrabold leading-tight">Сходятся ли вселенные — тоже ответ</h3>
-      <p class="mt-3 leading-relaxed text-ink-2">Когда все слои видят одно и то же, вывод надёжнее. Когда расходятся — мы подсвечиваем где именно и объясняем, что это значит на практике.</p>
+      <span class="chip bg-pair-soft">{% icon 'scale' 'size-3.5' %}Индекс согласия</span>
+      <h3 class="mt-4 text-2xl font-extrabold leading-tight">Насколько системы согласны</h3>
+      <p class="mt-3 leading-relaxed text-ink-2">Когда все системы видят одно и то же, вывод надёжнее. Когда расходятся, мы показываем, где именно, и объясняем, что это значит на практике.</p>
     </div>
-    <div class="space-y-4" data-observe>
-      {% for u in r.universes %}
-      <div class="grid grid-cols-[6.5rem_1fr_2.5rem] items-center gap-3 text-sm font-bold">
-        <span>{{ u.title }}</span>
-        <div class="bar {% if u.layer == 'scientific' %}tone-synergy{% else %}side-b{% endif %}" style="--v: {{ u.score }}; --i: {{ forloop.counter }}"><i class="t-fill"></i></div>
-        <span class="mono text-right">{{ u.score }}</span>
-      </div>
-      {% endfor %}
+    {# the scores as numbers: the bars live once, in the report example above #}
+    <div class="space-y-3">
+      <dl class="grid grid-cols-2 gap-3">
+        {% for u in r.universes %}
+        <div class="rounded-2xl p-4 {% if u.layer == 'scientific' %}bg-sage-soft text-[#2f6243]{% else %}bg-lilac-soft text-[#5b45a8]{% endif %}">
+          <dt class="flex items-center gap-2 text-sm font-bold">{% glyph u.icon 'size-5' %}{{ u.title }}</dt>
+          <dd class="mt-1 font-display text-3xl font-extrabold tabular-nums text-ink">{{ u.score }}</dd>
+        </div>
+        {% endfor %}
+      </dl>
       <div class="flex items-center justify-between rounded-2xl bg-synergy-soft px-4 py-3 text-synergy-ink">
-        <span class="flex items-center gap-2 font-bold">{% icon 'check' 'size-4' %}Вселенные сходятся</span>
+        <span class="flex items-center gap-2 font-bold">{% icon 'check' 'size-4' %}Системы сходятся</span>
         <span class="font-display text-xl font-extrabold"><span data-count="{{ r.agreement_index }}">{{ r.agreement_index }}</span>/100</span>
       </div>
     </div>
@@ -260,9 +254,9 @@
 <section class="mx-auto max-w-6xl px-4 sm:px-6">
   <div class="relative overflow-hidden rounded-[2.25rem] bg-ink px-6 py-14 text-center text-milk sm:px-12 sm:py-20" data-reveal="scale">
     <div class="mx-auto h-16 w-24" data-burst-in="900" aria-hidden="true">{% mark "h-full w-full" merge=True light=True %}</div>
-    <h2 class="mx-auto mt-8 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Начните с разбора — оставайтесь вдвоём</h2>
-    <p class="mx-auto mt-4 max-w-md text-milk/70">Первый результат — за 30 секунд, без регистрации.</p>
-    <a href="{% url 'start' %}" class="btn btn-light mt-8">Попробовать бесплатно {% icon 'arrow-right' 'size-4' %}</a>
+    <h2 class="mx-auto mt-8 max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl" data-split>Начните с разбора пары</h2>
+    <p class="mx-auto mt-4 max-w-md text-milk/70">Нужны только две даты рождения. Без регистрации.</p>
+    <a href="{% url 'start' %}" class="btn btn-light mt-8">Узнать за 30 секунд{% icon 'arrow-right' 'size-4' %}</a>
   </div>
 </section>
 {% endblock %}

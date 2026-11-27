@@ -13,6 +13,8 @@ from apps.core.domain.scoring import Factor, ScoreResult, clamp
 
 SIGNS = ["Овен", "Телец", "Близнецы", "Рак", "Лев", "Дева", "Весы", "Скорпион", "Стрелец", "Козерог", "Водолей", "Рыбы"]
 SIGN_GLYPH = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"]
+# «Луна в Весах», not «в Весы»
+SIGN_IN = dict(zip(SIGNS, ["Овне", "Тельце", "Близнецах", "Раке", "Льве", "Деве", "Весах", "Скорпионе", "Стрельце", "Козероге", "Водолее", "Рыбах"], strict=True))
 SIGN_ELEMENT = ["fire", "earth", "air", "water"] * 3
 SIGN_MODALITY = ["cardinal", "fixed", "mutable"] * 4
 ELEMENT_RU = {"fire": "огонь", "earth": "земля", "air": "воздух", "water": "вода"}

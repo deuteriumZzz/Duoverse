@@ -1,11 +1,10 @@
-<li class="tone-{{ f.tone }} rounded-2xl border border-line bg-paper/80 p-4">
-  <div class="flex items-start gap-3">
-    <span class="mt-0.5 shrink-0">{% glyph f.universe|universe_glyph 'size-6' %}</span>
-    <div class="min-w-0 flex-1">
-      <p class="break-words text-sm font-bold leading-snug">{{ f.title }}</p>
-      <div class="mt-2 flex flex-wrap gap-1.5">{% include "components/tone_badge.html" with tone=f.tone %}</div>
-    </div>
+{% comment %}One point of a sphere: the reading itself in plain words, the calculation small under it as a link to the layer.
+A link between the charts has no title of its own («Способ любить Ани и характер Миши звучат в унисон» said the same as
+the reading, twice the names); a figure from another layer keeps its name («Экстраверсия»), since its text is a number.{% endcomment %}
+<li class="tone-{{ f.tone }} flex gap-3 rounded-2xl border border-line bg-paper/80 p-4">
+  <span class="mt-0.5 shrink-0">{% glyph f.universe|universe_glyph 'size-6' %}</span>
+  <div class="min-w-0 flex-1">
+    <p class="break-words text-sm leading-relaxed">{% if not f.tech %}<b>{{ f.title }}.</b> {% endif %}{{ f.text }}</p>
+    <a href="{{ rbase }}{{ universe_tab|get_item:f.universe }}/{% if f.ref %}#{{ f.ref }}{% endif %}" class="mono mt-2 block break-words text-xs leading-relaxed text-ink-3 hover:text-ink">{% if f.tech %}{{ f.tech }} · {% endif %}<span class="font-bold">подробнее <span class="inline-block align-[-3px]">{% icon 'arrow-right' 'size-3.5' %}</span></span></a>
   </div>
-  <p class="mt-3 break-words text-sm leading-relaxed text-ink-2">{{ f.text }}</p>
-  <a href="{{ rbase }}{{ universe_tab|get_item:f.universe }}/{% if f.ref %}#{{ f.ref }}{% endif %}" class="mono mt-3 block break-words text-xs leading-relaxed text-ink-3 hover:text-ink">{% if f.tech %}{{ f.tech }} · {% endif %}<span class="font-bold">подробнее <span class="inline-block align-[-3px]">{% icon 'arrow-right' 'size-3.5' %}</span></span></a>
 </li>

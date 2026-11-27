@@ -13,7 +13,7 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
   {% if pair %}{% include "components/scene_defs.html" %}{% endif %}
   <div class="flex items-center gap-3">
     {% if pair %}<span class="flex shrink-0 -space-x-3" aria-hidden="true">{% avatar me_av 40 %}{% if partner_av %}{% avatar partner_av 40 %}{% endif %}</span>{% endif %}
-    <div class="min-w-0 flex-1"><p class="eyebrow">{% now "l, j E" %}</p><h1 class="text-2xl font-extrabold sm:text-3xl">Сегодня</h1></div>
+    <div class="min-w-0 flex-1"><p class="text-sm font-semibold text-ink-3">{% now "l, j E" %}</p><h1 class="text-2xl font-extrabold sm:text-3xl">Сегодня</h1></div>
     {% if strip %}
     <span class="chip shrink-0 gap-1 bg-paper py-1.5 shadow-soft" x-show="streak > 0" x-cloak title="Дней подряд вы оба ответили на вопрос дня. Один пропуск в неделю не обнуляет серию.">
       <span class="text-a">{% icon 'flame' 'size-4' %}</span><b class="font-display text-base">{{ streak }}</b><span class="sr-only"> {{ streak|ru_plural:"день,дня,дней" }} подряд вместе</span>
@@ -143,7 +143,7 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
           <span class="mono text-xs text-ink-3" x-text="text.length + ' / 500'"></span>
           <button class="btn btn-primary" :disabled="text.trim().length < 2" :class="text.trim().length < 2 && 'opacity-40'">{% icon 'send' 'size-4' %}Ответить</button>
         </div>
-        <p class="mt-2 text-xs text-ink-3">{% if answers.partner_answered %}{{ partner_name }} уже {{ partner_g|gv:"ответил|ответила|ответил(а)" }} — ответьте, и ответы откроются вам обоим.{% else %}Ответ партнёра откроется, когда ответите вы оба.{% endif %}</p>
+        <p class="mt-2 text-xs text-ink-3">{% if answers.partner_answered %}{{ partner_name }} уже {{ partner_g|gv:"ответил|ответила|ответил(а)" }}. Ответьте, и ответы откроются вам обоим.{% else %}Ответ партнёра откроется, когда ответите вы оба.{% endif %}</p>
       </form>
       {% else %}
       <div class="relative mt-6 rounded-2xl bg-paper p-4 text-sm text-ink-2">
@@ -249,7 +249,7 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
       },
     }"{% endif %}>
     <div class="flex flex-wrap items-start justify-between gap-3">
-      <div><p class="eyebrow">Неделя пары</p><h2 class="mt-1 text-xl font-extrabold sm:text-2xl">7 шагов из вашего разбора</h2>
+      <div><h2 class="text-xl font-extrabold sm:text-2xl">Неделя пары</h2>
         <p class="mt-1 text-sm text-ink-2">Короткие разговоры и упражнения для ваших самых чувствительных сфер. Отмечайте каждый сам — шаг засчитан, когда отметили оба.</p></div>
       {% if week %}<p class="chip h-7 bg-synergy-soft text-synergy-ink"><span x-text="w.done"></span>&nbsp;из 7 вдвоём</p>{% endif %}
     </div>
@@ -336,7 +336,7 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
   {# «Как мы»: a short weekly talk in the spirit of Gottman's «state of the union»; it counts when both marked it #}
   <section id="talk" class="card p-5 sm:p-7">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <div><p class="eyebrow">разговор недели</p><h2 class="mt-1 text-xl font-extrabold">«Как мы?» — 15 минут вдвоём</h2></div>
+      <div><h2 class="text-xl font-extrabold">«Как мы?»</h2><p class="mt-0.5 text-sm text-ink-3">Разговор недели, 15 минут вдвоём</p></div>
       {% if talk_mine and talk_partner %}<span class="chip bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3.5' %}поговорили на этой неделе</span>{% endif %}
     </div>
     {% if talk_focus %}<p class="mt-3 flex items-start gap-2 rounded-2xl bg-b-soft p-3 text-sm text-b-ink">{% icon 'sparkles' 'size-4 mt-0.5 shrink-0' %}<span>Тема недели — «{{ talk_focus.title|default:talk_focus.quiz }}»: в квизе «{{ talk_focus.quiz }}» вы ответили по-разному в {{ talk_focus.diff }} из 6. Начните с неё.</span></p>{% endif %}

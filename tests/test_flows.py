@@ -249,3 +249,34 @@ def test_sign_page_ranks_all_twelve_with_texts(client):
     assert "tabular-nums" not in html  # no scores on the page
     assert "символический ориентир" in html
     assert client.get("/signs/", {"sign": "99"}).status_code == 200  # nonsense is just «nothing chosen»
+
+
+def test_the_pdf_is_the_whole_report_as_a_document(client):
+    """What a paid report holds, in one printable document: every chapter, every sphere with its question, and colours
+    that survive printing (the film-grain overlay would turn each page into a bitmap, so print hides it)."""
+    page = client.get("/report/pdf/").content.decode()
+    for chapter in ("Главное о вашей паре", "Сферы вашей жизни", "План пары", "Астрология", "Числа", "Таро", "Психология",
+                    "Вопросы друг другу", "Как устроен разбор", "Источники"):
+        assert chapter in page, chapter
+    assert page.count("Вопрос друг другу:") == 13 and "Что получается" in page and "Упражнение" in page
+    assert "print-color-adjust: exact" in page
+    assert "body::after { display: none; }" in open("static/src/app.css").read()
+
+
+def test_a_report_saved_by_an_older_algorithm_is_recalculated_on_read_in_place():
+    """New wording reaches pairs who already have a report: the old snapshot is rebuilt once, under the same link —
+    unless the pair's data changed since (then the next request makes a new report)."""
+    from apps.compatibility.services import report_of
+
+    stored = make_pair(Client())
+    old = {**stored.snapshot, "summary": "старый текст"}
+    StoredReport.objects.filter(id=stored.id).update(algorithm_version="0.0.1", snapshot=old)
+    stored.refresh_from_db()
+    r = report_of(stored)
+    assert r.summary != "старый текст" and r.id == str(stored.id)
+    stored.refresh_from_db()
+    assert stored.algorithm_version != "0.0.1" and stored.snapshot["summary"] == r.summary  # saved: rebuilt once
+
+    StoredReport.objects.filter(id=stored.id).update(algorithm_version="0.0.1", snapshot=old, input_hash="changed")
+    stored.refresh_from_db()
+    assert report_of(stored).summary == "старый текст"  # the pair's data moved on: this snapshot stays as it was
