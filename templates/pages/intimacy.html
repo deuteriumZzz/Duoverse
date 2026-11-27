@@ -39,33 +39,40 @@
     </form>
     {% endif %}
 
-    <form method="post" class="mt-8 space-y-4">
+    {% comment %}One wish at a time, like a deck: answer and the next one comes. Every card stays in the form, so saving
+    sends all of them, and saving halfway keeps what's answered.{% endcomment %}
+    <form method="post" class="mt-6" x-data="{ i: 0, n: 0, cards: [] }" x-init="cards = [...$el.querySelectorAll('[data-card]')]; n = cards.length">
       {% csrf_token %}
-      {% for theme, items in themes.items %}
-      <fieldset class="card p-5">
-        <legend class="sr-only">{{ theme }}</legend>
+      <div class="flex items-center gap-3 text-sm font-bold text-ink-3">
+        <button type="button" class="grid size-9 shrink-0 place-items-center rounded-full border border-line transition hover:border-ink disabled:opacity-30" @click="i = Math.max(0, i - 1)" :disabled="i === 0" aria-label="Предыдущий вопрос">{% icon 'arrow-left' 'size-4' %}</button>
+        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-sand"><i class="block h-full rounded-full bg-ink transition-all duration-300" :style="'width:' + (n ? Math.min(i, n) / n * 100 : 0) + '%'"></i></div>
+        <span class="shrink-0 tabular-nums" aria-live="polite"><span x-text="Math.min(i + 1, n)">1</span> из <span x-text="n"></span></span>
+      </div>
+      {% for theme, items in themes.items %}{% for key, title in items %}
+      <fieldset data-card class="card mt-4 p-6" x-show="cards.indexOf($el) === i" {% if not forloop.parentloop.first or not forloop.first %}x-cloak{% endif %}>
+        <legend class="sr-only">{{ theme }}: {{ title }}</legend>
         <p class="eyebrow">{{ theme }}</p>
-        <ul class="mt-3 space-y-3">
-          {% for key, title in items %}
-          <li class="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span class="min-w-0 flex-1 text-sm font-semibold">{{ title }}</span>
-            <span class="flex gap-1" role="radiogroup" aria-label="{{ title }}">
-              {% for value, label in choices.items %}
-              <label class="cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-bold has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk">
-                <input type="radio" name="{{ key }}" value="{{ value }}" class="sr-only" {% if mine|get_item:key == value %}checked{% endif %}>{{ label }}
-              </label>
-              {% endfor %}
-            </span>
-          </li>
+        <p class="mt-3 font-display text-2xl font-extrabold leading-snug">{{ title }}</p>
+        <div class="mt-6 grid gap-2" role="radiogroup" aria-label="{{ title }}">
+          {% for value, label in choices.items %}
+          <label class="flex cursor-pointer items-center justify-center rounded-2xl border-2 border-line p-4 font-bold transition hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk">
+            <input type="radio" name="{{ key }}" value="{{ value }}" class="sr-only" {% if mine|get_item:key == value %}checked{% endif %} @change="setTimeout(() => i++, 250)">{{ label }}
+          </label>
           {% endfor %}
-        </ul>
+        </div>
+        <button type="button" class="mt-4 w-full text-center text-sm font-bold text-ink-3 hover:text-ink" @click="i++">Пропустить</button>
       </fieldset>
-      {% endfor %}
-      <div class="flex flex-wrap items-center gap-3">
+      {% endfor %}{% endfor %}
+      <div class="card mt-4 p-6 text-center" x-show="n && i >= n" x-cloak>
+        <span class="mx-auto grid size-12 place-items-center rounded-full bg-a-soft text-a-ink">{% icon 'heart' 'size-6' %}</span>
+        <p class="mt-3 font-display text-xl font-extrabold">Все вопросы позади</p>
+        <p class="mt-1 text-sm text-ink-2">Сохраните — вы увидите только совпадения.</p>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
         <button class="btn btn-primary">{% icon 'lock' 'size-4' %}Сохранить мои ответы</button>
         {% if mine %}<button name="action" value="clear" class="btn btn-ghost btn-sm">Стереть мои ответы</button>{% endif %}
       </div>
-      <p class="text-xs text-ink-3">Ответы хранятся зашифрованными. Изменить можно в любой момент.</p>
+      <p class="mt-3 text-xs text-ink-3">Ответы хранятся зашифрованными. Изменить можно в любой момент.</p>
     </form>
   {% endif %}
 </div>

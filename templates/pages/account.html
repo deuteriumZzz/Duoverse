@@ -140,12 +140,17 @@
   </section>
   {% endif %}
 
+  {% if devices or me.account %}
+  {# settings as rows, like any app's profile: what it is and its state at a glance, the rest opens on tap (a link to #plan / #notify / #privacy opens its row) #}
+  <div class="card mt-4 divide-y divide-line overflow-hidden" data-reveal>
   {% if devices %}
-  <section class="card mt-4 p-2" data-reveal>
-    <div class="flex flex-wrap items-center justify-between gap-3 p-4">
-      <div><h2 class="font-extrabold">Устройства</h2><p class="text-sm text-ink-3">Где выполнен вход в ваш аккаунт</p></div>
-      {% if devices|length > 1 %}<form method="post" action="{% url 'logout_others' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">Выйти на всех остальных</button></form>{% endif %}
-    </div>
+  <details class="group">
+    <summary class="flex cursor-pointer list-none items-center gap-3 p-4 hover:bg-sand/40 [&::-webkit-details-marker]:hidden">
+      <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-sand">{% icon 'smartphone' 'size-5' %}</span>
+      <span class="min-w-0 flex-1"><b class="block leading-tight">Устройства</b><span class="block text-xs text-ink-3">вход выполнен на {{ devices|length }} {{ devices|length|ru_plural:"устройстве,устройствах,устройствах" }}</span></span>
+      <span class="shrink-0 text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
+    </summary>
+    {% if devices|length > 1 %}<form method="post" action="{% url 'logout_others' %}" class="px-4">{% csrf_token %}<button class="btn btn-ghost btn-sm">Выйти на всех остальных</button></form>{% endif %}
     <ul class="divide-y divide-line">
       {% for d in devices %}
       <li class="flex items-center gap-3 p-4">
@@ -158,40 +163,47 @@
       </li>
       {% endfor %}
     </ul>
-  </section>
+  </details>
   {% endif %}
 
   {% if me.account %}
-  <section id="notify" class="card mt-4 scroll-mt-24 p-6" data-reveal>
-    <div class="flex items-start gap-4">
-      <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-b-soft text-b-ink">{% icon 'bell' %}</span>
-      <div class="min-w-0 flex-1">
-        <h2 class="font-extrabold">Уведомления</h2>
-        {% if telegram_linked %}
-          <p class="mt-1 text-sm text-ink-2">Telegram подключён: напишем, когда партнёр ответит на вопрос дня или присоединится к паре, и вечером напомним о вопросе.</p>
-          <form method="post" action="{% url 'telegram_unlink' %}" class="mt-4">{% csrf_token %}<button class="btn btn-ghost btn-sm">Отключить Telegram</button></form>
-        {% else %}
-          <p class="mt-1 text-sm text-ink-2">Пока присылаем короткое письмо, когда партнёр ответил на вопрос дня или присоединился к паре.{% if telegram_bot %} В Telegram удобнее — и с вечерним напоминанием.{% endif %}</p>
-          {% if telegram_bot %}<a href="{% url 'telegram_link' %}" class="btn btn-primary btn-sm mt-4" target="_blank" rel="noopener">{% icon 'send' 'size-4' %}Подключить Telegram</a>{% endif %}
-        {% endif %}
-      </div>
+  <details id="notify" class="group scroll-mt-24" x-data x-init="if (location.hash === '#notify') $el.open = true">
+    <summary class="flex cursor-pointer list-none items-center gap-3 p-4 hover:bg-sand/40 [&::-webkit-details-marker]:hidden">
+      <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-b-soft text-b-ink">{% icon 'bell' 'size-5' %}</span>
+      <span class="min-w-0 flex-1"><b class="block leading-tight">Уведомления</b><span class="block text-xs text-ink-3">{% if telegram_linked %}Telegram и почта{% else %}письмом на почту{% endif %}</span></span>
+      <span class="shrink-0 text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
+    </summary>
+    <div class="px-4 pb-4">
+      {% if telegram_linked %}
+        <p class="text-sm text-ink-2">Telegram подключён: напишем, когда партнёр ответит на вопрос дня или присоединится к паре, и вечером напомним о вопросе.</p>
+        <form method="post" action="{% url 'telegram_unlink' %}" class="mt-3">{% csrf_token %}<button class="btn btn-ghost btn-sm">Отключить Telegram</button></form>
+      {% else %}
+        <p class="text-sm text-ink-2">Пока присылаем короткое письмо, когда партнёр ответил на вопрос дня или присоединился к паре.{% if telegram_bot %} В Telegram удобнее — и с вечерним напоминанием.{% endif %}</p>
+        {% if telegram_bot %}<a href="{% url 'telegram_link' %}" class="btn btn-primary btn-sm mt-3" target="_blank" rel="noopener">{% icon 'send' 'size-4' %}Подключить Telegram</a>{% endif %}
+      {% endif %}
     </div>
-  </section>
-  {% endif %}
+  </details>
 
-  {% if me.account %}
-  <section id="plan" class="card mt-4 flex scroll-mt-24 flex-wrap items-center gap-4 p-6" data-reveal>
-    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
-    <div class="min-w-[12rem] flex-1"><h2 class="font-extrabold">Пара+</h2>
-      <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }} — для вас обоих, кто бы из вас ни оплатил.{% else %}Квиз недели, дневник пары, тихая бронь подарков и план свидания — от {{ plus_from }} ₽ в месяц, без автосписаний. С годом открыты и все ваши разборы.{% endif %}</p></div>
-    <div class="flex flex-wrap gap-2"><a href="{% url 'pricing' %}" class="btn btn-ghost btn-sm">Все тарифы</a><form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% if plus_until %}Продлить на 30 дней{% else %}30 дней · {{ price_plus }} ₽{% endif %}</button></form><form method="post" action="{% url 'checkout' 'plus365' %}">{% csrf_token %}<button class="btn btn-primary btn-sm">Год · {{ price_plus_year }} ₽</button></form></div>
-  </section>
-  {% endif %}
+  <details id="plan" class="group scroll-mt-24" x-data x-init="if (location.hash === '#plan') $el.open = true">
+    <summary class="flex cursor-pointer list-none items-center gap-3 p-4 hover:bg-sand/40 [&::-webkit-details-marker]:hidden">
+      <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-pair-soft">{% icon 'sparkles' 'size-5' %}</span>
+      <span class="min-w-0 flex-1"><b class="block leading-tight">Пара+</b><span class="block text-xs text-ink-3">{% if plus_until %}активна до {{ plus_until|date:"j E Y" }}{% else %}не подключена · от {{ plus_from }} ₽ в месяц{% endif %}</span></span>
+      <span class="shrink-0 text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
+    </summary>
+    <div class="px-4 pb-4">
+      <p class="text-sm text-ink-2">{% if plus_until %}Для вас обоих, кто бы из вас ни оплатил.{% else %}Квиз недели, дневник пары, тихая бронь подарков и план свидания — без автосписаний. С годом открыты и все ваши разборы.{% endif %}</p>
+      <div class="mt-3 flex flex-wrap gap-2"><a href="{% url 'pricing' %}" class="btn btn-ghost btn-sm">Все тарифы</a><form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% if plus_until %}Продлить на 30 дней{% else %}30 дней · {{ price_plus }} ₽{% endif %}</button></form><form method="post" action="{% url 'checkout' 'plus365' %}">{% csrf_token %}<button class="btn btn-primary btn-sm">Год · {{ price_plus_year }} ₽</button></form></div>
+    </div>
+  </details>
 
-  {% if me.account %}
-  <section id="privacy" class="card mt-4 scroll-mt-24 p-6" data-reveal>
-    <h2 class="font-extrabold">Что мы храним и зачем</h2>
-    <ul class="mt-3 space-y-2 text-sm text-ink-2">
+  <details id="privacy" class="group scroll-mt-24" x-data x-init="if (location.hash === '#privacy') $el.open = true">
+    <summary class="flex cursor-pointer list-none items-center gap-3 p-4 hover:bg-sand/40 [&::-webkit-details-marker]:hidden">
+      <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-synergy-soft text-synergy-ink">{% icon 'lock' 'size-5' %}</span>
+      <span class="min-w-0 flex-1"><b class="block leading-tight">Мои данные</b><span class="block text-xs text-ink-3">что храним и зачем · скачать</span></span>
+      <span class="shrink-0 text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
+    </summary>
+    <div class="px-4 pb-4">
+    <ul class="space-y-2 text-sm text-ink-2">
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Даты, время и место рождения — для астрологии, чисел и таро. Хранятся зашифрованными.</li>
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Ответы анкет — для научного слоя. Зашифрованы; партнёр видит только общий вывод, не ваши ответы.</li>
       <li class="flex gap-2"><span class="text-synergy-ink">{% icon 'lock' 'size-4' %}</span>Почта — только для входа и чеков. Зашифрована, рассылок нет.</li>
@@ -202,7 +214,13 @@
       <a class="btn btn-ghost btn-sm" href="{% url 'privacy' %}">Политика обработки данных</a>
     </div>
     <p class="mt-4 text-sm text-ink-2">Вопрос о ваших данных, отзыв согласия или удаление данных партнёра, который не пользуется сервисом, — пишите на <a class="font-bold underline" href="mailto:{{ privacy_email }}">{{ privacy_email }}</a>. Ответим в течение 10 рабочих дней.</p>
-  </section>
+    </div>
+  </details>
+  {% endif %}
+  </div>
+  {% endif %}
+
+  {% if me.account %}
 
   <section class="mt-6 rounded-[var(--radius-card)] border-2 border-risk/30 p-6" data-reveal>
     <h2 class="flex items-center gap-2 font-extrabold text-risk-ink">{% icon 'shield-exclamation-point' 'size-5' %}Стереть всё</h2>

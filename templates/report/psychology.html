@@ -38,25 +38,24 @@
   </div>
   <div class="mt-6 space-y-6">
     {% for t in p.ocean %}
-    <div class="grid gap-3 md:grid-cols-[13rem_1fr_1fr] md:items-center" data-observe>
+    {# the scale and both bars at a glance; what it means for the two of you opens on tap #}
+    <div class="grid gap-x-4 gap-y-2 md:grid-cols-[13rem_1fr_auto] md:items-center" data-observe x-data="{ open: false }">
       <p class="font-bold">{{ t.title }}</p>
       <div class="space-y-2">
         <div class="side-a flex items-center gap-3"><div class="bar flex-1" style="--v: {{ t.a }}; --i: {{ forloop.counter }}"><i></i></div><span class="mono w-7 text-right text-sm">{{ t.a }}</span></div>
         <div class="side-b flex items-center gap-3"><div class="bar flex-1" style="--v: {{ t.b }}; --i: {{ forloop.counter|add:1 }}"><i></i></div><span class="mono w-7 text-right text-sm">{{ t.b }}</span></div>
       </div>
-      <div class="md:pl-4">
+      <button type="button" class="inline-flex w-fit items-center gap-1.5 text-sm font-bold text-ink-3 hover:text-ink" @click="open = !open" :aria-expanded="open"><span class="transition" :class="open && 'rotate-180'">{% icon 'chevron-down' 'size-4' %}</span>Что это значит</button>
+      <div x-show="open" x-collapse x-cloak class="md:col-span-3">
         <p class="text-sm leading-relaxed text-ink-2">{{ t.note }}</p>
         {% if t.sources %}<p class="mono mt-1.5 text-[0.68rem] text-ink-3">{% icon 'book-open' 'size-3 inline -mt-0.5' %} {{ t.sources|join:" · " }}</p>{% endif %}
-      </div>
-      {% if t.a_text or t.b_text %}
-      <details class="psy-more group md:col-span-3">
-        <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-ink-3 hover:text-ink">{% icon 'chevron-down' 'size-4 transition group-open:rotate-180' %}О каждом из вас</summary>
+        {% if t.a_text or t.b_text %}
         <div class="mt-3 grid gap-3 md:grid-cols-2">
           <p class="side-a t-bg rounded-2xl p-4 text-sm leading-relaxed text-ink-2"><b class="t-ink">{{ a.name }} · {{ t.a }}</b><br>{{ t.a_text }}</p>
           <p class="side-b t-bg rounded-2xl p-4 text-sm leading-relaxed text-ink-2"><b class="t-ink">{{ b.name }} · {{ t.b }}</b><br>{{ t.b_text }}</p>
         </div>
-      </details>
-      {% endif %}
+        {% endif %}
+      </div>
     </div>
     {% endfor %}
   </div>

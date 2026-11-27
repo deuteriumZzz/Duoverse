@@ -21,8 +21,9 @@
 <section class="mt-12">
   <h2 class="text-2xl font-extrabold" data-split>Ваши карты как <span class="marker">созвездия</span></h2>
   <p class="mt-1 text-sm text-ink-3" data-reveal>Две карты сходятся в одну — линии показывают аспекты, а точки их пересечения складываются в созвездие пары.</p>
-  <div class="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-    <div class="card sticky top-36 overflow-hidden p-4 sm:p-6"
+  {# the picture alone: the strongest aspects it draws are the first rows of «Все аспекты» below, each with its full text #}
+  <div class="mx-auto mt-6 max-w-xl">
+    <div class="card overflow-hidden p-4 sm:p-6"
          x-data="{ phase: 0, play() { this.phase = 0; setTimeout(() => this.phase = 1, 900); setTimeout(() => this.phase = 2, 2500); setTimeout(() => this.phase = 3, 2500 + {{ r.astrology.aspects|length }} * 260 + 900) } }"
          x-init="new IntersectionObserver((e, o) => { if (e[0].isIntersecting) { play(); o.disconnect() } }, { threshold: .4 }).observe($el)"
          :class="'syn-' + phase + (phase >= 1 ? ' syn-1' : '') + (phase >= 2 ? ' syn-2' : '') + (phase >= 3 ? ' syn-3' : '') + ' syn-0'">
@@ -34,20 +35,6 @@
         <button class="chip border border-line bg-paper hover:bg-sand draw-icon" @click="play()">{% icon 'rotate-ccw' 'size-3.5' %}Собрать заново</button>
       </div>
     </div>
-    <ul class="space-y-3">
-      {% for asp in r.astrology.aspects %}
-      <li class="card group tone-{{ asp.tone }} cursor-default p-4 transition hover:border-ink-3 sm:p-5" data-reveal data-hover-link="asp-{{ asp.key }}" style="--i: {{ forloop.counter }}">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="side-a t-bg t-ink chip h-8 text-sm">{{ asp.planet_a }}</span>
-          <span class="grid size-8 place-items-center rounded-full border-2 border-current bg-paper font-bold t-ink transition group-hover:rotate-[360deg] group-hover:duration-700" title="{{ asp.aspect }}">{{ asp.symbol }}</span>
-          <span class="side-b t-bg t-ink chip h-8 text-sm">{{ asp.planet_b }}</span>
-          <span class="ml-auto">{% include "components/tone_badge.html" with tone=asp.tone %}</span>
-        </div>
-        <p class="mt-3 text-sm font-bold">{{ asp.aspect|capfirst }} <span class="mono font-normal text-ink-3">· орб {{ asp.orb }}°</span></p>
-        <p class="mt-0.5 text-sm leading-relaxed text-ink-2">{{ asp.meaning }}</p>
-      </li>
-      {% endfor %}
-    </ul>
   </div>
 </section>
 
@@ -120,7 +107,7 @@
 </section>
 
 {# ─── every aspect with its reading ─── #}
-<section class="mt-14" x-data="{ sphere: 'all', minor: location.hash.startsWith('#asp-') }">
+<section class="mt-14" x-data="{ sphere: 'all', minor: location.hash.startsWith('#asp-'), more: location.hash.startsWith('#asp-') }">
   <p class="chapter" data-reveal><b>03</b>все аспекты</p>
   <h2 class="mt-2 text-2xl font-extrabold" data-split>Что каждая связь значит для вас</h2>
   <div class="scroll-x mt-4 gap-2 pb-1">
@@ -131,7 +118,7 @@
   <ul class="mt-4 space-y-2">
     {% for asp in r.astrology.all_aspects %}
     <li id="asp-{{ asp.key }}" class="card tone-{{ asp.tone }} scroll-mt-48 target:ring-2 target:ring-pair" x-data="{ open: decodeURIComponent(location.hash) === '#asp-{{ asp.key|escapejs }}' }" data-hover-link="asp-{{ asp.key }}"
-        x-show="(sphere === 'all' || {{ asp.spheres|safe_json }}.includes(sphere)) && ({% if asp.major %}true{% else %}minor{% endif %})">
+        x-show="(sphere === 'all' || {{ asp.spheres|safe_json }}.includes(sphere)) && ({% if asp.major %}true{% else %}minor{% endif %}) && (more || sphere !== 'all' || {{ forloop.counter }} <= 10)">
       <button class="flex w-full items-center gap-2 p-3 text-left sm:p-4" @click="open = !open" :aria-expanded="open">
         <span class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <span class="side-a t-bg t-ink chip h-7">{{ asp.planet_a }}</span>
@@ -146,6 +133,7 @@
     </li>
     {% endfor %}
   </ul>
+  {% if r.astrology.all_aspects|length > 10 %}<button type="button" class="btn btn-soft btn-sm mt-3" x-show="!more && sphere === 'all'" @click="more = true">Показать все {{ r.astrology.all_aspects|length }} {{ r.astrology.all_aspects|length|ru_plural:"аспект,аспекта,аспектов" }}</button>{% endif %}
 </section>
 
 {# ─── house overlays ─── #}
@@ -153,16 +141,17 @@
   <p class="chapter" data-reveal><b>04</b>наложение домов</p>
   <h2 class="mt-2 text-2xl font-extrabold" data-split>В какие сферы жизни вы попадаете друг к другу</h2>
   {% if r.astrology.overlays %}
-  <div class="mt-5 grid gap-4 md:grid-cols-2">
+  {# one row per person, the twelve houses open on tap (a «Почему так» link to #ov-… opens the right one) #}
+  <div class="mt-5 grid items-start gap-3 md:grid-cols-2">
     {% for side, title in overlay_sides %}
-    <div class="card side-{{ side }} p-5" data-reveal>
-      <p class="font-bold t-ink">{{ title }}</p>
-      <ul class="mt-3 space-y-3">
+    <details class="card group side-{{ side }}" data-reveal x-data x-init="if (location.hash.startsWith('#ov-{{ side }}-')) $el.open = true">
+      <summary class="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden"><b class="flex-1 t-ink">{{ title }}</b><span class="shrink-0 text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span></summary>
+      <ul class="space-y-3 px-4 pb-4">
         {% for o in r.astrology.overlays %}{% if o.owner == side %}
         <li id="ov-{{ o.owner }}-{{ o.planet }}:{{ o.house }}" class="flex scroll-mt-48 gap-3 rounded-xl target:bg-pair-soft"><span class="mono grid size-8 shrink-0 place-items-center rounded-lg t-bg text-xs font-bold t-ink">{{ o.house }}</span><p class="text-sm leading-relaxed text-ink-2"><b class="text-ink">{{ o.planet }}</b> · {{ o.text }}</p></li>
         {% endif %}{% endfor %}
       </ul>
-    </div>
+    </details>
     {% endfor %}
   </div>
   {% else %}

@@ -97,7 +97,10 @@
       </ul>
     </section>
 
-    <form id="add" method="post" class="card mt-8 scroll-mt-24 space-y-3 p-6">{% csrf_token %}
+    {# behind one button like «Желания»; open right away after an error or when a link points at #add #}
+    <div x-data="{ add: {{ error|yesno:'true,false' }} || location.hash === '#add' }">
+    <button type="button" class="btn btn-soft btn-sm mt-6" x-show="!add" @click="add = true">{% icon 'plus' 'size-4' %}Добавить дату</button>
+    <form id="add" method="post" class="card mt-8 scroll-mt-24 space-y-3 p-6" x-show="add" x-cloak>{% csrf_token %}
       <h2 class="text-lg font-extrabold">Добавить дату</h2>
       {% if error %}<p class="rounded-2xl bg-risk-soft p-3 text-sm text-risk-ink" role="alert">Проверьте название и дату: дата — не дальше чем через год.</p>{% endif %}
       <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -107,6 +110,7 @@
       <input name="note" maxlength="200" placeholder="Заметка для вас двоих — по желанию" class="field" aria-label="Заметка">
       <button class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}Добавить</button>
     </form>
+    </div>
     <p class="mt-4 text-xs text-ink-3">Напоминаем за неделю и за день, о дне рождения — только партнёру, чтобы сюрприз остался сюрпризом. 23 февраля и 8 марта показываем, но не напоминаем. Прошедшие даты повторяются каждый год. Всё хранится зашифрованным.</p>
   {% endif %}
 </div>

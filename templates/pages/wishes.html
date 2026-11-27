@@ -66,7 +66,10 @@
       {% endfor %}
     </ul>
     {% endif %}
-    <form method="post" class="card mt-3 space-y-3 p-5">{% csrf_token %}
+    {# the form waits behind one button, the way apps add things; it stays open when there was an error to fix #}
+    <div x-data="{ add: {{ error|yesno:'true,false' }} }">
+    <button type="button" class="btn btn-soft btn-sm mt-3" x-show="!add" @click="add = true; $nextTick(() => $refs.title.focus())">{% icon 'plus' 'size-4' %}Добавить желание</button>
+    <form method="post" class="card mt-3 space-y-3 p-5" x-show="add" x-cloak>{% csrf_token %}
       {% if error %}<p class="rounded-2xl bg-risk-soft p-3 text-sm text-risk-ink" role="alert">Проверьте название и ссылку: ссылка должна начинаться с https://</p>{% endif %}
       <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Что это">
         {% for key, label in kinds.items %}
@@ -74,11 +77,12 @@
           <input type="radio" name="kind" value="{{ key }}" class="sr-only" {% if forloop.first %}checked{% endif %}>{{ label }}</label>
         {% endfor %}
       </div>
-      <input name="title" maxlength="80" required placeholder="Что бы вы хотели? Например, мастер-класс по керамике" class="field" aria-label="Желание">
+      <input name="title" maxlength="80" required placeholder="Что бы вы хотели? Например, мастер-класс по керамике" class="field" aria-label="Желание" x-ref="title">
       <input name="link" type="url" maxlength="300" placeholder="Ссылка — по желанию" class="field" aria-label="Ссылка">
       <input name="note" maxlength="200" placeholder="Подсказка: размер, цвет, где продаётся" class="field" aria-label="Подсказка">
       <button class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}Добавить в карту</button>
     </form>
+    </div>
   </section>
 
   <section id="dreams" class="mt-10 scroll-mt-24" aria-labelledby="dreams-title">

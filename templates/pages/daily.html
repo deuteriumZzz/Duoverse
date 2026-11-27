@@ -23,8 +23,9 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
   </div>
 
   {% if pair %}{# «Как вы сегодня?» — one tap, as weather; the partner sees it here and on «Главная» (views.MOODS) #}
-  <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2" x-data="{ mood: '{{ my_mood }}', async pick(m) { const was = this.mood; this.mood = was === m ? '' : m; try { await postForm('{% url 'daily_mood' %}', { mood: this.mood }) } catch (e) { this.mood = was; toast('Не получилось сохранить — попробуйте ещё раз') } } }">
-    <span class="text-sm font-bold text-ink-2">Как вы сегодня?</span>
+  <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2" x-data="{ mood: '{{ my_mood }}', words: { {% for key, icon, word in moods %}'{{ key }}': '{{ word }}'{% if not forloop.last %}, {% endif %}{% endfor %} }, async pick(m) { const was = this.mood; this.mood = was === m ? '' : m; try { await postForm('{% url 'daily_mood' %}', { mood: this.mood }) } catch (e) { this.mood = was; toast('Не получилось сохранить — попробуйте ещё раз') } } }">
+    {# the icons alone don't say which is which: once picked, the word is said here #}
+    <span class="text-sm font-bold text-ink-2" x-text="mood ? 'Сегодня — ' + words[mood] : 'Как вы сегодня?'">Как вы сегодня?</span>
     <div class="flex gap-1.5" role="group" aria-label="Настроение сегодня">
       {% for key, icon, word in moods %}<button type="button" class="grid size-9 place-items-center rounded-full border-2 transition" :class="mood === '{{ key }}' ? 'border-ink bg-pair text-ink' : 'border-line bg-paper text-ink-2 hover:border-ink'" @click="pick('{{ key }}')" :aria-pressed="mood === '{{ key }}'" aria-label="{{ word|capfirst }}" title="{{ word|capfirst }}">{% icon icon 'size-4' %}</button>{% endfor %}
     </div>
