@@ -62,7 +62,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "sofa"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -130,7 +131,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "hand-heart"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -198,7 +200,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "swords"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -266,7 +269,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "wallet"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -334,7 +338,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "rocket"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -402,7 +407,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "heart"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -470,7 +476,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "users"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -538,7 +545,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "shield-check"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -606,7 +614,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "scale"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -674,7 +683,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "sprout"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -742,7 +752,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "messages-square"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -810,7 +821,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "magnet"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -880,7 +892,8 @@
       "Чтобы не стало обязанностью"
      ]
     }
-   ]
+   ],
+   "icon": "calendar-heart"
   }
  },
  {
@@ -948,7 +961,8 @@
       "Только впечатления"
      ]
     }
-   ]
+   ],
+   "icon": "plane"
   }
  },
  {
@@ -1016,7 +1030,8 @@
       "Злюсь, но молчу"
      ]
     }
-   ]
+   ],
+   "icon": "spray-can"
   }
  },
  {
@@ -1084,7 +1099,8 @@
       "Помочь подготовиться"
      ]
     }
-   ]
+   ],
+   "icon": "heart-handshake"
   }
  },
  {
@@ -1152,7 +1168,8 @@
       "Когда захочется"
      ]
     }
-   ]
+   ],
+   "icon": "baby"
   }
  },
  {
@@ -1220,7 +1237,8 @@
       "Сделанное за меня дело"
      ]
     }
-   ]
+   ],
+   "icon": "gift"
   }
  },
  {
@@ -1288,7 +1306,8 @@
       "Не уверен(а), что восстанавливается"
      ]
     }
-   ]
+   ],
+   "icon": "fence"
   }
  },
  {
@@ -1356,7 +1375,8 @@
       "Мы и так мало сидим"
      ]
     }
-   ]
+   ],
+   "icon": "smartphone"
   }
  },
  {
@@ -1424,7 +1444,8 @@
       "Не очень важно"
      ]
     }
-   ]
+   ],
+   "icon": "heart-pulse"
   }
  },
  {
@@ -1492,7 +1513,8 @@
       "Время вместе"
      ]
     }
-   ]
+   ],
+   "icon": "party-popper"
   }
  },
  {
@@ -1560,7 +1582,8 @@
       "Спортом"
      ]
     }
-   ]
+   ],
+   "icon": "briefcase-business"
   }
  },
  {
@@ -1628,7 +1651,8 @@
       "Обычные вечера вдвоём"
      ]
     }
-   ]
+   ],
+   "icon": "hourglass"
   }
  },
  {
@@ -1694,7 +1718,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "utensils"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -1762,7 +1787,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "drama"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -1830,7 +1856,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "sun-moon"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -1898,7 +1925,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "coffee"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -1966,7 +1994,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "clapperboard"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2034,7 +2063,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "map-pin"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2102,7 +2132,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "battery-charging"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2170,7 +2201,8 @@
      ]
     }
    ],
-   "level": 1
+   "level": 1,
+   "icon": "sparkles"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2238,7 +2270,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "receipt"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2306,7 +2339,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "piggy-bank"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2374,7 +2408,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "battery-low"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2442,7 +2477,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "handshake"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2510,7 +2546,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "door-closed"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2578,7 +2615,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "users-round"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2646,7 +2684,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "toy-brick"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2714,7 +2753,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "trophy"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2782,7 +2822,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "message-circle-x"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2850,7 +2891,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "anchor"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2918,7 +2960,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "house"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2986,7 +3029,8 @@
      ]
     }
    ],
-   "level": 2
+   "level": 2,
+   "icon": "refresh-cw"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3054,7 +3098,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "ghost"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3122,7 +3167,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "flame"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3190,7 +3236,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "bandage"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3258,7 +3305,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "mountain"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3326,7 +3374,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "rewind"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3394,7 +3443,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "key-round"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3462,7 +3512,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "moon-star"
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -3530,7 +3581,8 @@
      ]
     }
    ],
-   "level": 3
+   "level": 3,
+   "icon": "infinity"
   },
   "evidence_level": "scientific",
   "status": "published"

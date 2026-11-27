@@ -61,6 +61,9 @@ GLYPHS = {
     "star": f'<path d="M16 4l3.6 7.4 8.1 1.2-5.9 5.7 1.4 8L16 22.5l-7.2 3.8 1.4-8-5.9-5.7 8.1-1.2z" fill="{PAIR}" {INK}/>',
     "house": f'<path d="M8 13.5V26.5h16V13.5" fill="{LILAC}" {INK}/><path d="M4.5 15 16 5.5 27.5 15" fill="none" {INK}/>'
     f'<rect x="13.5" y="18.5" width="5" height="8" rx="1.2" fill="{PAPER}" {INK}/>',
+    # «Библиотека»: a shelf of three books — quizzes, dates, the diary
+    "books": f'<rect x="4.5" y="6" width="6.5" height="21" rx="1.6" fill="{A}" {INK}/><rect x="11" y="9" width="6.5" height="18" rx="1.6" fill="{B}" {INK}/>'
+    f'<path d="m19 10.6 5.8-1.6 4.2 15.9-5.8 1.6z" fill="{PAIR}" {INK}/><path d="M7.75 10v3M14.25 12.5v3" fill="none" {INK}/>',
 }
 
 

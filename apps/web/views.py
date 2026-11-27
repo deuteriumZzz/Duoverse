@@ -899,6 +899,7 @@ QUIZ_TOPICS = (
     ("life", "Люди и планы", ("people", "plans", "growth")),
 )
 TOPIC_OF = {sphere: key for key, _, spheres in QUIZ_TOPICS for sphere in spheres}
+TOPIC_TINT = {"talk": "bg-b-soft", "feel": "bg-lilac-soft", "close": "bg-a-soft", "home": "bg-sage-soft", "life": "bg-pair-soft"}
 
 
 def library(request: HttpRequest) -> HttpResponse:
@@ -928,7 +929,8 @@ def library(request: HttpRequest) -> HttpResponse:
         done = len(by) == 2
         quizzes.append({
             "key": q["key"], "title": q["title"], "sphere": titles.get(q.get("sphere", ""), ""), "open": level <= stage.n,
-            "topic": TOPIC_OF.get(q.get("sphere", ""), ""),
+            "topic": TOPIC_OF.get(q.get("sphere", ""), ""), "icon": q.get("icon", "sparkles"),
+            "tint": TOPIC_TINT.get(TOPIC_OF.get(q.get("sphere", ""), ""), "bg-lilac-soft"),
             "opens_at": pair_stages.STAGES[level - 1].title, "done": done, "mine": side in by, "this_week": bool(week) and week["key"] == q["key"],
             "match": round(100 * sum(x == y for x, y in zip(by["a"], by["b"], strict=False)) / len(q["items"])) if done else None,
         })  # fmt: skip
