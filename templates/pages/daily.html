@@ -229,9 +229,10 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
     <div class="absolute inset-0 bg-ink/40" @click="sheet = null" x-show="sheet" x-transition.opacity.duration.300ms></div>
     <div class="absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-t-2 border-ink bg-milk px-3 pb-8 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[40rem] sm:-translate-x-1/2 sm:rounded-[1.75rem] sm:border-2"
          x-show="sheet" x-transition:enter="transition duration-500 ease-[var(--ease-out)]" x-transition:enter-start="translate-y-full" x-transition:leave="transition duration-200" x-transition:leave-end="translate-y-full">
-      <div class="sticky top-0 z-10 -mx-3 mb-2 flex items-center justify-center bg-milk/90 py-2.5 backdrop-blur">
+      {# the handle row is as tall as the close button, so the button sits inside the sheet, clear of its rounded edge #}
+      <div class="sticky top-0 z-10 -mx-3 mb-2 flex h-14 items-center justify-center bg-milk/90 backdrop-blur">
         <span class="h-1.5 w-10 rounded-full bg-line"></span>
-        <button type="button" class="btn btn-ghost btn-icon btn-sm absolute right-2" @click="sheet = null" aria-label="Закрыть">{% icon 'x' 'size-4' %}</button>
+        <button type="button" class="dp-nav absolute right-3 top-1/2 -translate-y-1/2" @click="sheet = null" aria-label="Закрыть">{% icon 'x' 'size-5' %}</button>
       </div>
       <div x-show="sheet === 'week'">
   {# «Неделя пары»: seven steps from the report, marked by each partner (apps/compatibility/week.py) #}

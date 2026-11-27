@@ -415,6 +415,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
 
 /* ───────── questionnaire scenes (components/quiz_scenes.html): --v is the answer, 1 → 0 … 5 → 1 ───────── */
 .scene { stroke: var(--color-ink); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+/* the two role cards sit side by side on a phone; the one whose «Почему так» is open takes the whole row to be readable */
+@media (max-width: 1023px) { .roles > article:has(button[aria-expanded="true"]) { grid-column: 1 / -1; } }
 /* gender chips (gender_pick.html): the sign of the chosen one pops */
 .g-pick.is-on svg { animation: dp-pop .45s var(--ease-spring); }
 @media (prefers-reduced-motion: reduce) { .g-pick svg { animation: none !important; } }
