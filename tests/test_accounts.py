@@ -668,7 +668,9 @@ def test_a_guest_has_one_home_and_today_says_it_is_a_sample():
     visitor = Client()
     assert visitor.get("/pair/")["Location"] == "/#pair"  # no pair yet: home tells what a couple gets
     home = visitor.get("/").content.decode()
-    assert 'id="pair"' in home and "Ваше пространство" in home and "Как это <span" in home and "Позовите партнёра" in home  # not only a report
+    assert (
+        'id="pair"' in home and "Ваше пространство" in home and "Как это <span" in home and "Позовите партнёра" in home
+    )  # not only a report
     tabs = home.split('aria-label="Нижнее меню"')[1].split("</nav>")[0]
     assert tabs.count("<li>") == 4 and "Вдвоём" not in tabs  # Главная, Сегодня, Отчёт, Профиль — the same four as a couple's
     assert 'href="/report/"' in tabs  # no report of your own yet: «Отчёт» is the sample
@@ -866,7 +868,15 @@ def test_a_pair_keeps_what_it_does_and_each_sees_the_other():
     from apps.compatibility.models import Person
     from apps.psychology.domain.instruments import CORE_IDS
 
-    wizard = {"mode": "quick", "a_name": "Варя", "a_gender": "f", "a_date": "1996-03-14", "b_name": "Лёва", "b_gender": "m", "b_date": "1994-09-02"}
+    wizard = {
+        "mode": "quick",
+        "a_name": "Варя",
+        "a_gender": "f",
+        "a_date": "1996-03-14",
+        "b_name": "Лёва",
+        "b_gender": "m",
+        "b_date": "1994-09-02",
+    }
     assert Client().post("/new/", wizard).status_code == 302
     assert dict(Person.objects.filter(name__in=["Варя", "Лёва"]).values_list("name", "gender")) == {"Варя": "f", "Лёва": "m"}
 

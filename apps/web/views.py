@@ -363,9 +363,16 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
             (d.get("psych", False), "Анкеты обоих", "научный слой: привязанность, конфликт, тени", links["quiz_url"]),
             # the optional 38: shown once the core is in, so the step is always something one can do
             *(
-                [(d.get("psych_full", False), "Уточнить психологию", "ещё 38 вопросов — характер и привязанность точнее",
-                  links["quiz_url"] + "?more=1")]
-                if d.get("psych") else []
+                [
+                    (
+                        d.get("psych_full", False),
+                        "Уточнить психологию",
+                        "ещё 38 вопросов — характер и привязанность точнее",
+                        links["quiz_url"] + "?more=1",
+                    )
+                ]
+                if d.get("psych")
+                else []
             ),
         ]
     }
@@ -1923,7 +1930,9 @@ def join(request: HttpRequest, code: str) -> HttpResponse:
             if _save_answers(request, pair.b) is None:
                 return HttpResponse("answers incomplete", status=422)
             return redirect(reverse("generating") + f"?r={request_report(pair).id}")
-        return render(request, "pages/quiz.html", {**_quiz_ctx(pair.b.gender), "person": pair.b, "submit_url": request.path, "joining": True})
+        return render(
+            request, "pages/quiz.html", {**_quiz_ctx(pair.b.gender), "person": pair.b, "submit_url": request.path, "joining": True}
+        )
     stored = latest_ready(pair)
     return redirect(reverse("stored_report", args=[stored.id]) if stored else reverse("generating") + f"?r={request_report(pair).id}")
 

@@ -86,5 +86,7 @@ def test_answering_sometimes_throughout_moves_nothing():
     r = psy.score(neutral, neutral)
     assert r.score == 70 and set(r.categories.values()) == {65}
     assert not neutral.attachment.startswith(("Тревожн", "Избегающ"))
-    contempt = psy.profile({k: (5 if ITEMS[k].scale == "contempt" and not ITEMS[k].reverse else 1 if ITEMS[k].scale == "contempt" else 3) for k in ITEMS})
+    contempt = psy.profile(
+        {k: (5 if ITEMS[k].scale == "contempt" and not ITEMS[k].reverse else 1 if ITEMS[k].scale == "contempt" else 3) for k in ITEMS}
+    )
     assert psy.score(contempt, neutral).categories["conflict"] < 65  # contempt above the middle costs

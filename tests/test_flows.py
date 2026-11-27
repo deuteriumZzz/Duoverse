@@ -2,6 +2,7 @@
 
 import json
 import re
+from pathlib import Path
 
 import pytest
 from django.core import mail
@@ -255,12 +256,22 @@ def test_the_pdf_is_the_whole_report_as_a_document(client):
     """What a paid report holds, in one printable document: every chapter, every sphere with its question, and colours
     that survive printing (the film-grain overlay would turn each page into a bitmap, so print hides it)."""
     page = client.get("/report/pdf/").content.decode()
-    for chapter in ("Главное о вашей паре", "Сферы вашей жизни", "План пары", "Астрология", "Числа", "Таро", "Психология",
-                    "Вопросы друг другу", "Как устроен разбор", "Источники"):
+    for chapter in (
+        "Главное о вашей паре",
+        "Сферы вашей жизни",
+        "План пары",
+        "Астрология",
+        "Числа",
+        "Таро",
+        "Психология",
+        "Вопросы друг другу",
+        "Как устроен разбор",
+        "Источники",
+    ):
         assert chapter in page, chapter
     assert page.count("Вопрос друг другу:") == 13 and "Что получается" in page and "Упражнение" in page
     assert "print-color-adjust: exact" in page
-    assert "body::after { display: none; }" in open("static/src/app.css").read()
+    assert "body::after { display: none; }" in Path("static/src/app.css").read_text(encoding="utf-8")
 
 
 def test_a_report_saved_by_an_older_algorithm_is_recalculated_on_read_in_place():

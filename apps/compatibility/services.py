@@ -278,9 +278,9 @@ def request_report(pair: Pair) -> StoredReport:
 def report_of(stored: StoredReport) -> Report:
     """The saved report. One made by an older algorithm (older texts, older rules) is recalculated on first read, in place:
     the links stay, and every pair gets today's wording — unless the pair's data changed since, then a new report is due."""
-    if stored.algorithm_version != settings.ALGORITHM_VERSION and stored.status == StoredReport.Status.READY:
-        if (fresh := _refreshed(stored)) is not None:
-            return fresh
+    stale = stored.algorithm_version != settings.ALGORITHM_VERSION and stored.status == StoredReport.Status.READY
+    if stale and (fresh := _refreshed(stored)) is not None:
+        return fresh
     return Report.model_validate(stored.snapshot)
 
 

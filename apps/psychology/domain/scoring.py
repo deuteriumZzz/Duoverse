@@ -97,7 +97,13 @@ def score(a: PsychProfile, b: PsychProfile) -> ScoreResult:
     # so answering «иногда» throughout no longer reads as a problem. The pursue–withdraw pairing keeps its own weight.
     styles = {a.attachment.split(",")[0], b.attachment.split(",")[0]}
     sec = sum(3 - x for p in (a, b) for x in (p.anxiety, p.avoidance)) / 4  # −2 … +2
-    why = "надёжная база" if a.secure and b.secure else "надёжный партнёр стабилизирует" if a.secure or b.secure else "важно проговаривать потребности"
+    why = (
+        "надёжная база"
+        if a.secure and b.secure
+        else "надёжный партнёр стабилизирует"
+        if a.secure or b.secure
+        else "важно проговаривать потребности"
+    )
     add(sec * 6, {"emotions": sec * 7, "conflict": sec * 4}, "Привязанность", f"{a.attachment.lower()} · {b.attachment.lower()} — {why}")
     if styles == {"Тревожный", "Избегающий"}:
         add(-6, {"emotions": -8, "conflict": -6}, "Привязанность", "тревожный · избегающий — риск цикла «догоняю — убегаю»")
