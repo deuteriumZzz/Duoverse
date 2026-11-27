@@ -458,6 +458,28 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
 .tree-scene .wet { opacity: 0; }
 .tree-scene.watering .wet { animation: tree-wet 2.4s ease-out 2.1s both; }
 @keyframes tree-wet { 40% { opacity: .55; } 100% { opacity: .22; } }
+/* the season in motion: petals in spring, leaves in autumn, snow in winter come down slowly (still, under reduced motion) */
+.tree-scene .fall { animation: tree-fall var(--t, 7s) linear infinite; animation-delay: calc(var(--k, 0) * -1.7s); }
+@keyframes tree-fall { 0% { translate: 0 0; opacity: 0; } 12% { opacity: 1; } 40% { translate: 8px calc(var(--fy, 64px) * .4); } 70% { translate: -5px calc(var(--fy, 64px) * .7); } 88% { opacity: 1; } 100% { translate: 4px var(--fy, 64px); opacity: 0; } }
+/* the time of day on this device (treeScene sets data-time): the sun walks from a low east to a low orange west, the
+   sky changes with the hour, the ground is lit to match, and at night the moon, stars, lanterns and fireflies shine */
+.tree-scene .sun { transition: translate 1.2s var(--ease-out), opacity 1.2s; }
+.tree-scene[data-time="morning"] .sun { translate: -214px 40px; }
+.tree-scene[data-time="evening"] .sun { translate: 6px 52px; --sun: var(--color-a); }
+.tree-scene[data-time="night"] .sun { opacity: 0; }
+.tree-scene .sky { opacity: 0; transition: opacity 1.5s; }
+.tree-scene[data-time="morning"] .sky-morning, .tree-scene[data-time="evening"] .sky-evening, .tree-scene[data-time="night"] .sky-night { opacity: 1; }
+.tree-scene[data-time="morning"] .lit { filter: url(#tree-morning); }
+.tree-scene[data-time="evening"] .lit { filter: url(#tree-evening); }
+.tree-scene[data-time="night"] .lit { filter: url(#tree-night); }
+.tree-scene :is(.night, .glow) { opacity: 0; transition: opacity 1.2s; pointer-events: none; }
+.tree-scene[data-time="night"] :is(.night, .glow) { opacity: 1; }
+.tree-scene[data-time="evening"] .glow { opacity: .75; }
+.tree-scene .star { animation: tree-twinkle 2.6s ease-in-out infinite alternate; animation-delay: calc(var(--k, 0) * -.8s); }
+@keyframes tree-twinkle { from { opacity: .3; } to { opacity: 1; } }
+.tree-scene .bulb { animation: tree-twinkle 1.4s ease-in-out infinite alternate; animation-delay: calc(var(--k, 0) * -.35s); }
+.tree-scene .firefly { animation: tree-firefly 4.5s ease-in-out infinite alternate; animation-delay: calc(var(--k, 0) * -1.1s); }
+@keyframes tree-firefly { 0% { translate: 0 0; opacity: .2; } 35% { opacity: 1; } 60% { translate: 7px -9px; opacity: .5; } 100% { translate: -5px -16px; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .tree-scene * { animation: none !important; transition: none !important; } }
 @media (prefers-reduced-motion: reduce) { .scene * { transition: none !important; } }
 
@@ -513,7 +535,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 90; pointer-event
   .dp-chip { width: 7.6em; text-align: center; font-variant-numeric: tabular-nums; cursor: pointer; }
   .dp-chip::placeholder { color: var(--t-ink); opacity: .45; }
 
-  .dp-pop { position: absolute; z-index: 40; top: calc(100% + .6rem); left: 0; width: min(20.5rem, calc(100vw - 1.5rem)); padding: .8rem; border-radius: 1.4rem;
+  .dp-pop { white-space: normal; position: absolute; z-index: 40; top: calc(100% + .6rem); left: 0; width: min(20.5rem, calc(100vw - 1.5rem)); padding: .8rem; border-radius: 1.4rem;
     background: var(--color-paper); border: 1px solid var(--color-line); transform-origin: 1.5rem top;
     box-shadow: 0 1px 0 rgb(255 255 255 / .7) inset, 0 2px 6px -2px rgb(60 40 20 / .08), 0 28px 60px -24px rgb(60 40 20 / .32);
     font: 600 .875rem/1.4 var(--font-sans); letter-spacing: 0; color: var(--color-ink); text-align: left; white-space: normal; vertical-align: top; }

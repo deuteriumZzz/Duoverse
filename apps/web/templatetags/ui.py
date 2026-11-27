@@ -377,6 +377,18 @@ def gender_verb(gender: str, forms: str) -> str:
     return inflect("{" + forms + "}", gender or "")
 
 
+@register.filter(name="ru_plural")
+def ru_plural(n, forms: str) -> str:
+    """{{ n|ru_plural:"день,дня,дней" }} — the word that goes with the number: 1 день, 2 дня, 5 дней, 21 день."""
+    from apps.compatibility.dates import plural
+
+    one, few, many = forms.split(",")
+    try:
+        return plural(int(n), one, few, many)
+    except (TypeError, ValueError):
+        return many
+
+
 @register.filter(name="agree")
 def agree_filter(text: str, gender: str) -> str:
     """{{ question|agree:me_g }} — «ты хотел(а)» becomes «ты хотела» for her, «ты хотел» for him, stays as is when unknown."""

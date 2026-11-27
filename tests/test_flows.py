@@ -13,7 +13,7 @@ from apps.knowledge.models import KnowledgeBlock
 
 pytestmark = pytest.mark.django_db(transaction=True)  # on_commit hooks fire, Celery runs eagerly
 
-TABS = ["", "astrology/", "psychology/", "numbers/", "tarot/", "habits/", "share/", "pdf/", "weights/", "razbor/"]
+TABS = ["", "astrology/", "psychology/", "numbers/", "tarot/", "share/", "pdf/", "weights/", "razbor/"]
 
 
 def sign_in(client: Client, email: str = "anya@example.com", next_url: str = "") -> str:

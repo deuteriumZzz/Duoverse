@@ -42,6 +42,45 @@ AVATARS: dict[str, tuple[str, str, str]] = {
             f'<path d="M30 42h4l-2 2Z" fill="{INK}"/><path d="M10 40h8M10 45h8M46 40h8M46 45h8" fill="none"/></g>'),
     "key": ("Ключ", "#ece6ff", f'<g {_S}><circle cx="22" cy="24" r="10" fill="{SUN}"/><circle cx="22" cy="24" r="3.5" fill="{CREAM}"/>'
             f'<path d="M29 31l20 20M42 44l-5 5M47 49l-4 4" fill="none"/></g>'),
+    "heart": ("Сердце", "#ffe6da", f'<g {_S}><path d="M32 50S12 38 12 24a10 10 0 0 1 20-4 10 10 0 0 1 20 4c0 14-20 26-20 26Z" fill="{CORAL}"/>'
+              f'<path d="M19 23a6 6 0 0 1 5-5" fill="none" stroke="{CREAM}"/></g>'),
+    "leaf": ("Лист", "#e3efe6", f'<g {_S}><path d="M14 50C14 26 28 14 50 14c0 22-12 36-36 36Z" fill="{SAGE}"/>'
+             f'<path d="M14 50 38 26M26 38h-7M32 32v-7" fill="none"/></g>'),
+    "cherry": ("Вишни", "#ffe6da", f'<g {_S}><path d="M21 38c2-12 8-19 14-24M43 38c-1-10-3-17-8-24" fill="none"/>'
+               f'<path d="M35 14c6-5 12-4 16 1-5 4-11 4-16-1Z" fill="{SAGE}"/><circle cx="21" cy="44" r="8" fill="{CORAL}"/>'
+               f'<circle cx="43" cy="44" r="8" fill="{CORAL}"/><path d="M17 41a4 4 0 0 1 3-3" fill="none" stroke="{CREAM}"/></g>'),
+    "cup": ("Чашка", "#fbf0c9", f'<g {_S}><path d="M14 26h30v12a12 12 0 0 1-12 12h-6a12 12 0 0 1-12-12Z" fill="{CORAL}"/>'
+            f'<path d="M44 30h3a6 6 0 0 1 0 12h-4M10 55h38M22 19c-2-3 2-5 0-8M30 19c-2-3 2-5 0-8M38 19c-2-3 2-5 0-8" fill="none"/></g>'),
+    "book": ("Книга", "#e1e7ff", f'<g {_S}><path d="M10 18c8-3 15-3 22 2v30c-7-5-14-5-22-2Z" fill="{CREAM}"/>'
+             f'<path d="M54 18c-8-3-15-3-22 2v30c7-5 14-5 22-2Z" fill="{BLUE}"/><path d="M16 27c4-1 8-1 11 1M16 34c4-1 8-1 11 1" fill="none"/></g>'),
+    "note": ("Нота", "#ece6ff", f'<g {_S}><path d="M26 45V17l22-6v29" fill="none"/><path d="M26 17l22-6v7l-22 6Z" fill="{INK}"/>'
+             f'<ellipse cx="20" cy="45" rx="7" ry="5.5" fill="{LILAC}"/><ellipse cx="42" cy="40" rx="7" ry="5.5" fill="{LILAC}"/></g>'),
+    "gem": ("Кристалл", "#ece6ff", f'<g {_S}><path d="M12 26 22 14h20l10 12-20 26Z" fill="{LILAC}"/>'
+            f'<path d="M12 26h40M22 14l4 12 6 26 6-26 4-12" fill="none"/></g>'),
+    "crown": ("Корона", "#fbf0c9", f'<g {_S}><path d="M13 46 10 20l12 10 10-16 10 16 12-10-3 26Z" fill="{SUN}"/>'
+              f'<path d="M13 46h38" fill="none"/><circle cx="32" cy="37" r="3" fill="{CORAL}"/></g>'),
+    "rainbow": ("Радуга", "#fff1d6", f'<g {_S}><path d="M8 46a24 24 0 0 1 48 0Z" fill="{CORAL}"/><path d="M14 46a18 18 0 0 1 36 0Z" fill="{SUN}"/>'
+                f'<path d="M20 46a12 12 0 0 1 24 0Z" fill="{SAGE}"/><path d="M26 46a6 6 0 0 1 12 0Z" fill="{CREAM}"/></g>'),
+    "balloon": ("Шарик", "#ffe6da", f'<g {_S}><path d="M32 42c-9 0-15-8-15-17a15 15 0 0 1 30 0c0 9-6 17-15 17Z" fill="{CORAL}"/>'
+                f'<path d="M30 42h4l-2 4Z" fill="{CORAL}"/><path d="M32 46c-3 4 3 6 0 10" fill="none"/><path d="M24 20a8 8 0 0 1 5-5" fill="none" stroke="{CREAM}"/></g>'),
+    "plane": ("Самолётик", "#e1e7ff", f'<g {_S}><path d="M10 30 54 12 42 52 30 38Z" fill="{CREAM}"/><path d="M30 38 54 12M30 38v12l6-7" fill="none"/></g>'),
+    "fish": ("Рыбка", "#e1e7ff", f'<g {_S}><path d="M44 32l10-8v16Z" fill="{BLUE}"/><path d="M10 32c8-12 22-14 34 0-12 14-26 12-34 0Z" fill="{BLUE}"/>'
+             f'<circle cx="20" cy="30" r="2" fill="{INK}" stroke="none"/><path d="M28 25c3 4 3 10 0 14" fill="none" stroke="{CREAM}"/></g>'),
+    "butterfly": ("Бабочка", "#ece6ff", f'<g {_S}><path d="M32 30C26 14 10 12 10 24c0 8 10 12 22 8Z" fill="{LILAC}"/><path d="M32 30C38 14 54 12 54 24c0 8-10 12-22 8Z" fill="{LILAC}"/>'
+                  f'<path d="M32 34c-6 8-16 12-18 6s8-8 18-6Z" fill="{CORAL}"/><path d="M32 34c6 8 16 12 18 6s-8-8-18-6Z" fill="{CORAL}"/>'
+                  f'<path d="M32 22v24M32 22l-4-8M32 22l4-8" fill="none"/></g>'),
+    "mushroom": ("Гриб", "#fff1d6", f'<g {_S}><path d="M24 32h16v14a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6Z" fill="{CREAM}"/><path d="M10 32a22 18 0 0 1 44 0Z" fill="{CORAL}"/>'
+                 f'<circle cx="22" cy="25" r="3" fill="{CREAM}"/><circle cx="35" cy="20" r="3.5" fill="{CREAM}"/><circle cx="45" cy="27" r="2.5" fill="{CREAM}"/></g>'),
+    "cactus": ("Кактус", "#e3efe6", f'<g {_S}><path d="M26 40h-5a5 5 0 0 1-5-5v-9a3 3 0 0 1 6 0v8h4Z" fill="{SAGE}"/><path d="M38 34h4v-9a3 3 0 0 1 6 0v10a5 5 0 0 1-5 5h-5Z" fill="{SAGE}"/>'
+               f'<path d="M26 50V18a6 6 0 0 1 12 0v32Z" fill="{SAGE}"/><path d="M19 50h26l-3 8H22Z" fill="{CORAL}"/></g>'),
+    "fox": ("Лиса", "#fff1d6", f'<g {_S}><path d="M12 16l10 7h20l10-7-2 20c-2 10-10 16-18 16s-16-6-18-16Z" fill="{CORAL}"/>'
+            f'<path d="M15 36c5 1 11 4 17 12 6-8 12-11 17-12-2 10-9 16-17 16s-15-6-17-16Z" fill="{CREAM}"/>'
+            f'<circle cx="25" cy="32" r="2" fill="{INK}" stroke="none"/><circle cx="39" cy="32" r="2" fill="{INK}" stroke="none"/><circle cx="32" cy="47" r="2.4" fill="{INK}" stroke="none"/></g>'),
+    "comet": ("Комета", "#ece6ff", f'<g {_S}><path d="M10 52 30 32M16 56 33 38M8 44l20-16" fill="none" stroke="{BLUE}"/><circle cx="39" cy="25" r="10" fill="{SUN}"/>'
+              f'<path d="M51 44v6M48 47h6M50 12v4M48 14h4" fill="none"/></g>'),
+    "snowflake": ("Снежинка", "#e1e7ff", f'<g {_S}>' + "".join(
+        f'<path d="M32 9v46M32 17l-5-5M32 17l5-5M32 47l-5 5M32 47l5 5" transform="rotate({a} 32 32)" fill="none" stroke="{BLUE}"/>' for a in (0, 60, 120)
+    ) + f'<circle cx="32" cy="32" r="4" fill="{CREAM}"/></g>'),
 }  # fmt: skip
 DEFAULT = "sun"
 

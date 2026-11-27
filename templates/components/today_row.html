@@ -1,0 +1,16 @@
+{% comment %}today_tile as one row, for the numbered list on «Сегодня»: glyph, title (and the sphere it is about), both
+partners' marks, ›. key opens the bottom sheet of that name; href goes to a page instead.{% endcomment %}
+<{% if href %}a href="{{ href }}"{% else %}button type="button" @click="sheet = '{{ key }}'"{% endif %} class="card flex w-full items-center gap-3 p-3 pr-4 text-left transition hover:-translate-y-0.5 hover:border-ink">
+  <span class="grid size-11 shrink-0 place-items-center rounded-2xl {{ bg }}">{% glyph g 'size-7' %}</span>
+  <span class="min-w-0 flex-1"><b class="block leading-tight">{{ title }}</b>{% if why %}<span class="block truncate text-xs text-ink-3">про «{{ why }}»</span>{% endif %}</span>
+  <span class="flex shrink-0 items-center gap-1.5 text-xs font-bold {% if mine and partner %}text-synergy-ink{% else %}text-ink-3{% endif %}">
+    {% if solo %}{{ sub|default:"открыть" }}{% else %}
+    <span class="flex -space-x-1.5" aria-hidden="true">
+      <span class="grid size-5 place-items-center rounded-full border-2 border-paper text-[0.6rem] font-extrabold {% if mine %}bg-synergy text-white{% else %}bg-a-soft text-a-ink{% endif %}">{% if mine %}✓{% else %}{{ me_name|first }}{% endif %}</span>
+      <span class="grid size-5 place-items-center rounded-full border-2 border-paper text-[0.6rem] font-extrabold {% if partner %}bg-synergy text-white{% else %}bg-b-soft text-b-ink{% endif %}">{% if partner %}✓{% else %}{{ partner_name|first }}{% endif %}</span>
+    </span>
+    <span class="hidden min-[380px]:inline">{% if mine and partner %}вдвоём{% elif mine %}ждём {{ partner_name|acc }}{% elif partner %}ваш ход{% else %}{{ sub|default:"ваш ход" }}{% endif %}</span>
+    {% endif %}
+  </span>
+  <span class="shrink-0 text-ink-3" aria-hidden="true">{% icon 'chevron-right' 'size-4' %}</span>
+</{% if href %}a{% else %}button{% endif %}>

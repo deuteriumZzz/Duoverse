@@ -22,8 +22,7 @@ SCREENS = [
     "/report/",
     "/report/share/",
     "/report/pdf/",
-    "/pair/",
-    "/pair/waiting/",
+    "/pair/waiting/",  # /pair/ is a couple's home; a guest is sent to the landing's «вдвоём» section
     "/pair/ready/",
     "/daily/",
     "/history/",
@@ -33,7 +32,7 @@ SCREENS = [
     "/states/",
     "/disclaimer/",
     "/offline/",
-    *[f"/report/{t}/" for t in ("astrology", "psychology", "numbers", "tarot", "habits", "layers", "razbor")],
+    *[f"/report/{t}/" for t in ("astrology", "psychology", "numbers", "tarot", "layers", "razbor")],
 ]
 pytestmark = pytest.mark.django_db
 
@@ -68,7 +67,7 @@ def test_no_dead_internal_links(client):
 
 
 @pytest.mark.parametrize("scenario", [s.key for s in SCENARIOS if s.key != "error"])
-@pytest.mark.parametrize("tab", ["", "astrology/", "psychology/", "numbers/", "tarot/", "habits/", "layers/", "share/", "pdf/"])
+@pytest.mark.parametrize("tab", ["", "astrology/", "psychology/", "numbers/", "tarot/", "layers/", "share/", "pdf/"])
 def test_every_scenario_renders_every_tab(client, scenario, tab):
     use(client, scenario)
     assert client.get(f"/report/{tab}").status_code == 200

@@ -175,3 +175,42 @@ def test_knowledge_texts_agree_with_each_partner():
     filled = fill(text, a="Аня", b="Миша", a_g="f", b_g="m")
     assert filled == "Миша может чувствовать себя незамеченным, а Аня — сдерживаемой. «Чтобы ты выслушал(а)»."
     assert fill(text, a="Аня", b="Миша", a_g="", b_g="").startswith("Миша может чувствовать себя незамеченным(ой)")
+
+
+def test_the_first_stage_asks_light_questions_and_nothing_sensitive():
+    from apps.compatibility.stages import SENSITIVE, STAGES
+    from apps.web.views import question_of_day
+    from config.container import report_provider
+
+    report = report_provider().get_report("hard")
+    by_text = {
+        b.data["question"]: (b.key.split(":")[1], b.data.get("depth", 1))
+        for b in KnowledgeBlock.objects.filter(key__startswith="QUESTION:")
+    }
+    days = [date(2026, 3, 2) + timedelta(days=i) for i in range(40)]  # no holiday among them: those have their own question
+    first = [by_text[question_of_day(report, "pair-1", d, STAGES[0])] for d in days]
+    assert all(depth == 1 and sphere not in SENSITIVE for sphere, depth in first)  # a new pair isn't asked about the hard parts
+    later = [by_text[question_of_day(report, "pair-1", d, STAGES[2])] for d in days]
+    assert max(depth for _, depth in later) == 3  # and goes deeper once it's in the rhythm
+
+
+def test_holidays_and_the_day_you_met_get_their_own_question():
+    from datetime import date
+
+    from apps.web.views import question_of_day
+    from config.container import report_provider
+
+    report = report_provider().get_report("ideal")
+    assert "этого года" in question_of_day(report, "p", date(2026, 12, 31))  # New Year's Eve
+    assert "годовщина" in question_of_day(report, "p", date(2027, 5, 3), met=date(2024, 5, 3))
+    assert "годовщина" not in question_of_day(report, "p", date(2024, 5, 3), met=date(2024, 5, 3))  # the day itself isn't one
+    assert question_of_day(report, "p", date(2027, 5, 4), met=date(2024, 5, 3)) == question_of_day(report, "p", date(2027, 5, 4))
+
+
+def test_a_year_of_weekly_content():
+    from apps.compatibility.date_ideas import IDEAS
+
+    assert KnowledgeBlock.objects.filter(key__startswith="QUIZ:").count() == 52  # a quiz a week for a year
+    assert sum(len(v) for v in IDEAS.values()) == 52  # and a date idea
+    for sphere in ("money", "sex", "home"):
+        assert KnowledgeBlock.objects.filter(key__startswith=f"HABIT:{sphere}:").count() == 8

@@ -40,11 +40,85 @@
     </div>
     <ul class="divide-y divide-line">
       {% for p in pairs %}
-      <li class="flex flex-wrap items-center gap-4 p-4">
+      <li class="flex flex-wrap items-center gap-3 p-4">
+        <div class="flex w-full min-w-0 items-center gap-4">{# names and «⋯» on one line, the buttons below #}
         {% include "components/pair_avatars.html" with a=p.a b=p.b av_a=p.av_a av_b=p.av_b invite=p.invite %}
-        <div class="min-w-[10rem] flex-1">
+        <div class="min-w-0 flex-1">
           <p class="font-bold">{{ p.a.name }} и {{ p.b.name }}</p>
           <p class="text-xs {% if p.b_joined %}text-synergy-ink{% else %}text-ink-3{% endif %}">{% if p.b_joined %}{% if p.my_side == 'b' %}Вы присоединились к этой паре{% else %}{{ p.b.name }} в паре — план и вопрос дня общие{% endif %}{% else %}Ждём, когда {{ p.b.name }} присоединится{% endif %}</p>
+        </div>
+        {% comment %}Managing the pair: a «⋯» menu like the profile menu up top, and every action confirmed in a sheet that says
+        what will be removed and what stays — a creator unlinks the partner or deletes the pair, a partner leaves.{% endcomment %}
+        <div class="relative" x-data="{ menu: false, ask: '' }" @click.outside="menu = false" @keydown.escape="menu = false">
+          <button type="button" class="btn btn-ghost btn-sm btn-icon" @click="menu = !menu" :aria-expanded="menu" aria-haspopup="menu" aria-label="Управление парой «{{ p.a.name }} и {{ p.b.name }}»">{% icon 'ellipsis' 'size-4' %}</button>
+          <div x-show="menu" x-cloak class="me-menu w-60" role="menu" aria-label="Управление парой"
+            x-transition:enter="dp-t-in" x-transition:enter-start="dp-t-from" x-transition:enter-end="dp-t-to" x-transition:leave="dp-t-out" x-transition:leave-start="dp-t-to" x-transition:leave-end="dp-t-from">
+            {% if p.mine %}
+              {% if p.b_joined %}<button type="button" class="me-item w-full" role="menuitem" @click="menu = false; ask = 'unlink'">{% icon 'unlink' 'size-4' %}Отвязать партнёра</button>{% endif %}
+              <button type="button" class="me-item w-full !text-risk-ink" role="menuitem" @click="menu = false; ask = 'delete'">{% icon 'trash' 'size-4' %}Удалить пару</button>
+            {% else %}
+              <button type="button" class="me-item w-full !text-risk-ink" role="menuitem" @click="menu = false; ask = 'leave'">{% icon 'log-out' 'size-4' %}Выйти из пары</button>
+            {% endif %}
+          </div>
+          <template x-teleport="body">
+            <div x-show="ask" x-cloak class="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6" @keydown.escape.window="ask = ''"
+              x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:leave="transition duration-200" x-transition:leave-end="opacity-0">
+              <div class="absolute inset-0 bg-ink/30 backdrop-blur-sm" @click="ask = ''"></div>
+              <section class="sheet-panel" role="dialog" aria-modal="true" x-show="ask" x-trap.noscroll="ask"
+                x-transition:enter="transition duration-500 ease-[var(--ease-spring)]" x-transition:enter-start="translate-y-full sm:translate-y-6 sm:scale-95 sm:opacity-0"
+                x-transition:leave="transition duration-200 ease-in" x-transition:leave-end="translate-y-full sm:translate-y-6 sm:opacity-0">
+                <div class="mx-auto mb-2 h-1.5 w-10 rounded-full bg-line sm:hidden"></div>
+                <button type="button" class="dp-nav absolute right-3 top-3" @click="ask = ''" aria-label="Закрыть">{% icon 'x' 'size-5' %}</button>
+                <div class="flex items-center gap-3 pr-8">
+                  {% include "components/pair_avatars.html" with a=p.a b=p.b av_a=p.av_a av_b=p.av_b %}
+                  <p class="text-sm font-bold text-ink-3">{{ p.a.name }} и {{ p.b.name }}</p>
+                </div>
+                {% if p.mine %}
+                <div x-show="ask === 'unlink'">
+                  <h2 class="mt-5 text-2xl font-extrabold leading-tight">Отвязать {{ p.b.name|acc }}?</h2>
+                  <p class="mt-2 text-sm text-ink-2">{{ p.b.name }} больше не увидит вашу пару. Позвать снова можно в любой момент — по новой ссылке.</p>
+                  <ul class="mt-4 space-y-2 text-sm">
+                    <li class="flex gap-2.5 rounded-2xl bg-risk-soft/60 p-3"><span class="text-risk-ink">{% icon 'x' 'size-4' %}</span>Удалятся ответы {{ p.b.name|gen }}: анкета, вопросы дня, квизы и «Близость»</li>
+                    <li class="flex gap-2.5 rounded-2xl bg-risk-soft/60 p-3"><span class="text-risk-ink">{% icon 'x' 'size-4' %}</span>И то, что {{ p.b.gender|gv:"добавил|добавила|добавил(а)" }} {{ p.b.name }}: даты, желания, заметки</li>
+                    <li class="flex gap-2.5 rounded-2xl bg-sand/70 p-3"><span class="text-synergy-ink">{% icon 'check' 'size-4' %}</span>Ваши данные и разбор остаются — он пересчитается без анкеты партнёра</li>
+                  </ul>
+                  <form method="post" action="{% url 'unlink_partner' p.id %}" class="mt-6 grid gap-2 sm:grid-cols-2">{% csrf_token %}<input type="hidden" name="next" value="{% url 'account' %}#pair">
+                    <button type="button" class="btn btn-ghost" @click="ask = ''">Отмена</button>
+                    <button class="btn bg-risk-ink text-milk hover:bg-risk">{% icon 'unlink' 'size-4' %}Отвязать</button>
+                  </form>
+                </div>
+                <div x-show="ask === 'delete'">
+                  <h2 class="mt-5 text-2xl font-extrabold leading-tight">Удалить пару?</h2>
+                  <p class="mt-2 text-sm text-ink-2">Это нельзя отменить.{% if p.b_joined %} {{ p.b.name }} тоже потеряет доступ.{% endif %}</p>
+                  <ul class="mt-4 space-y-2 text-sm">
+                    <li class="flex gap-2.5 rounded-2xl bg-risk-soft/60 p-3"><span class="text-risk-ink">{% icon 'x' 'size-4' %}</span>Все разборы этой пары и её история</li>
+                    <li class="flex gap-2.5 rounded-2xl bg-risk-soft/60 p-3"><span class="text-risk-ink">{% icon 'x' 'size-4' %}</span>Вопросы дня, квизы, дерево, календарь, желания и заметки</li>
+                    <li class="flex gap-2.5 rounded-2xl bg-sand/70 p-3"><span class="text-synergy-ink">{% icon 'check' 'size-4' %}</span>Останутся оплаты и люди в «Сохранённых людях»</li>
+                  </ul>
+                  <form method="post" action="{% url 'delete_pair' p.id %}" class="mt-6 grid gap-2 sm:grid-cols-2">{% csrf_token %}
+                    <button type="button" class="btn btn-ghost" @click="ask = ''">Отмена</button>
+                    <button class="btn bg-risk-ink text-milk hover:bg-risk">{% icon 'trash' 'size-4' %}Удалить навсегда</button>
+                  </form>
+                </div>
+                {% else %}
+                <div x-show="ask === 'leave'">
+                  <h2 class="mt-5 text-2xl font-extrabold leading-tight">Выйти из пары?</h2>
+                  <p class="mt-2 text-sm text-ink-2">Пара останется у {{ p.a.name|gen }}, а вы больше её не увидите.</p>
+                  <ul class="mt-4 space-y-2 text-sm">
+                    <li class="flex gap-2.5 rounded-2xl bg-risk-soft/60 p-3"><span class="text-risk-ink">{% icon 'x' 'size-4' %}</span>Ваши ответы в этой паре: анкета, вопросы дня, квизы и «Близость»</li>
+                    <li class="flex gap-2.5 rounded-2xl bg-risk-soft/60 p-3"><span class="text-risk-ink">{% icon 'x' 'size-4' %}</span>Ваши даты, желания и заметки в ней</li>
+                    <li class="flex gap-2.5 rounded-2xl bg-sand/70 p-3"><span class="text-synergy-ink">{% icon 'check' 'size-4' %}</span>Ваш аккаунт и другие пары остаются</li>
+                  </ul>
+                  <form method="post" action="{% url 'unlink_partner' p.id %}" class="mt-6 grid gap-2 sm:grid-cols-2">{% csrf_token %}<input type="hidden" name="next" value="{% url 'account' %}#pair">
+                    <button type="button" class="btn btn-ghost" @click="ask = ''">Остаться</button>
+                    <button class="btn bg-risk-ink text-milk hover:bg-risk">{% icon 'log-out' 'size-4' %}Выйти</button>
+                  </form>
+                </div>
+                {% endif %}
+              </section>
+            </div>
+          </template>
+        </div>
         </div>
         {% if p.invite %}<button type="button" class="btn btn-primary btn-sm" @click="$dispatch('invite-open', '{{ p.invite.pair }}')">{% icon 'user-plus' 'size-4' %}Пригласить</button>{% include "components/invite_sheet.html" with invite=p.invite %}{% endif %}
         {% if p.story %}<a href="{{ p.story }}" class="btn btn-ghost btn-sm">{% icon 'book-heart' 'size-4' %}История</a>{% endif %}
@@ -109,7 +183,7 @@
   <section id="plan" class="card mt-4 flex scroll-mt-24 flex-wrap items-center gap-4 p-6" data-reveal>
     <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-pair-soft">{% icon 'sparkles' %}</span>
     <div class="min-w-[12rem] flex-1"><h2 class="font-extrabold">Пара+</h2>
-      <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }}. Действует и для партнёра в связанной паре.{% else %}Квиз недели, дневник пары, тихая бронь подарков и план свидания — от {{ plus_from }} ₽ в месяц, без автосписаний. С годом открыты и все ваши разборы.{% endif %}</p></div>
+      <p class="text-sm text-ink-2">{% if plus_until %}Активна до {{ plus_until|date:"j E Y" }} — для вас обоих, кто бы из вас ни оплатил.{% else %}Квиз недели, дневник пары, тихая бронь подарков и план свидания — от {{ plus_from }} ₽ в месяц, без автосписаний. С годом открыты и все ваши разборы.{% endif %}</p></div>
     <div class="flex flex-wrap gap-2"><a href="{% url 'pricing' %}" class="btn btn-ghost btn-sm">Все тарифы</a><form method="post" action="{% url 'checkout' 'plus' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% if plus_until %}Продлить на 30 дней{% else %}30 дней · {{ price_plus }} ₽{% endif %}</button></form><form method="post" action="{% url 'checkout' 'plus365' %}">{% csrf_token %}<button class="btn btn-primary btn-sm">Год · {{ price_plus_year }} ₽</button></form></div>
   </section>
   {% endif %}
@@ -139,6 +213,18 @@
       <form method="post" action="{% url 'delete_everything' %}">{% csrf_token %}<button class="btn mt-3 bg-risk text-white" :disabled="typed !== 'УДАЛИТЬ'" :class="typed !== 'УДАЛИТЬ' && 'opacity-40'">Стереть навсегда</button></form>
     </div>
   </section>
+
+  {# what the site footer holds, for the signed in: the app has no footer #}
+  <nav class="mt-8 text-sm" aria-label="О сервисе">
+    <ul class="flex flex-wrap gap-x-4 gap-y-2 font-semibold text-ink-2">
+      <li><a class="hover:text-ink" href="{% url 'disclaimer' %}">О методе</a></li>
+      <li><a class="hover:text-ink" href="{% url 'privacy' %}">Политика данных</a></li>
+      <li><a class="hover:text-ink" href="{% url 'terms' %}">Соглашение и оферта</a></li>
+      <li><a class="hover:text-ink" href="{% url 'pricing' %}">Тарифы</a></li>
+      <li><a class="hover:text-ink" href="{% url 'landing' %}?about">О Duoverse</a></li>
+    </ul>
+    <p class="mt-3 text-xs text-ink-3"><span class="mr-1 inline-grid h-5 place-items-center rounded border border-current px-1 font-bold" title="Для лиц старше 18 лет">18+</span>© 2026 Duoverse · места: <a class="underline" href="https://www.geonames.org/" rel="noopener">GeoNames</a> (CC BY 4.0), контуры: Natural Earth</p>
+  </nav>
   {% endif %}
 </div>
 {% endblock %}

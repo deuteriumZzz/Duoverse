@@ -210,6 +210,32 @@
   "status": "published"
  },
  {
+  "key": "HABIT:attraction:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Задержать взгляд",
+   "cadence": "при каждой встрече",
+   "duration": "10 секунд",
+   "why": "Взгляд и улыбка при встрече, а не кивок на бегу, — маленький знак, что вы рады видеть друг друга."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:attraction:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Нарядиться друг для друга",
+   "cadence": "раз в месяц",
+   "duration": "вечер",
+   "why": "Небольшое усилие ради другого напоминает: вы всё ещё хотите нравиться друг другу."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
   "key": "EXERCISE:attraction:01",
   "domain": "pair",
   "text": "",
@@ -450,6 +476,32 @@
    "cadence": "пару раз в неделю",
    "duration": "15 минут",
    "why": "Отдых и спокойствие каждого напрямую влияют на желание быть ближе."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Настоящий поцелуй на прощание",
+   "cadence": "каждое утро",
+   "duration": "6 секунд",
+   "why": "Не «чмок на бегу», а поцелуй — он держит телесную связь, даже когда будни плотные."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:sex:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Спросить «как тебе?»",
+   "cadence": "раз в неделю",
+   "duration": "1 вопрос",
+   "why": "Без оценок узнать, что было приятно, — так близость подстраивается под обоих, а не идёт по привычке."
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -701,6 +753,32 @@
   "status": "published"
  },
  {
+  "key": "HABIT:emotions:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Заметить усталость",
+   "cadence": "когда партнёр пришёл домой",
+   "duration": "1 фраза",
+   "why": "«Вижу, тебе было непросто» и чай — признание чувства успокаивает быстрее любых советов."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:emotions:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Порадоваться за другого",
+   "cadence": "когда у партнёра хорошая новость",
+   "duration": "2 минуты",
+   "why": "Искренняя радость и расспросы о хорошем сближают пару сильнее, чем поддержка в трудностях (Гейбл)."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
   "key": "EXERCISE:emotions:01",
   "domain": "pair",
   "text": "",
@@ -940,6 +1018,32 @@
    "cadence": "когда нет сил",
    "duration": "1 фраза",
    "why": "«Давай вернёмся к этому в 8 вечера» — тема не потеряется и не превратится в ссору."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Один новый вопрос",
+   "cadence": "каждый день",
+   "duration": "1 вопрос",
+   "why": "Вопрос, на который ты не знаешь ответа, обновляет «карту» партнёра у тебя в голове (Готтман)."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:talk:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Телефон экраном вниз",
+   "cadence": "когда партнёр говорит",
+   "duration": "весь разговор",
+   "why": "Отложенный телефон — простой сигнал «ты важнее», который партнёр замечает сразу."
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -1185,6 +1289,32 @@
    "cadence": "в споре",
    "duration": "весь разговор",
    "why": "Не вспоминать старое: спор об одном решается, спор обо всём — нет."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Сначала понять",
+   "cadence": "в начале спора",
+   "duration": "1 вопрос",
+   "why": "«Что для тебя здесь самое важное?» до спора: многие ссоры оказываются о разных вещах."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:conflicts:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Добрая шутка о ситуации",
+   "cadence": "в напряжённый момент",
+   "duration": "1 шутка",
+   "why": "Шутка над ситуацией, а не над партнёром, снимает напряжение — пары, которые так умеют, ссорятся мягче."
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -1436,6 +1566,32 @@
   "status": "published"
  },
  {
+  "key": "HABIT:trust:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Правда о мелочи",
+   "cadence": "когда хочется промолчать",
+   "duration": "1 фраза",
+   "why": "Доверие трескается раньше от мелких умолчаний, чем от больших событий."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:trust:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Планы дня с утра",
+   "cadence": "каждое утро",
+   "duration": "1 минута",
+   "why": "Знать, где и как пройдёт день другого, — простая предсказуемость, на которой держится спокойствие."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
   "key": "EXERCISE:trust:01",
   "domain": "pair",
   "text": "",
@@ -1677,6 +1833,32 @@
    "cadence": "когда партнёр взял решение на себя",
    "duration": "1 фраза",
    "why": "Признание снимает ощущение, что один тащит всё."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "День наоборот",
+   "cadence": "раз в месяц",
+   "duration": "один день",
+   "why": "Решает тот, кто обычно уступает: баланс выравнивается, и видно, как непросто быть «главным»."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:power:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Честная очередь",
+   "cadence": "раз в неделю",
+   "duration": "—",
+   "why": "Неприятные дела по очереди, а не «кто первым не выдержит», — так никто не копит обиду."
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -1927,6 +2109,32 @@
   "status": "published"
  },
  {
+  "key": "HABIT:shadows:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Про сейчас или про прошлое?",
+   "cadence": "когда реакция сильнее повода",
+   "duration": "1 вдох",
+   "why": "Этот вопрос себе помогает отделить старую боль от того, что делает партнёр сейчас."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:shadows:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "История из детства",
+   "cadence": "раз в месяц",
+   "duration": "20 минут",
+   "why": "Истории из детства объясняют реакции лучше теорий и делают их понятнее для другого."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
   "key": "EXERCISE:shadows:01",
   "domain": "pair",
   "text": "",
@@ -2167,6 +2375,32 @@
    "cadence": "каждое утро",
    "duration": "5 минут",
    "why": "Кофе вместе или пожелание хорошего дня задаёт тон всем следующим часам."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Одно дело без просьбы",
+   "cadence": "каждый день",
+   "duration": "1 дело",
+   "why": "Домашнее дело, о котором не просили, — забота, которую видно без слов."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:home:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Субботний завтрак",
+   "cadence": "раз в неделю",
+   "duration": "30 минут",
+   "why": "Неспешный завтрак вдвоём отделяет выходные от гонки будней — маленькая традиция пары."
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2416,6 +2650,32 @@
   "status": "published"
  },
  {
+  "key": "HABIT:money:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Разбор подписок",
+   "cadence": "раз в квартал",
+   "duration": "15 минут",
+   "why": "Вместе пересмотреть регулярные траты — и деньги уходят на то, что важно обоим."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:money:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Копилка на радость",
+   "cadence": "каждый месяц",
+   "duration": "—",
+   "why": "Небольшая сумма на общие удовольствия убирает споры «стоит ли тратить»: эти деньги уже для радости."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
   "key": "EXERCISE:money:01",
   "domain": "pair",
   "text": "",
@@ -2655,6 +2915,32 @@
    "cadence": "постоянно",
    "duration": "—",
    "why": "Картинка общей цели перед глазами помогает не забывать, ради чего вы стараетесь."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Выходные — договориться в среду",
+   "cadence": "раз в неделю",
+   "duration": "5 минут",
+   "why": "Когда у одного «отдых», а у другого «дела», заранее согласованный план бережёт от разочарований."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:plans:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Следующая поездка в календаре",
+   "cadence": "раз в квартал",
+   "duration": "10 минут",
+   "why": "Дата поездки, даже маленькой, даёт обоим, чего ждать, — ожидание радует почти как сама поездка."
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -2904,6 +3190,32 @@
   "status": "published"
  },
  {
+  "key": "HABIT:people:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Звонок родным вдвоём",
+   "cadence": "раз в месяц",
+   "duration": "15 минут",
+   "why": "Общий звонок родителям одного из вас показывает: вы команда, а не гость в чужой семье."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:people:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Общие новые друзья",
+   "cadence": "раз в квартал",
+   "duration": "вечер",
+   "why": "Пары с общими друзьями реже чувствуют, что живут в двух разных мирах."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
   "key": "EXERCISE:people:01",
   "domain": "pair",
   "text": "",
@@ -3143,6 +3455,32 @@
    "cadence": "раз в квартал",
    "duration": "30 минут",
    "why": "Обсудить, как каждый изменился и что ему сейчас нужно, — чтобы расти не в разные стороны."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Итоги месяца на прогулке",
+   "cadence": "раз в месяц",
+   "duration": "30 минут",
+   "why": "Что получилось у каждого и что дальше: когда рост друг друга замечают, его легче продолжать."
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HABIT:growth:08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Похвалить старание",
+   "cadence": "когда партнёр пробует новое",
+   "duration": "1 фраза",
+   "why": "Отмечать усилие, а не только результат, — так проще пробовать, не боясь ошибиться."
   },
   "evidence_level": "scientific",
   "status": "published"
@@ -5689,6 +6027,116 @@
     "Договоритесь об одной конкретной поддержке и проверьте через месяц."
    ],
    "source": "Исследования поддержки целей в паре"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:01-01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Первый день года",
+   "question": "Какое одно общее «впервые» мы хотим в этом году — и когда его устроим?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:01-07",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Рождество",
+   "question": "Какая традиция из твоего детства тебе дорога — и какую мы начнём вдвоём?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:02-14",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "День влюблённых",
+   "question": "Какой момент нашего начала ты вспоминаешь чаще всего — и почему именно его?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:03-01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Первый день весны",
+   "question": "Что мы хотим успеть вдвоём этой весной — одно главное дело?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:06-01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Первый день лета",
+   "question": "Каким должно быть это лето, чтобы через год мы вспоминали его с улыбкой?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:07-08",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "День семьи, любви и верности",
+   "question": "Что для тебя значит «быть верными друг другу» — кроме самого очевидного?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:09-01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Первый день осени",
+   "question": "Что этой осенью будет только нашим — даже когда навалятся дела?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:12-01",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Первый день зимы",
+   "question": "Что сделает эту зиму уютной для нас двоих?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:12-31",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Канун Нового года",
+   "question": "Что из этого года ты хочешь взять с собой в следующий — а что оставить здесь?"
+  },
+  "evidence_level": "scientific",
+  "status": "published"
+ },
+ {
+  "key": "HOLIDAY:met",
+  "domain": "pair",
+  "text": "",
+  "data": {
+   "title": "Годовщина знакомства",
+   "question": "Сегодня годовщина нашего знакомства. Что ты помнишь о том дне — и что пожелаешь нам на следующий год?"
   },
   "evidence_level": "scientific",
   "status": "published"

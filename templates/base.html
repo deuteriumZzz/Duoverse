@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{% block title %}Duoverse — совместимость, у которой есть объяснение{% endblock %}</title>
-  <meta name="description" content="Совместимость пары в четырёх вселенных: астрология, числа, таро и психология отношений. Каждый вывод — с объяснением.">
+  <title>{% block title %}Duoverse — пространство для пары: разбор и каждый день вдвоём{% endblock %}</title>
+  <meta name="description" content="Приложение для двоих: разбор пары в четырёх вселенных — астрология, числа, таро и психология отношений, — а дальше вопрос дня, ваше дерево, свидания, календарь и желания.">
   <meta name="theme-color" content="#fbf7f2">
   <link rel="icon" type="image/png" href="{% static 'pwa/icon-192.png' %}">
   <link rel="preload" href="{% static 'fonts/manrope-normal-cyrillic.woff2' %}" as="font" type="font/woff2" crossorigin>
@@ -31,7 +31,7 @@
         Duoverse
       </a>
       <nav class="ml-6 hidden items-center gap-1 text-sm font-semibold text-ink-2 md:flex" aria-label="Основное меню">
-        {% for url_name, ic, label, active in tabbar %}{% if url_name != 'landing' and url_name != 'account' %}{% url url_name as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if active %}bg-sand text-ink{% endif %}"{% if active %} aria-current="page"{% endif %}>{{ label }}</a>{% endif %}{% endfor %}
+        {% for url_name, ic, label, active, href in tabbar %}{% if url_name != 'landing' and url_name != 'account' %}<a href="{{ href }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if active %}bg-sand text-ink{% endif %}"{% if active %} aria-current="page"{% endif %}>{{ label }}</a>{% endif %}{% endfor %}
         {% url 'pricing' as u %}<a href="{{ u }}" class="rounded-full px-3.5 py-2 transition hover:bg-sand {% if nav == 'pricing' %}bg-sand text-ink{% endif %}">Тарифы</a>
       </nav>
       <div class="ml-auto flex items-center gap-2">
@@ -69,7 +69,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  {% block footer %}
+  {% block footer %}{% if not me.account %}{# inside the app there is no site footer, like in any app: its links live in «Профиль» #}
   <footer class="no-print mt-24 border-t border-line bg-sand/50 pb-28 md:pb-0">
     <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
@@ -102,7 +102,7 @@
     </div>
     <div class="mx-auto max-w-6xl px-4 pb-10 text-xs text-ink-3 sm:px-6"><span class="mr-2 inline-grid h-5 place-items-center rounded border border-current px-1 font-bold" title="Для лиц старше 18 лет">18+</span>© 2026 Duoverse · сделано с заботой о парах · места: <a class="underline" href="https://www.geonames.org/" rel="noopener">GeoNames</a> (CC BY 4.0), контуры: Natural Earth</div>
   </footer>
-  {% endblock %}
+  {% endif %}{% endblock %}
 
   {% include "components/mobile_nav.html" %}
   {% if not me.account %}{% include "components/login_sheet.html" %}{% endif %}

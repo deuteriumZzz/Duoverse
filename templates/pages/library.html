@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Библиотека — Duoverse{% endblock %}
+{% block content %}
+{% comment %}«Библиотека», like Explore in couple apps: what is open to the pair, done or not — quizzes, date ideas, the
+diary — as shelves, not a wall of cards: a row to swipe, a short list with «ещё», one line per stage for what the path
+hasn't reached yet (so nothing comes as a surprise). «Сегодня» gives one thing a day; this is for going back or ahead.{% endcomment %}
+<div class="mx-auto max-w-2xl px-4 py-8 sm:px-6" x-data="{ tab: ['quizzes', 'dates', 'diary'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'quizzes', go(t) { this.tab = t; history.replaceState(null, '', '#' + t) } }">
+  <a href="{% url 'pair_invite' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}Главная</a>
+  <p class="eyebrow mt-5">{{ me_name }} и {{ partner_name }}</p>
+  <h1 class="mt-1 text-3xl font-extrabold">Библиотека</h1>
+  <p class="mt-1 text-ink-2">Всё, что у вас открыто, — проходите в своём темпе. Остальное откроется по пути.</p>
+  <a href="{% url 'pair_invite' %}#path" class="card mt-4 flex items-center gap-3 p-3 transition hover:-translate-y-0.5 hover:border-ink">
+    <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-lilac-soft font-display font-extrabold">{{ stage.n }}</span>
+    <span class="min-w-0 flex-1 text-sm"><b class="block">Этап «{{ stage.title }}»</b><span class="text-ink-3">{{ stage.text }}</span></span>
+    <span class="shrink-0 text-xs font-bold text-ink-3">весь путь {% icon 'chevron-right' 'size-4 inline' %}</span>
+  </a>
+
+  <div class="mt-5 grid grid-cols-3 rounded-full border border-line bg-paper p-1 text-sm font-bold" role="tablist" aria-label="Разделы библиотеки">
+    <button type="button" role="tab" class="rounded-full py-2 transition" :class="tab === 'quizzes' ? 'bg-ink text-milk' : 'text-ink-2 hover:bg-sand'" :aria-selected="tab === 'quizzes'" @click="go('quizzes')">Квизы</button>
+    <button type="button" role="tab" class="rounded-full py-2 transition" :class="tab === 'dates' ? 'bg-ink text-milk' : 'text-ink-2 hover:bg-sand'" :aria-selected="tab === 'dates'" @click="go('dates')">Свидания</button>
+    <button type="button" role="tab" class="rounded-full py-2 transition" :class="tab === 'diary' ? 'bg-ink text-milk' : 'text-ink-2 hover:bg-sand'" :aria-selected="tab === 'diary'" @click="go('diary')">Дневник</button>
+  </div>
+
+  {% comment %}Quizzes as shelves: this week's, the open ones in a row you swipe, the done ones as a short list, and what
+  is ahead as one line per stage — 52 quizzes, never a wall of cards.{% endcomment %}
+  <section class="mt-5" x-show="tab === 'quizzes'" role="tabpanel" x-data="{ more: false, topic: 'all' }">
+    <p class="text-sm text-ink-3">Пройдено вдвоём {{ done_count }} из {{ open_count }} открытых · всего {{ quizzes|length }}</p>
+    {% if week_quiz %}
+    <a href="{% url 'quiz_week' %}?q={{ week_quiz.key|urlencode }}" class="sticker mt-3 flex items-center gap-3 bg-pair-soft p-4 transition hover:-translate-y-0.5">
+      <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-paper">{% glyph 'gem' 'size-8' %}</span>
+      <span class="min-w-0 flex-1"><span class="block text-[0.7rem] font-bold uppercase tracking-wide text-ink-2">квиз этой недели</span>
+        <b class="block font-display text-lg leading-tight">{{ week_quiz.title }}</b>{% if week_quiz.sphere %}<span class="block text-xs text-ink-2">про «{{ week_quiz.sphere }}»</span>{% endif %}</span>
+      <span class="btn btn-primary btn-sm shrink-0">{% if week_quiz.mine %}Ответы{% else %}Пройти{% endif %}</span>
+    </a>
+    {% endif %}
+
+    {# topics, like the category row of couple apps: they filter what is open and what is done #}
+    <div class="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:px-6" role="group" aria-label="Темы квизов">
+      <button type="button" class="chip shrink-0 border-2 py-1.5 transition" :class="topic === 'all' ? 'border-ink bg-ink text-milk' : 'border-line bg-paper text-ink-2 hover:border-ink'" :aria-pressed="topic === 'all'" @click="topic = 'all'">Все темы</button>
+      {% for key, title in quiz_topics %}<button type="button" class="chip shrink-0 border-2 py-1.5 transition" :class="topic === '{{ key }}' ? 'border-ink bg-ink text-milk' : 'border-line bg-paper text-ink-2 hover:border-ink'" :aria-pressed="topic === '{{ key }}'" @click="topic = '{{ key }}'">{{ title }}</button>{% endfor %}
+    </div>
+
+    {% if open_quizzes %}
+    <h2 class="eyebrow mt-5">Открыты сейчас · {{ open_quizzes|length }}</h2>
+    <ul class="-mx-4 mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:px-6" aria-label="Открытые квизы">
+      {% for q in open_quizzes %}
+      <li class="w-40 shrink-0 snap-start" x-show="topic === 'all' || topic === '{{ q.topic }}'"><a href="{% url 'quiz_week' %}?q={{ q.key|urlencode }}" class="card flex h-full flex-col p-3.5 transition hover:-translate-y-0.5 hover:border-ink">
+        <span class="grid size-9 place-items-center rounded-xl bg-lilac-soft">{% glyph 'gem' 'size-6' %}</span>
+        <b class="mt-2 text-sm leading-snug">{{ q.title }}</b>{% if q.sphere %}<span class="text-xs text-ink-3">про «{{ q.sphere }}»</span>{% endif %}
+        <span class="mt-auto pt-3 text-xs font-bold {% if q.mine %}text-ink-3{% else %}text-ink{% endif %}">{% if q.mine %}ждём {{ partner_name|acc }}{% else %}Пройти →{% endif %}</span>
+      </a></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if done_quizzes %}
+    <h2 class="eyebrow mt-6">Пройдено вдвоём · {{ done_quizzes|length }}</h2>
+    <ul class="mt-2 divide-y divide-dashed divide-line rounded-3xl border border-line bg-paper px-4">
+      {% for q in done_quizzes %}
+      <li class="flex items-center gap-3 py-3" x-show="topic === 'all' ? {{ forloop.counter }} <= 3 || more : topic === '{{ q.topic }}'"{% if forloop.counter > 3 %} x-cloak{% endif %}>
+        <span class="min-w-0 flex-1 truncate font-bold">{{ q.title }}</span>
+        <span class="chip shrink-0 bg-synergy-soft text-synergy-ink">{{ q.match }}%</span>
+        <a href="{% url 'quiz_week' %}?q={{ q.key|urlencode }}" class="shrink-0 text-sm font-bold text-ink-2 underline decoration-dotted underline-offset-4 hover:text-ink">Ответы</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if done_quizzes|length > 3 %}<button type="button" class="mt-2 text-sm font-bold text-ink-2 hover:text-ink" x-show="!more && topic === 'all'" @click="more = true">Ещё {{ done_quizzes|length|add:"-3" }}</button>{% endif %}
+    {% endif %}
+
+    {% if ahead %}
+    <h2 class="eyebrow mt-6">Впереди</h2>
+    <ul class="mt-2 space-y-2">
+      {% for a in ahead %}
+      <li class="flex items-center gap-3 rounded-2xl bg-sand/60 p-3">
+        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-paper">{% icon 'lock' 'size-4 text-ink-3' %}</span>
+        <span class="min-w-0 flex-1 text-sm"><b class="block">На этапе «{{ a.stage }}» — ещё {{ a.n }} {{ a.n|ru_plural:"квиз,квиза,квизов" }}</b>
+          <span class="block truncate text-xs text-ink-3">{{ a.titles|join:", " }}…</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if not plus %}{% include "components/plus_lock.html" with title="Квизы" text="Отвечайте вдвоём и смотрите, где вы совпадаете." cls="mt-5" %}{% endif %}
+  </section>
+
+  {# ── date ideas by theme: one theme at a time, five at first — the steps with «Пара+»; 18+ ideas live in «Близость» ── #}
+  <section class="mt-5" x-show="tab === 'dates'" x-cloak role="tabpanel" x-data="{ theme: 'talk', more: false }">
+    <p class="text-sm text-ink-3">Каждую неделю одна идея приходит в «Сегодня» — а здесь все {{ ideas|length }}.</p>
+    <div class="mt-3 flex gap-2" role="group" aria-label="Темы свиданий">
+      {% for t in themes %}
+      <button type="button" class="chip border-2 py-1.5 transition" :class="theme === '{{ t.key }}' ? 'border-ink bg-ink text-milk' : 'border-line bg-paper text-ink-2 hover:border-ink'"
+        :aria-pressed="theme === '{{ t.key }}'" @click="theme = '{{ t.key }}'; more = false">{{ t.title }} · {{ t.ideas|length }}</button>
+      {% endfor %}
+    </div>
+    {% for t in themes %}
+    <ul class="mt-3 space-y-2.5" x-show="theme === '{{ t.key }}'"{% if not forloop.first %} x-cloak{% endif %}>
+      {% for i in t.ideas %}
+      <li{% if forloop.counter > 5 %} x-show="more" x-cloak{% endif %}><details class="card group p-4">
+        <summary class="flex cursor-pointer list-none items-center gap-3">
+          <span class="min-w-0 flex-1 font-bold leading-snug">{{ i.title }}</span>
+          <span class="text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
+        </summary>
+        <p class="mt-3 text-sm text-ink-2">{{ i.text }}</p>
+        {% if plus %}<ol class="mt-3 space-y-1.5 text-sm">{% for st in i.steps %}<li class="flex gap-2"><span class="mono text-ink-3">{{ forloop.counter }}.</span><span>{{ st }}</span></li>{% endfor %}</ol>{% endif %}
+      </details></li>
+      {% endfor %}
+    </ul>
+    {% if t.ideas|length > 5 %}<button type="button" class="btn btn-ghost btn-sm mt-3 w-full" x-show="theme === '{{ t.key }}' && !more" @click="more = true">Ещё {{ t.ideas|length|add:"-5" }}</button>{% endif %}
+    {% endfor %}
+    {% if not plus %}{% include "components/plus_lock.html" with title="Пошаговые планы свиданий" cls="mt-4" %}{% endif %}
+    <p class="mt-4 text-xs text-ink-3">{% if intimate %}Идеи 18+ приходят по очереди в «Сегодня» — из того, на что вы оба сказали «да».{% else %}Идеи 18+ появятся, когда вы оба включите их в <a href="{% url 'intimacy' %}" class="font-bold underline">«Близости»</a>.{% endif %}</p>
+  </section>
+
+  {# ── the diary: days you both answered, newest first ── #}
+  <section class="mt-5" x-show="tab === 'diary'" x-cloak role="tabpanel" x-data="{ more: false }">
+    {% if not plus %}
+      {% include "components/plus_lock.html" with title="Дневник пары" text="Все ваши общие ответы на вопросы дня в одном месте." cls="mt-0" %}
+    {% elif diary %}
+      <ul class="space-y-3">
+        {% for d in diary %}
+        <li class="card p-4"{% if forloop.counter > 5 %} x-show="more" x-cloak{% endif %}>
+          <p class="text-xs font-bold uppercase tracking-wide text-ink-3">{{ d.day|date:"j E" }}</p>
+          <p class="mt-1 font-bold leading-snug">{{ d.question }}</p>
+          <div class="mt-2.5 grid gap-2 text-sm sm:grid-cols-2">
+            <p class="rounded-2xl bg-a-soft p-3"><b class="text-a-ink">{{ me_name }}:</b> {{ d.mine }}</p>
+            <p class="rounded-2xl bg-b-soft p-3"><b class="text-b-ink">{{ partner_name }}:</b> {{ d.theirs }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% if diary|length > 5 %}<button type="button" class="btn btn-ghost btn-sm mt-3 w-full" x-show="!more" @click="more = true">Ещё {{ diary|length|add:"-5" }}</button>{% endif %}
+    {% else %}
+      <div class="card p-6 text-center text-sm text-ink-2">Здесь появятся ваши общие ответы — когда вы оба ответите на вопрос дня.<br>
+        <a href="{% url 'daily' %}" class="btn btn-primary btn-sm mt-4">{% icon 'message-circle' 'size-4' %}К вопросу дня</a></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

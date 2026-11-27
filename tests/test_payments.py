@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from apps.compatibility.access import mark_paid, plus_for_pair, unlocked
 from apps.compatibility.infrastructure import yookassa
-from apps.compatibility.models import Purchase
+from apps.compatibility.models import DailyAnswer, Purchase
 from tests.test_flows import make_pair, sign_in
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -152,3 +152,57 @@ def test_gift_is_bought_once_and_opens_someone_elses_pair(settings):
     them.post(f"/gift/{gift.gift_code}/", {"pair": stored.pair.id})
     assert unlocked(stored.pair)
     assert them.get(f"/gift/{gift.gift_code}/").status_code == 404  # used once
+
+
+def test_plus_is_shared_in_badges_and_a_partners_payment_stacks_after_it():
+    from tests.test_accounts import _linked_pair
+
+    anya, misha, stored = _linked_pair()
+    pair = stored.pair
+    Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())
+    mark_paid(year := Purchase.objects.create(owner=pair.owner, kind="plus365", amount=1490))
+    assert "Бесплатный тариф" not in misha.get("/account/").content.decode()  # Аня paid: Миша has «Пара+» too and is told so
+    mark_paid(month := Purchase.objects.create(owner=pair.partner, kind="plus", amount=249))
+    assert (month.valid_until - year.valid_until).days == 30  # Миша pays early: his month starts when Аня's year ends
+
+
+def test_every_plan_opens_what_it_promises_and_nothing_more():
+    """The funnel in one table: the free week, free, the 490 ₽ report, a month and a year of «Пара+» — what each opens,
+    read from the pages a person gets (the plans page promises exactly this)."""
+    from tests.test_accounts import _linked_pair
+
+    anya, misha, stored = _linked_pair()
+    pair, rid = stored.pair, stored.id
+    for side in ("a", "b"):
+        DailyAnswer.objects.create(pair=pair, side=side, day=timezone.localdate() - timedelta(days=1), question="q", text=f"ужин-{side}")
+    misha.post("/wishes/", {"kind": "thing", "title": "Фотоаппарат"})
+
+    def opened():
+        daily, wishes = anya.get("/daily/").content.decode(), anya.get("/wishes/").content.decode()
+        return {
+            "report": "/pay/deep/" not in anya.get(f"/r/{rid}/razbor/").content.decode() and "в полном разборе" not in anya.get(f"/r/{rid}/astrology/").content.decode(),
+            "quiz": "Квиз недели — в «Паре+»" not in anya.get("/daily/quiz/").content.decode(),
+            "diary": "ужин-b" in daily and "Дневник пары — в «Паре+»" not in daily,
+            "reserve": "Забронировать" in wishes,
+            "plan": "Пошаговый план свидания — в «Паре+»" not in daily,
+        }  # fmt: skip
+
+    extras = {"quiz": True, "diary": True, "reserve": True, "plan": True}
+    none = dict.fromkeys(extras, False)
+    assert opened() == {"report": False, **extras}  # the free week: everyday extras, never the report
+    Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())
+    assert opened() == {"report": False, **none}
+    from apps.compatibility.services import report_of
+
+    razbor = anya.get(f"/r/{rid}/razbor/").content.decode()
+    assert not [s.title for s in report_of(stored).spheres[1:] if len(s.story) > 1 and s.story[1] in razbor]  # blur is CSS: no paid text
+    assert anya.post("/week/start/").status_code == 404  # a missing report id is «not found», not a server error
+    assert f"/r/{rid}/invite/" not in misha.get(f"/r/{rid}/").content.decode()  # the joined partner isn't asked to invite
+    mark_paid(deep := Purchase.objects.create(owner=pair.owner, pair=pair, kind="deep", amount=490))
+    assert opened() == {"report": True, **none}
+    deep.delete()
+    mark_paid(month := Purchase.objects.create(owner=pair.owner, kind="plus", amount=249))
+    assert opened() == {"report": False, **extras}
+    month.delete()
+    mark_paid(Purchase.objects.create(owner=pair.partner, kind="plus365", amount=1490))  # the partner pays: it's for both
+    assert opened() == {"report": True, **extras}

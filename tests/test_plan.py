@@ -35,7 +35,7 @@ def test_streak_counts_back_from_today_or_yesterday_and_breaks_on_a_gap():
 @pytest.mark.django_db
 def test_demo_plan_lives_in_the_session():
     client = Client()
-    title = client.get("/report/habits/").context["r"].habits[0].title
+    title = client.get("/daily/").context["r"].habits[0].title  # habits are picked in «Сегодня»
     assert client.post("/plan/pick/", {"habit": [title, "чужая"]}).json()["picked"] == [title]
     assert client.post("/plan/done/", {"habit": title}).json()["habits"][0]["today"]
     assert title in client.get("/daily/").content.decode()
@@ -45,7 +45,7 @@ def test_demo_plan_lives_in_the_session():
 def test_stored_plan_is_saved_on_the_pair_and_only_for_its_owner():
     client = Client()
     stored = make_pair(client)
-    title = client.get(f"/r/{stored.id}/habits/").context["r"].habits[1].title
+    title = client.get("/daily/").context["r"].habits[1].title
     client.post("/plan/pick/", {"rid": stored.id, "habit": [title]})
     stored.pair.refresh_from_db()
     assert stored.pair.plan["picked"] == [title]

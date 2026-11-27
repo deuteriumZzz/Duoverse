@@ -1,6 +1,6 @@
 """«История пары»: what happened to a pair, in order — reports with how the score moved, the partner joining, the pair week,
-the full report opened — plus which spheres changed most between the first and the latest report. Built from what is
-already stored; nothing new is tracked for it.
+the full report opened, what appeared on the tree — plus which spheres changed most between the first and the latest
+report. Built from what is already stored; only the day each thing appeared on the tree is noted for it.
 """
 
 from dataclasses import dataclass
@@ -21,8 +21,11 @@ def _day(d: date | datetime) -> date:
     return d.date() if isinstance(d, datetime) else d
 
 
-def events(reports: list[dict], joined: datetime | None, week: dict | None, opened: datetime | None) -> list[Event]:
-    """reports: [{"created_at", "score", "pair_type"}] oldest first; week: pair.plan["week"] or None."""
+def events(
+    reports: list[dict], joined: datetime | None, week: dict | None, opened: datetime | None, tree: dict | None = None
+) -> list[Event]:
+    """reports: [{"created_at", "score", "pair_type"}] oldest first; week: pair.plan["week"] or None; tree:
+    pair.plan["tree"], {mark: [day, title]} — the day each thing first appeared on the tree (tree.MARKS)."""
     out = []
     prev = None
     for i, r in enumerate(reports):
@@ -42,6 +45,7 @@ def events(reports: list[dict], joined: datetime | None, week: dict | None, open
         both = sum(1 for marks in week.get("done", {}).values() if {"a", "b"} <= set(marks))
         if both == len(week.get("days", [])) and both:
             out.append(Event(date.fromisoformat(week["started"]) + timedelta(days=6), "trophy", "Прошли неделю пары вдвоём"))
+    out += [Event(date.fromisoformat(day), "sprout", title, "на вашем дереве") for day, title in (tree or {}).values()]
     return sorted(out, key=lambda e: e.when, reverse=True)
 
 
@@ -69,6 +73,7 @@ if __name__ == "__main__":
     ev = events(r, datetime(2026, 1, 11), week, datetime(2026, 1, 20))
     assert ev[0].title == "Новый разбор" and "+6 к прошлому" in ev[0].detail and ev[-1].title == "Первый разбор пары"
     assert any(e.title == "Прошли неделю пары вдвоём" for e in ev)
+    assert events([], None, None, None, {"nest": ["2026-05-01", "Птица свила гнездо"]})[0].title == "Птица свила гнездо"
     ch = changes([{"key": "money", "title": "Деньги", "score": 40}, {"key": "home", "title": "Дом", "score": 60}],
                  [{"key": "money", "title": "Деньги", "score": 55}, {"key": "home", "title": "Дом", "score": 58}])  # fmt: skip
     assert ch[0] == {"title": "Деньги", "from": 40, "to": 55, "delta": 15} and len(ch) == 2

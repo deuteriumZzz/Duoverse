@@ -29,6 +29,21 @@ def plus_until(owner: Owner):
     )
 
 
+def shared_plus_until(owner: Owner | None):
+    """When «Пара+» ends for this person — their own or a partner's: it works for both, so the badge, the profile and
+    the plans must say so too (Миша sees «Пара+» that Аня paid for). None when there's none."""
+    if owner is None:
+        return None
+    paired = Pair.objects.filter(Q(owner=owner) | Q(partner=owner)).values_list("owner_id", "partner_id")
+    ids = {owner.id} | {i for row in paired for i in row if i}
+    return (
+        Purchase.objects.filter(owner_id__in=ids, kind__in=PLUS_DAYS, status="succeeded", valid_until__gt=timezone.now())
+        .order_by("-valid_until")
+        .values_list("valid_until", flat=True)
+        .first()
+    )
+
+
 def plus_for_pair(pair: Pair) -> bool:
     """«Пара+» works for both partners of a linked pair."""
     owners = [o for o in (pair.owner, pair.partner) if o is not None]
@@ -51,14 +66,8 @@ def mark_paid(purchase: Purchase) -> None:
         return
     purchase.status, purchase.paid_at = Purchase.Status.SUCCEEDED, timezone.now()
     if purchase.kind in PLUS_DAYS:
-        # stack on top of an active period so paying early never loses days
-        current = (
-            Purchase.objects.filter(owner=purchase.owner, kind__in=PLUS_DAYS, status="succeeded", valid_until__gt=timezone.now())
-            .exclude(id=purchase.id)
-            .order_by("-valid_until")
-            .first()
-        )
-        start = current.valid_until if current and current.valid_until else timezone.now()
+        # stack on top of the pair's active period (yours or your partner's) so paying early never loses days
+        start = shared_plus_until(purchase.owner) or timezone.now()
         purchase.valid_until = start + timedelta(days=PLUS_DAYS[purchase.kind])
     if purchase.kind == "gift":
         purchase.gift_code = new_gift_code()

@@ -176,18 +176,27 @@
 
 {# ─── next steps ─── #}
 <section class="mt-14 grid gap-4 md:grid-cols-3">
-  <a href="{{ rbase }}habits/" class="sticker group bg-sage-soft p-6" data-reveal>
+  <a href="{% url 'daily' %}#habits" class="sticker group bg-sage-soft p-6" data-reveal>
     <span class="grid size-11 place-items-center rounded-2xl border-2 border-ink bg-paper">{% icon 'sprout' %}</span>
     <h3 class="mt-5 font-display font-extrabold">План микропривычек</h3>
-    <p class="mt-1 text-sm text-ink-2">{{ r.habits|length }} маленьких шагов из вашего разбора</p>
-    <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Открыть {% icon 'arrow-right' 'size-4' %}</span>
+    <p class="mt-1 text-sm text-ink-2">{{ r.habits|length }} {{ r.habits|length|ru_plural:"шаг,шага,шагов" }} из вашего разбора</p>
+    <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Выбрать в «Сегодня» {% icon 'arrow-right' 'size-4' %}</span>
   </a>
+  {% if invite_url %}
   <a href="{{ invite_url }}" class="sticker group bg-b-soft p-6" data-reveal style="--i:1">
     <span class="grid size-11 place-items-center rounded-2xl border-2 border-ink bg-paper">{% icon 'user-plus' %}</span>
     <h3 class="mt-5 font-display font-extrabold">Пригласить {{ b.name }}</h3>
     <p class="mt-1 text-sm text-ink-2">Пусть ответит сам — разбор станет точнее</p>
     <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Отправить ссылку {% icon 'arrow-right' 'size-4' %}</span>
   </a>
+  {% else %}{# the partner has joined: the next place is your home together #}
+  <a href="{% url 'pair_invite' %}" class="sticker group bg-b-soft p-6" data-reveal style="--i:1">
+    <span class="grid size-11 place-items-center rounded-2xl border-2 border-ink bg-paper">{% icon 'house' %}</span>
+    <h3 class="mt-5 font-display font-extrabold">Ваша главная</h3>
+    <p class="mt-1 text-sm text-ink-2">Дерево, «Думаю о тебе» и всё, что у вас общее</p>
+    <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold transition-all group-hover:gap-2.5">Открыть {% icon 'arrow-right' 'size-4' %}</span>
+  </a>
+  {% endif %}
   <a href="{% url 'daily' %}" class="sticker group bg-pair-soft p-6" data-reveal style="--i:2">
     <span class="grid size-11 place-items-center rounded-2xl border-2 border-ink bg-paper">{% icon 'sun' %}</span>
     <h3 class="mt-5 font-display font-extrabold">Вопрос дня</h3>

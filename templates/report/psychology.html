@@ -9,7 +9,7 @@
   <div class="relative bg-paper/70 backdrop-blur-sm">
     {% with quiz=quiz_url %}
     {% include "components/empty_state.html" with icon="brain" bg="bg-sage-soft" title="Научный слой пока выключен" text="Пройдите короткие анкеты (≈ 8 минут на каждого): Big Five, тип привязанности и реакции в конфликте. Это самый надёжный слой отчёта." cta="Пройти анкеты" cta_url=quiz %}{% endwith %}
-    <p class="pb-10 text-center text-xs text-ink-3">Партнёр может пройти свою часть по ссылке — <a class="font-bold underline" href="{{ invite_url }}">пригласить</a></p>
+    {% if invite_url %}<p class="pb-10 text-center text-xs text-ink-3">Партнёр может пройти свою часть по ссылке — <a class="font-bold underline" href="{{ invite_url }}">пригласить</a></p>{% endif %}
   </div>
 </section>
 {% else %}

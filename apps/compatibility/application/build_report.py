@@ -4,6 +4,7 @@ Numbers come from deterministic code; every sentence comes from a knowledge bloc
 the optional LLM stitcher only rewrites the summary and sphere stories from these same blocks (prompt §4).
 """
 
+import hashlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, time
@@ -704,11 +705,15 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             )
         )
 
-    # habits grow out of the weakest spheres: two per sphere, each tied to that sphere's strongest reason
+    # habits grow out of the weakest spheres: two per sphere, each tied to that sphere's strongest reason; which two of the
+    # sphere's six depends on the pair, so two couples with the same weak spheres don't get the same list («Сегодня»
+    # offers the rest of the six too)
     sphere_habits = []
     for weak_sphere in sorted(spheres, key=lambda x: x.score)[:3]:
         reason = weak_sphere.evidence[0] if weak_sphere.evidence else ev(factors[0])
-        for hb in kb.series(f"HABIT:{weak_sphere.key}:")[:2]:
+        pool = kb.series(f"HABIT:{weak_sphere.key}:")
+        start = int(hashlib.sha256(f"{a.id}:{b.id}:{weak_sphere.key}".encode()).hexdigest(), 16) % max(len(pool), 1)
+        for hb in (pool[start:] + pool[:start])[:2]:
             sphere_habits.append(Habit(title=hb["title"], cadence=hb["cadence"], duration=hb["duration"], why=hb["why"], evidence=reason))
     habits = sphere_habits or habits
 

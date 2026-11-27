@@ -40,6 +40,7 @@ and «Пара+» as the one dark card with the year and the month as two rows; 
         {% for f in plan.features %}<li class="flex items-start gap-2.5"><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-milk/15 text-pair">{% icon 'check' 'size-3' %}</span>{{ f }}</li>{% endfor %}
         <li class="flex items-start gap-2.5 font-bold text-pair" x-show="year" x-transition.opacity><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-pair text-ink">{% icon 'plus' 'size-3' %}</span>{{ plan.year_extra }} — с годом</li>
       </ul>
+      {% if me.plus %}<p class="mt-6 rounded-2xl bg-milk/10 p-3 text-xs font-bold text-pair">У вас «Пара+» до {{ me.plus_until|date:"j E" }}. Оплата сейчас продлит срок — дни не сгорят.</p>{% endif %}
       <form method="post" action="{% url 'checkout' 'plus365' %}" :action="year ? '{% url 'checkout' 'plus365' %}' : '{% url 'checkout' 'plus' %}'" class="mt-8">{% csrf_token %}
         <button class="btn btn-light w-full"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}><span x-text="year ? 'Подключить на год · {{ price_plus_year }} ₽' : 'Подключить на месяц · {{ plan.price }}'">Подключить на год · {{ price_plus_year }} ₽</span></button>
       </form>
@@ -57,7 +58,7 @@ and «Пара+» as the one dark card with the year and the month as two rows; 
         {% for f in plan.features %}<li class="flex items-start gap-2.5"><span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-synergy-soft text-synergy-ink">{% icon 'check' 'size-3' %}</span>{{ f }}</li>{% endfor %}
       </ul>
       {% if plan.kind == "free" %}
-        {% if me.account and not me.plus %}<span class="btn btn-ghost pointer-events-none mt-8 opacity-70">Ваш тариф сейчас</span>{% else %}<a href="{% url 'start' %}" class="btn btn-ghost mt-8">{{ plan.cta }}</a>{% endif %}
+        {% if me.account %}<span class="btn btn-ghost pointer-events-none mt-8 opacity-70">{% if me.plus %}Входит в ваш тариф{% else %}Ваш тариф сейчас{% endif %}</span>{% else %}<a href="{% url 'start' %}" class="btn btn-ghost mt-8">{{ plan.cta }}</a>{% endif %}
       {% else %}<a href="{% url 'history' %}" class="btn btn-primary mt-8">{{ plan.cta }}</a>{% endif %}
       <p class="mt-3 text-center text-xs text-ink-3">{{ plan.small }}</p>
     </article>
@@ -73,16 +74,6 @@ and «Пара+» as the one dark card with the year and the month as two rows; 
   </section>
 
   <p class="mt-6 text-center text-xs text-ink-3">Оплачивая, вы принимаете <a href="{% url 'terms' %}" class="underline">Соглашение и публичную оферту</a>. «Пара+» не продлевается сама.</p>
-
-  <h2 class="mt-14 text-center font-display text-2xl font-extrabold">Что где есть</h2>
-  <div class="card mt-6 overflow-x-auto p-2" data-reveal>
-    <table class="w-full min-w-[34rem] text-left text-sm">
-      <thead><tr class="text-ink-3"><th class="p-4 font-bold">Что входит</th><th class="p-4 font-bold">Бесплатно</th><th class="p-4 font-bold">Глубокий разбор</th><th class="p-4 font-bold">Пара+</th></tr></thead>
-      <tbody class="divide-y divide-line">
-        {% for row in compare %}<tr><td class="p-4 font-semibold">{{ row.0 }}</td>{% for v in row.1 %}<td class="p-4">{% if v == True %}<span class="text-synergy" aria-label="есть">{% icon 'check' 'size-4' %}</span>{% elif v == False %}<span class="text-ink-3" aria-label="нет">—</span>{% else %}{{ v }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
-      </tbody>
-    </table>
-  </div>
 
   <div class="mx-auto mt-14 max-w-2xl">
     <h2 class="text-center font-display text-2xl font-extrabold">Частые вопросы</h2>

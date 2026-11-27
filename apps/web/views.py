@@ -17,6 +17,7 @@ from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import SimpleLazyObject
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
@@ -29,10 +30,11 @@ from apps.compatibility import date_ideas, places, story
 from apps.compatibility import dates as pair_dates
 from apps.compatibility import intimacy as intimacy_wishes
 from apps.compatibility import plan as habit_plan
+from apps.compatibility import stages as pair_stages
 from apps.compatibility import tree as pair_tree
 from apps.compatibility import week as pair_week
 from apps.compatibility import wishes as pair_wishes
-from apps.compatibility.access import grant_trial, mark_paid, open_gift, plus_for_pair, plus_until, redeem_gift, unlocked
+from apps.compatibility.access import grant_trial, mark_paid, open_gift, plus_for_pair, redeem_gift, shared_plus_until, unlocked
 from apps.compatibility.domain.archetypes import DYNAMICS, ELEMENTS, MODES, ROLES, dynamic_for, pair_name
 from apps.compatibility.domain.report import Report, ReportUnavailable
 from apps.compatibility.infrastructure import oauth, yookassa
@@ -76,7 +78,6 @@ from config.container import report_provider
 # What an ordinary reader needs: the answer, the spheres, what to do. The layers live one level down.
 REPORT_TABS = {  # title, icon, short title for the phone tab bar
     "razbor": ("Разбор", "book-open", "Разбор"),
-    "habits": ("Вместе", "sprout", "Вместе"),
     "layers": ("Из чего сложилось", "blocks", "Слои"),
 }
 LAYER_TABS = {
@@ -196,23 +197,6 @@ PLANS = [  # what is gated: access.plus_for_pair (quiz, diary, reservation, date
         ],
     },
 ]
-COMPARE = [
-    ("Тип пары, балл и первая сфера", (True, True, True)),
-    ("Вопрос дня, серия и наше дерево", (True, True, True)),
-    ("Календарь пары и карта желаний", (True, True, True)),
-    ("«Думаю о тебе» и «спасибо за…»", (True, True, True)),
-    ("«Близость 18+» из общих «да»", (True, True, True)),
-    ("Все 13 сфер, научный слой и сценарии", (False, True, "с годом")),
-    ("Четыре вселенные", ("2 из 4", True, "с годом")),
-    ("«Неделя пары»", ("1-й день", True, "с годом")),
-    ("PDF", (False, True, "с годом")),
-    ("Для всех ваших пар", (False, "одна пара", "с годом")),
-    ("«Свидание недели»", ("идея", "идея", "идея и план")),
-    ("Квиз недели", (False, False, True)),
-    ("Дневник ответов", (False, False, True)),
-    ("Тихая бронь подарков", (False, False, True)),
-    ("Открывается партнёру", (True, True, True)),
-]
 FAQ_PRICING = [
     ("Платить нужно обоим?", "Нет. Разбор открывается вам обоим, а «Пара+» одного из вас работает для всей пары."),
     (
@@ -275,8 +259,13 @@ STORY = [
 
 FAQ = [
     (
+        "Это только разбор совместимости?",
+        "Нет. Разбор — начало: он показывает, как устроена ваша пара. Дальше у вас общее пространство — вопрос дня, ваше дерево, "
+        "свидание недели, календарь и карта желаний.",
+    ),
+    (
         "Это предсказание?",
-        "Нет. Мы не предсказываем события и не решаем за вас. Отчёт показывает сильные стороны пары и зоны, где понадобятся договорённости.",
+        "Нет. Мы не предсказываем события и не решаем за вас. Разбор показывает сильные стороны пары и зоны, где понадобятся договорённости.",
     ),
     (
         "Что если я не знаю время рождения?",
@@ -287,18 +276,23 @@ FAQ = [
         "Это единственный слой с научной базой. Мы показываем его рядом с символическими, но не смешиваем, чтобы он оставался читаемым.",
     ),
     (
-        "Партнёру нужно регистрироваться?",
-        "Нет. Вы отправляете ссылку, партнёр проходит свою часть — и вы видите общий разбор, когда ответили оба.",
+        "Нужно регистрироваться?",
+        "Для первого разбора — нет. Чтобы позвать партнёра и вести всё вдвоём, нужен вход по почте, без паролей: так ваша пара "
+        "откроется с любого устройства.",
     ),
     (
-        "Нужно регистрироваться?",
-        "Нет. Разборы хранятся на вашем устройстве. Если захотите открыть их на другом телефоне — пришлём ссылку на почту, без паролей.",
+        "Партнёр увидит мои ответы?",
+        "Ответы анкет — нет, только общий вывод. Ответ на вопрос дня откроется партнёру, когда ответите оба.",
     ),
     (
         "Что с моими данными?",
-        "Данные рождения и анкеты шифруются, используются только для отчёта и удаляются одной кнопкой. Соответствие 152-ФЗ и GDPR.",
+        "Данные рождения, анкеты и всё, что вы пишете вдвоём, шифруются и удаляются одной кнопкой. Соответствие 152-ФЗ и GDPR.",
     ),
-    ("Сколько стоит?", "Быстрый отчёт бесплатный. Глубокий разбор, парный режим и PDF — по прозрачной цене, без автосписаний."),
+    (
+        "Сколько стоит?",
+        f"Каждый день вдвоём — бесплатно. Полный разбор — {settings.PRICE_DEEP} ₽ разово, «Пара+» — "
+        f"от {round(settings.PRICE_PLUS_YEAR / 12)} ₽ в месяц на двоих. Без автосписаний.",
+    ),
 ]
 
 SPHERE_TITLES = [
@@ -392,7 +386,7 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
         "chapters": REPORT_CHAPTERS,
         "rbase": rbase,
         "quiz_url": reverse("quiz"),
-        "invite_url": reverse("pair_invite"),
+        "invite_url": reverse("landing") + "#pair",  # the sample has no one to invite; a stored report sets its own link
         "share_url": request.build_absolute_uri(rbase + "share/"),
         # «add time and place» goes back to the wizard with this pair's data filled in (stored reports set it)
         "upgrade_url": (extra or {}).get("upgrade_url") or reverse("wizard") + "?mode=extended",
@@ -437,6 +431,12 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
             "layer_tabs": LAYER_TABS,
             "universe_tab": UNIVERSE_TAB,
             "plan": _plan_ctx(request, (extra or {}).get("stored")),
+            # only «Сегодня» reads it: this week's six habits, counted from the report's day (the demo from a fixed Monday)
+            "habits_now": SimpleLazyObject(
+                lambda: _habits_now(
+                    report, _report_day(extra), timezone.localdate(), _plan_ctx(request, (extra or {}).get("stored"))["picked"]
+                )
+            ),
             **roles,
             **links,
             **charts,
@@ -444,6 +444,11 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
             **ctx,
         },
     )
+
+
+def _report_day(extra: dict | None) -> date:
+    stored = (extra or {}).get("stored")
+    return timezone.localtime(stored.created_at).date() if stored else date(2026, 1, 5)
 
 
 def _my_side(request: HttpRequest, pair: Pair | None) -> str:
@@ -457,13 +462,50 @@ def _plan_ctx(request: HttpRequest, stored: StoredReport | None) -> dict:
     return {**habit_plan.state(raw, timezone.localdate(), side), "rid": str(stored.id) if stored else "", "max": habit_plan.MAX_PICK}
 
 
+def _habit_pool(report: Report) -> list:
+    """What «Сегодня» offers to pick from: the report's own habits first, then every other habit of the same three weakest
+    spheres (eight per sphere in the knowledge base), each with its sphere's reason — twenty-four to choose from, not six."""
+    from apps.compatibility.domain.report import Habit
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    if not report.habits:
+        return []
+    kb, pool = KnowledgeRepository(), list(report.habits)
+    seen = {h.title for h in pool}
+    for sphere in sorted(report.spheres, key=lambda s: s.score)[:3]:
+        reason = sphere.evidence[0] if sphere.evidence else report.habits[0].evidence
+        for hb in kb.series(f"HABIT:{sphere.key}:"):
+            if hb["title"] not in seen:
+                seen.add(hb["title"])
+                pool.append(Habit(title=hb["title"], cadence=hb["cadence"], duration=hb["duration"], why=hb["why"], evidence=reason))
+    return pool
+
+
+HABITS_SHOWN, HABITS_NEW_A_WEEK = 6, 2
+
+
+def _habits_now(report: Report, since: date, today: date, picked: list[str]) -> list[tuple]:
+    """What «Сегодня» offers this week: six of the pair's habits, two of them swapped for new ones every Monday (marked
+    «новая»), so the list stays short and keeps changing — the report's own six in the first week, the whole pool of the
+    weakest spheres in nine. Whatever is picked stays on top. (habit, is_new) pairs."""
+    pool = _habit_pool(report)
+    if not pool:
+        return []
+    n, k = len(pool), max(0, (today - since).days // 7)
+    window = lambda w: [pool[(HABITS_NEW_A_WEEK * w + i) % n] for i in range(min(HABITS_SHOWN, n))]  # noqa: E731
+    now, before = window(k), ({h.title for h in window(k - 1)} if k else {h.title for h in window(0)})
+    kept = [h for h in pool if h.title in picked and h not in now]
+    now = [h for h in now if h.title in picked] + [h for h in now if h.title not in picked]  # what's in the plan comes first
+    return [(h, False) for h in kept] + [(h, h.title not in before) for h in now]
+
+
 def _plan_target(request: HttpRequest) -> tuple[dict, list[str], Pair | None]:
     """The plan being edited: the owner's stored pair when `rid` is given, otherwise the demo plan in the session."""
     if rid := request.POST.get("rid"):
         stored = _owned_report(request, rid)
-        return stored.pair.plan, [h.title for h in report_of(stored).habits], stored.pair
+        return stored.pair.plan, [h.title for h in _habit_pool(report_of(stored))], stored.pair
     report = report_provider().get_report(_scenario(request))
-    return request.session.get("plan", {}), [h.title for h in report.habits], None
+    return request.session.get("plan", {}), [h.title for h in _habit_pool(report)], None
 
 
 def _plan_save(request: HttpRequest, plan: dict, pair: Pair | None) -> JsonResponse:
@@ -566,6 +608,35 @@ def landing(request: HttpRequest) -> HttpResponse:
             "b": r.partners[1],
             "pair_types": [_example(a, b) for a, b in EXAMPLE_PAIRS],
             "faq": FAQ,
+            "steps": [  # «Как это устроено»: the report is the way in, the pair space is where you stay
+                (
+                    "1",
+                    "bg-a-soft text-a-ink",
+                    "≈ 30 секунд",
+                    "Разбор пары",
+                    "Астрология, числа и таро по датам рождения — балл, тип пары и где вы сильны. Глубже — с временем, местом и психологическими тестами.",
+                    reverse("wizard"),
+                    "Начать",
+                ),
+                (
+                    "2",
+                    "bg-pair-soft",
+                    "одна ссылка",
+                    "Позовите партнёра",
+                    "У вас появится общее пространство — оно станет вашей главной. Неделя «Пары+» — в подарок.",
+                    "#pair",
+                    "Что внутри",
+                ),
+                (
+                    "3",
+                    "bg-b-soft text-b-ink",
+                    "пара минут в день",
+                    "Каждый день вдвоём",
+                    "Вопрос дня и свидание недели — по сферам из вашего разбора. От всего, что вы делаете вдвоём, растёт ваше дерево.",
+                    reverse("pricing"),
+                    "Что бесплатно",
+                ),
+            ],  # fmt: skip
             "marquee": MARQUEE,
             "story": STORY,
         },
@@ -575,7 +646,6 @@ def landing(request: HttpRequest) -> HttpResponse:
 def pricing(request: HttpRequest) -> HttpResponse:
     ctx = {
         "plans": PLANS,
-        "compare": COMPARE,
         "faq": FAQ_PRICING,
         "price_plus_year": settings.PRICE_PLUS_YEAR,
         "price_deep": settings.PRICE_DEEP,
@@ -588,6 +658,8 @@ def report(request: HttpRequest) -> HttpResponse:
 
 
 def report_tab(request: HttpRequest, tab: str) -> HttpResponse:
+    if tab == "habits":  # habits are picked and kept in «Сегодня» now; old links open that sheet
+        return redirect(reverse("daily") + "#habits")
     if tab == "weights":
         return _demo(request, "pages/weights.html")
     if tab not in REPORT_TABS and tab not in LAYER_TABS:
@@ -631,30 +703,118 @@ def weights(request: HttpRequest) -> HttpResponse:
     return _demo(request, "pages/weights.html")
 
 
-def question_of_day(report: Report, seed: str, today: date) -> str:
-    """A new question every day, leaning on the pair's weakest spheres; both partners get the same one.
+def _pair_stage(pair: Pair, today: date) -> tuple[pair_stages.Stage, int, bool]:
+    """Where the pair is on its path: the stage, days you both answered before today (today's answers don't move the
+    question under your feet), and whether both switched «Близость 18+» on."""
+    sides: dict[date, set] = {}
+    for d, s in DailyAnswer.objects.filter(pair=pair, day__lt=today).values_list("day", "side"):
+        sides.setdefault(d, set()).add(s)
+    days = sum(1 for v in sides.values() if len(v) == 2)
+    return pair_stages.stage_for(days), days, set(pair.plan.get("date18", [])) == {"a", "b"}
+
+
+TILE_TITLES = {"week": "«Неделя пары»", "talk": "«Как мы?»", "quiz": "Квиз недели"}
+
+
+def _path_ctx(pair: Pair, report: Report | None, today: date) -> dict:
+    """The pair's stage for «Главная» and «Сегодня»: where you are, what's next, which tiles are open and when the
+    closed ones open, and — on the day a stage begins — a word about it."""
+    stage, days, _ = _pair_stage(pair, today)
+    paired = (today - timezone.localtime(pair.created_at).date()).days
+    opened = pair_stages.opened(days, paired)
+    soon = sorted(
+        (min(max(t - days, 0) or 99, max(p - paired, 0) or 99), TILE_TITLES[k])
+        for k, (t, p) in pair_stages.OPENS.items()
+        if k not in opened
+    )
+    nxt = pair_stages.next_stage(days)
+    titles = {s.key: s.title for s in report.spheres} if report else {}
+    return {
+        "stage": stage,
+        "stage_next": nxt[0] if nxt else None,
+        "stage_left": nxt[1] if nxt else 0,
+        "stage_progress": round(100 * (days - stage.starts) / (nxt[0].starts - stage.starts)) if nxt else 100,
+        "stage_new": stage.n > 1 and days == stage.starts,
+        "opened": opened,
+        "soon": soon,
+        "talk_focus": _quiz_focus(pair, titles),
+        "roadmap": pair_stages.roadmap(days),  # «Ваш путь»: the whole path, so nothing comes as a surprise
+    }
+
+
+def _quiz_of_week(pair: Pair, today: date) -> dict | None:
+    """The pair's quiz this week: light ones first, serious ones as the path goes deeper (each quiz has a level 1–3),
+    every pair in its own order — the next one you haven't both done yet, counted on Monday so it holds all week."""
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    quizzes = KnowledgeRepository().series("QUIZ:")
+    if not quizzes:
+        return None
+    monday = today - timedelta(days=today.weekday())
+    stage = _pair_stage(pair, monday)[0]
+    order = sorted(quizzes, key=lambda q: (q.get("level", 1), hashlib.sha256(f"{pair.id}:{q['key']}".encode()).hexdigest()))
+    allowed = [q for q in order if q.get("level", 1) <= stage.n]
+    sides: dict[str, set] = {}
+    for key, side in QuizAnswer.objects.filter(pair=pair, created_at__date__lt=monday).values_list("quiz_key", "side"):
+        sides.setdefault(key, set()).add(side)
+    fresh = [q for q in allowed if len(sides.get(q["key"], ())) < (2 if pair.partner_id else 1)]
+    return fresh[0] if fresh else allowed[(monday - timezone.localtime(pair.created_at).date()).days // 7 % len(allowed)]
+
+
+def _quiz_focus(pair: Pair, titles: dict[str, str]) -> dict | None:
+    """Where your latest quiz together showed different answers (two or more): the week's talk and date start there.
+    None when you answered alike — nothing to dig into — or haven't both done one yet."""
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    quizzes = {q["key"]: q for q in KnowledgeRepository().series("QUIZ:")}
+    rows: dict[str, dict] = {}
+    for q in QuizAnswer.objects.filter(pair=pair).order_by("-created_at")[:20]:
+        rows.setdefault(q.quiz_key, {})[q.side] = q.picks
+    for key, by in rows.items():  # newest first
+        if len(by) == 2 and key in quizzes:
+            diff = sum(x != y for x, y in zip(by["a"], by["b"], strict=False))
+            sphere = quizzes[key].get("sphere", "")
+            return {"sphere": sphere, "title": titles.get(sphere, ""), "quiz": quizzes[key]["title"], "diff": diff} if diff >= 2 else None
+    return None
+
+
+def question_of_day(
+    report: Report, seed: str, today: date, stage: pair_stages.Stage | None = None, intimate: bool = False, met: date | None = None
+) -> str:
+    """A new question every day, leaning on the pair's weakest spheres; both partners get the same one. On a holiday
+    (New Year's Eve, the first day of a season, 14 February…) and on the day you met, a question for that day instead.
     Even days go to the four weakest spheres, odd days to the rest; each sphere walks its own pool in turn, so a
     question comes back only after its whole sphere was asked (weak ones in about 7 months, the rest in over a year).
+    With the pair's `stage` (stages.py) only what fits it is asked: at the first stage light questions about what
+    already works — the strongest spheres first, nothing sensitive — and deeper ones as you go.
     """
     from apps.knowledge.infrastructure.repository import KnowledgeRepository
 
     kb = KnowledgeRepository()
+    anniversary = met and met < today and (met.month, met.day) == (today.month, today.day)
+    if special := kb.data("HOLIDAY:met" if anniversary else f"HOLIDAY:{today:%m-%d}"):
+        return special["question"]
     order = [s.key for s in sorted(report.spheres, key=lambda s: s.score)]
     pools = {k: kb.series(f"QUESTION:{k}:") for k in order}
+    if stage:
+        pools = {k: [q for q in pool if pair_stages.question_ok(k, q.get("depth", 1), stage, intimate)] for k, pool in pools.items()}
     order = [k for k in order if pools[k]]
     if not order:
         return report.daily.question
     n = (today - date(2026, 1, 1)).days + int(hashlib.sha256(seed.encode()).hexdigest()[:6], 16)
-    group, k = ((order[:4] if n % 2 == 0 else order[4:]), n // 2) if order[4:] else (order, n)
+    if stage and stage.n == 1:  # start from strengths: what already works is easier to talk about
+        group, k = order[::-1], n
+    else:
+        group, k = ((order[:4] if n % 2 == 0 else order[4:]), n // 2) if order[4:] else (order, n)
     pool = pools[group[k % len(group)]]
     return pool[(k // len(group)) % len(pool)]["question"]
 
 
-def _week_days(report: Report, seed: str) -> list[dict]:
+def _week_days(report: Report, seed: str, round_: int = 0) -> list[dict]:
     from apps.knowledge.infrastructure.repository import KnowledgeRepository
 
     scenario = next((s.title for s in report.psychology.scenarios if s.tone != "synergy"), "")
-    return pair_week.build([(s.key, s.title, s.score) for s in report.spheres], scenario, KnowledgeRepository().series, seed)
+    return pair_week.build([(s.key, s.title, s.score) for s in report.spheres], scenario, KnowledgeRepository().series, seed, round_)
 
 
 def _week_ctx(pair: Pair | None, report: Report, side: str) -> dict:
@@ -668,10 +828,12 @@ def _week_ctx(pair: Pair | None, report: Report, side: str) -> dict:
 @require_POST
 def week_start(request: HttpRequest) -> HttpResponse:
     stored = _owned_report(request, request.POST.get("rid", ""))
-    pair = stored.pair
-    if not pair.plan.get("week"):
-        days = _week_days(report_of(stored), str(pair.id))
-        pair.plan = {**pair.plan, "week": {"rid": str(stored.id), "started": timezone.localdate().isoformat(), "days": days, "done": {}}}
+    pair, today = stored.pair, timezone.localdate()
+    w = pair.plan.get("week")
+    if not w or pair_week.finished(w, today):  # the first week, or the next one once seven days have passed
+        n = (w.get("round", 0) + 1) if w else 0
+        days = _week_days(report_of(stored), str(pair.id), n)
+        pair.plan = {**pair.plan, "week": {"rid": str(stored.id), "started": today.isoformat(), "days": days, "done": {}, "round": n}}
         pair.save(update_fields=["plan"])
         notify_partner(pair, side_of(get_owner(request), pair), "week")  # type: ignore[arg-type]
     return redirect(reverse("daily") + "#week")
@@ -761,10 +923,89 @@ def _date_idea(pair: Pair, report: Report) -> dict:
             return False
 
     weak = [s.key for s in sorted(report.spheres, key=lambda s: s.score)[:4]]
+    if focus := _quiz_focus(pair, {}):  # different answers in the last quiz: that's what to talk about on the date
+        weak = [focus["sphere"]]
     week = date_ideas.week_no(timezone.localdate())
     idea = date_ideas.pick(week, str(pair.id), weak, open_to_new(pair.a) and open_to_new(pair.b), mutual, close_on)
     titles = {s.key: s.title for s in report.spheres}  # «про „Деньги“» on the tile: where in your report it comes from
     return {**idea, "why": next((titles[k] for k in idea["spheres"] if k in titles), "")}
+
+
+# quiz topics in «Библиотека», like the category row of couple apps: thirteen spheres in five words
+QUIZ_TOPICS = (
+    ("talk", "Общение", ("talk", "conflicts")),
+    ("feel", "Чувства", ("emotions", "trust", "shadows")),
+    ("close", "Близость", ("attraction", "sex")),
+    ("home", "Быт и деньги", ("home", "money", "power")),
+    ("life", "Люди и планы", ("people", "plans", "growth")),
+)
+TOPIC_OF = {sphere: key for key, _, spheres in QUIZ_TOPICS for sphere in spheres}
+
+
+def library(request: HttpRequest) -> HttpResponse:
+    """«Библиотека», like Explore in couple apps: everything that is open to you — quizzes (done ones with how much you
+    matched, open ones to take any time, the rest with the stage they open at), date ideas, and your diary of answers.
+    «Сегодня» brings one thing a day; here you can go back or ahead within what's open."""
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+    owner = get_owner(request)
+    pair = pairs_of(owner).select_related("a", "b").order_by("-created_at").first() if owner and owner.is_account else None
+    if not pair:
+        return redirect(reverse("landing") + "#pair")
+    today, side = timezone.localdate(), side_of(owner, pair)  # type: ignore[arg-type]
+    stage, days, intimate = _pair_stage(pair, today)
+    stored = latest_ready(pair)
+    titles = {s.key: s.title for s in report_of(stored).spheres} if stored else {}
+    week = _quiz_of_week(pair, today)
+    rows: dict[str, dict] = {}
+    for a in QuizAnswer.objects.filter(pair=pair):
+        rows.setdefault(a.quiz_key, {})[a.side] = a.picks
+    quizzes = []
+    for q in sorted(
+        KnowledgeRepository().series("QUIZ:"),
+        key=lambda q: (q.get("level", 1), hashlib.sha256(f"{pair.id}:{q['key']}".encode()).hexdigest()),
+    ):
+        by, level = rows.get(q["key"], {}), q.get("level", 1)
+        done = len(by) == 2
+        quizzes.append({
+            "key": q["key"], "title": q["title"], "sphere": titles.get(q.get("sphere", ""), ""), "open": level <= stage.n,
+            "topic": TOPIC_OF.get(q.get("sphere", ""), ""),
+            "opens_at": pair_stages.STAGES[level - 1].title, "done": done, "mine": side in by, "this_week": bool(week) and week["key"] == q["key"],
+            "match": round(100 * sum(x == y for x, y in zip(by["a"], by["b"], strict=False)) / len(q["items"])) if done else None,
+        })  # fmt: skip
+    ideas = [{**i, "theme_title": date_ideas.THEMES[t]} for t in ("talk", "play", "romance") for i in date_ideas.IDEAS[t]]
+    plus = plus_for_pair(pair)
+    diary = []
+    if plus:
+        by_day: dict[date, dict] = {}
+        for a in DailyAnswer.objects.filter(pair=pair, day__lt=today).order_by("-day")[:120]:
+            by_day.setdefault(a.day, {})[a.side] = a
+        other = "b" if side == "a" else "a"
+        diary = [
+            {"day": d, "question": v[side].question, "mine": v[side].text, "theirs": v[other].text}
+            for d, v in by_day.items()
+            if len(v) == 2
+        ][:30]
+    ctx = {
+        "pair": pair, "stage": stage, "quizzes": quizzes, "ideas": ideas, "plus": plus, "diary": diary, "intimate": intimate,
+        "me_name": pair.a.name if side == "a" else pair.b.name, "partner_name": pair.b.name if side == "a" else pair.a.name,
+        "open_count": sum(q["open"] for q in quizzes), "done_count": sum(q["done"] for q in quizzes),
+    }  # fmt: skip
+    # shelves, not a wall of 52 cards: this week's quiz, the open ones in a row, the done ones as a list, and what is
+    # ahead as one line per stage; date ideas by theme
+    ctx |= {
+        "week_quiz": next((q for q in quizzes if q["this_week"] and q["open"] and not q["done"]), None),
+        "open_quizzes": [q for q in quizzes if q["open"] and not q["done"] and not q["this_week"]],
+        "done_quizzes": [q for q in quizzes if q["done"]],
+        "ahead": [
+            {"stage": s.title, "n": len(qs), "titles": [q["title"] for q in qs[:3]]}
+            for s in pair_stages.STAGES
+            if (qs := [q for q in quizzes if not q["open"] and q["opens_at"] == s.title])
+        ],
+        "themes": [{"key": t, "title": date_ideas.THEMES[t], "ideas": date_ideas.IDEAS[t]} for t in ("talk", "play", "romance")],
+        "quiz_topics": [(key, title) for key, title, _ in QUIZ_TOPICS],
+    }
+    return render(request, "pages/library.html", ctx)
 
 
 def pair_calendar(request: HttpRequest) -> HttpResponse:
@@ -887,6 +1128,60 @@ def idea_done(request: HttpRequest) -> HttpResponse:
     return redirect(reverse("daily") + ("?together=1" if set(marks) == {"a", "b"} else "") + "#date-idea")
 
 
+# «Как вы сегодня?» — one tap, as weather (the pair's own metaphor): key → icon, how it reads to the partner
+MOODS = {
+    "sun": ("sun", "радостно"),
+    "calm": ("cloud-sun", "спокойно"),
+    "tired": ("cloud", "устало"),
+    "sad": ("cloud-rain", "грустно"),
+    "tense": ("cloud-lightning", "тревожно"),
+}
+
+
+def _moods(pair: Pair, side: str, today: date) -> dict:
+    """Today's mood of each of you (pair.plan["mood"] = {side: [day, key]}); yesterday's is gone by morning."""
+    now = {s: k for s, (day, k) in pair.plan.get("mood", {}).items() if day == today.isoformat() and k in MOODS}
+    theirs = now.get("b" if side == "a" else "a")
+    return {
+        "moods": [(k, icon, word) for k, (icon, word) in MOODS.items()],
+        "my_mood": now.get(side, ""),
+        "partner_mood": {"key": theirs, "icon": MOODS[theirs][0], "word": MOODS[theirs][1]} if theirs else None,
+    }
+
+
+@require_POST
+def daily_mood(request: HttpRequest) -> HttpResponse:
+    """Set (or clear, with an empty mood) how you are today; your partner sees it on «Главная» and «Сегодня»."""
+    owner = get_owner(request)
+    pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None
+    mood = request.POST.get("mood", "")
+    if not pair:
+        raise Http404
+    if mood and mood not in MOODS:
+        return JsonResponse({"error": "mood"}, status=400)
+    side, today = side_of(owner, pair), timezone.localdate()  # type: ignore[arg-type]
+    with transaction.atomic():
+        pair = Pair.objects.select_for_update().get(id=pair.id)
+        moods = {k: v for k, v in pair.plan.get("mood", {}).items() if k != side}
+        pair.plan = {**pair.plan, "mood": {**moods, **({side: [today.isoformat(), mood]} if mood else {})}}
+        pair.save(update_fields=["plan"])
+    return JsonResponse({"mood": mood})
+
+
+def _focus(ctx: dict) -> tuple[str, bool]:
+    """The one weekly thing «Сегодня» puts second, after the question: the first open one you haven't done yet — the
+    week's step, the quiz, the date, the talk — or, when all are done, the first open one, ticked. (key, done)"""
+    opened = ctx.get("opened")
+    options = [
+        ("week", not opened or "week" in opened, bool(ctx.get("step") and ctx["step"].get("mine"))),
+        ("quiz", bool(ctx.get("answers")) and bool(opened) and "quiz" in opened, bool(ctx.get("quiz_mine"))),
+        ("date", bool(ctx.get("date_idea")), bool(ctx.get("idea_mine"))),
+        ("talk", bool(ctx.get("pair")) and bool(opened) and "talk" in opened, bool(ctx.get("talk_mine"))),
+    ]
+    todo = next((k for k, ok, done in options if ok and not done), "")
+    return (todo, False) if todo else next(((k, True) for k, ok, _ in options if ok), ("", False))
+
+
 @require_POST
 def talk_done(request: HttpRequest) -> HttpResponse:
     """«Как мы»: each partner marks this week's talk; it counts when both did."""
@@ -944,15 +1239,10 @@ def _week_strip(pair: Pair, side: str, today: date, plus: bool) -> dict:
 
 def _tile_marks(pair: Pair, side: str, week: dict | None) -> dict:
     """Who has done this week's things, so each tile on «Сегодня» shows both partners' marks instead of a paragraph."""
-    from apps.knowledge.infrastructure.repository import KnowledgeRepository
-
-    quizzes = KnowledgeRepository().series("QUIZ:")
-    done: set = set()
-    if quizzes:
-        key = quizzes[timezone.localdate().isocalendar().week % len(quizzes)]["key"]
-        done = set(QuizAnswer.objects.filter(pair=pair, quiz_key=key).values_list("side", flat=True))
+    quiz = _quiz_of_week(pair, timezone.localdate())
+    done = set(QuizAnswer.objects.filter(pair=pair, quiz_key=quiz["key"]).values_list("side", flat=True)) if quiz else set()
     return {
-        "step": week["days"][week["today"] - 1] if week else None,
+        "step": week["days"][week["today"] - 1] if week and not week["finished"] else None,  # a finished week: the tile offers the next
         "quiz_mine": side in done,
         "quiz_partner": ("b" if side == "a" else "a") in done,
     }
@@ -969,7 +1259,9 @@ def daily(request: HttpRequest) -> HttpResponse:
         extra = {
             "stored": stored,
             "pair": pair,
-            "daily_question": question_of_day(report, str(pair.id), today),
+            "daily_question": question_of_day(
+                report, str(pair.id), today, *_pair_stage(pair, today)[::2], met=pair_dates.met_day(pair.dates)
+            ),
             "answers": daily_state(pair, side, today),
             "plus": plus_for_pair(pair),
             "price_deep": settings.PRICE_DEEP,
@@ -990,10 +1282,14 @@ def daily(request: HttpRequest) -> HttpResponse:
             **_week_strip(pair, side, today, plus_for_pair(pair)),
         }
         extra |= _tile_marks(pair, side, extra.get("week"))
+        extra |= _path_ctx(pair, report, today)
         extra["tree"] = _pair_tree(pair, extra["answers_together"], extra["strip"][3]["ring"] == 2, report)  # today is the middle
+        extra |= _moods(pair, side, today)
+        extra["focus"], extra["focus_done"] = _focus(extra)
         return _render_report(request, report, "pages/daily.html", reverse("stored_report", args=[stored.id]), extra)
     demo = report_provider().get_report(_scenario(request))
     demo_ctx = {"daily_question": question_of_day(demo, "demo", today), "me_g": "", **_week_ctx(None, demo, "a")}  # a guest: neutral forms
+    demo_ctx |= {"focus": "week", "focus_done": False}
     return _render_report(request, demo, "pages/daily.html", reverse("report"), demo_ctx)
 
 
@@ -1009,7 +1305,15 @@ def daily_answer(request: HttpRequest) -> HttpResponse:
     today = timezone.localdate()
     side = side_of(owner, pair)
     _, created = DailyAnswer.objects.update_or_create(
-        pair=pair, side=side, day=today, defaults={"question": question_of_day(report_of(stored), str(pair.id), today), "text": text}
+        pair=pair,
+        side=side,
+        day=today,
+        defaults={
+            "question": question_of_day(
+                report_of(stored), str(pair.id), today, *_pair_stage(pair, today)[::2], met=pair_dates.met_day(pair.dates)
+            ),
+            "text": text,
+        },
     )
     if created:
         notify_partner(pair, side, "answered")
@@ -1018,16 +1322,20 @@ def daily_answer(request: HttpRequest) -> HttpResponse:
 
 def quiz_week(request: HttpRequest) -> HttpResponse:
     """Quiz of the week (Пара+): each partner answers about themselves; matches show once both have answered."""
-    from apps.knowledge.infrastructure.repository import KnowledgeRepository
 
     owner = get_owner(request)
     pair = pairs_of(owner).order_by("-created_at").first() if owner and owner.is_account else None
     if not pair or not owner:
         return _to_login(request, "save")
-    quizzes = KnowledgeRepository().series("QUIZ:")
-    if not quizzes:
+    quiz = _quiz_of_week(pair, timezone.localdate())
+    if (key := request.GET.get("q", "")) and key != (quiz or {}).get("key"):  # from the library: any quiz the path has opened
+        from apps.knowledge.infrastructure.repository import KnowledgeRepository
+
+        chosen = next((q for q in KnowledgeRepository().series("QUIZ:") if q["key"] == key), None)
+        if chosen and chosen.get("level", 1) <= _pair_stage(pair, timezone.localdate())[0].n:
+            quiz = chosen
+    if not quiz:
         raise Http404
-    quiz = quizzes[timezone.localdate().isocalendar().week % len(quizzes)]
     side = side_of(owner, pair)
     me, partner = (pair.a, pair.b) if side == "a" else (pair.b, pair.a)
     ctx = {"quiz": quiz, "pair": pair, "plus": plus_for_pair(pair), "has_partner": bool(pair.partner_id), "price_plus": settings.PRICE_PLUS}
@@ -1045,7 +1353,7 @@ def quiz_week(request: HttpRequest) -> HttpResponse:
             )
             if created:
                 notify_partner(pair, side, "quiz")
-        return redirect("quiz_week")
+        return redirect(request.get_full_path())  # back to the same quiz, the library's one too
     rows = {r.side: r for r in QuizAnswer.objects.filter(pair=pair, quiz_key=quiz["key"])}
     me_row, them_row = rows.get(side), rows.get("b" if side == "a" else "a")
     mine, theirs = (me_row.picks if me_row else None), (them_row.picks if them_row else None)
@@ -1233,6 +1541,10 @@ def generating_status(request: HttpRequest) -> HttpResponse:
 # ── stored reports (owner-only) ───────────────────────────────────────────
 def _owned_report(request: HttpRequest, rid) -> StoredReport:
     owner = get_owner(request)
+    try:
+        rid = uuid.UUID(str(rid))  # forms post it as text: a missing or broken id is «not found», not a server error
+    except ValueError:
+        raise Http404 from None
     stored = StoredReport.objects.select_related("pair").filter(id=rid).first()
     if not stored or not owner or owner.id not in (stored.pair.owner_id, stored.pair.partner_id):
         raise Http404  # the creator and the joined partner only
@@ -1304,8 +1616,9 @@ def _stored(request: HttpRequest, rid, template: str, **ctx) -> HttpResponse:
         "price_deep": settings.PRICE_DEEP,
         "unlock_items": _unlock_items(report_of(stored)) if locked else [],
         "gift_code": request.session.get("gift_code", "") if locked else "",  # a gift waiting for this pair
-        "quiz_url": reverse("person_quiz", args=[pair.a_id]),
-        "invite_url": reverse("invite", args=[stored.id]),
+        # your own questionnaire, whichever side you are; inviting is the creator's step and only until the partner joins
+        "quiz_url": reverse("person_quiz", args=[pair.b_id if owner and pair.partner_id == owner.id else pair.a_id]),
+        "invite_url": reverse("invite", args=[stored.id]) if owner and pair.owner_id == owner.id and not pair.partner_id else "",
         "share_url": request.build_absolute_uri(reverse("public_share", args=[share_token(stored)])),
     }
     if owner and pair.owner_id == owner.id:
@@ -1319,6 +1632,8 @@ def stored_report(request: HttpRequest, rid) -> HttpResponse:
 
 
 def stored_tab(request: HttpRequest, rid, tab: str) -> HttpResponse:
+    if tab == "habits":  # habits are picked and kept in «Сегодня» now; old links open that sheet
+        return redirect(reverse("daily") + "#habits")
     if tab == "share":
         return _stored(request, rid, "report/share.html", tab="share")
     if tab in ("pdf", "weights"):
@@ -1482,22 +1797,30 @@ def _pair_tree(pair: Pair, answers: int, watered: bool, report: Report | None) -
     dates_n = sum(1 for v in pair.plan.get("ideas", {}).values() if set(v) == {"a", "b"})
     dreams = sum(1 for w in pair.wishes if w["kind"] == "dream" and w["done"])
     kind = report.pair_type.dynamic if report else "complement"
-    return pair_tree.grow(answers, dates_n, dreams, watered, months=(known or 0) // 30, kind=kind)
+    today = timezone.localdate()
+    tree = pair_tree.grow(
+        answers, dates_n, dreams, watered, months=(known or 0) // 30, kind=kind,
+        season=pair_tree.season(today.month), snow=pair_tree.snowing(today), hour=timezone.localtime().hour, holiday=pair_tree.holiday(today),
+    )  # fmt: skip
+    if new := {k: [today.isoformat(), t] for k, t in tree["marks"] if k not in pair.plan.get("tree", {})}:
+        with transaction.atomic():  # the day something new appeared on the tree, once, for «История пары»
+            fresh = Pair.objects.select_for_update().get(id=pair.id)
+            fresh.plan = {**fresh.plan, "tree": {**new, **fresh.plan.get("tree", {})}}
+            fresh.save(update_fields=["plan"])
+            pair.plan = fresh.plan
+    return tree
 
 
 def together(request: HttpRequest) -> HttpResponse:
     """«Вдвоём»: your shared space — the tree you grow by doing things together, «Думаю о тебе», a thank-you, what your
-    partner did lately, and everything that is «ours» as tiles. Before the partner joins it is the invite."""
+    partner did lately, and everything that is «ours» as tiles. Before the partner joins it is still your home — the path
+    card on top says step one is the invite, and only what needs two (nudges, the feed, today's line) waits."""
     owner = get_owner(request)
     pair = pairs_of(owner).order_by("-created_at").first() if owner else None
-    if not owner or not owner.is_account or not pair:  # without an account it is a preview: what is here and how to begin
-        return render(
-            request,
-            "pages/together_preview.html",
-            {"has_report": bool(pair and latest_ready(pair)), "account": bool(owner and owner.is_account)},
-        )
-    if not pair.partner_id:  # step one of the path: invite the partner
-        return redirect("invite_new", pair_id=pair.id)
+    if pair and latest_ready(pair) and not owner.is_account:  # type: ignore[union-attr]
+        return _to_login(request, "invite")  # a report but no account: the pair space starts with signing in
+    if not owner or not owner.is_account or not pair:  # nothing to show yet: the landing tells what a couple gets here
+        return redirect(reverse("landing") + "#pair")
     side, today = side_of(owner, pair), timezone.localdate()  # type: ignore[arg-type]
     other = "b" if side == "a" else "a"
     sides: dict[date, set] = {}
@@ -1539,9 +1862,12 @@ def together(request: HttpRequest) -> HttpResponse:
         "weather": _weather(pair),
         "sent": request.GET.get("sent", ""),
         "path": _pair_path(owner, pair, len(both), latest_ready(pair)),  # type: ignore[arg-type]
+        **_path_ctx(pair, report_of(stored) if (stored := latest_ready(pair)) else None, today),
         "today_mine": side in sides.get(today, ()),
         "today_partner": other in sides.get(today, ()),
+        "solo": not pair.partner_id,  # signed in, partner not here yet: home with the invite as step one
         **_pair_people(request, pair),
+        **_moods(pair, side, today),
     }
     ctx["me_av"], ctx["partner_av"] = (ctx["av_a"], ctx["av_b"]) if side == "a" else (ctx["av_b"], ctx["av_a"])
     ctx["me_g"], ctx["partner_g"] = (pair.a.gender, pair.b.gender) if side == "a" else (pair.b.gender, pair.a.gender)
@@ -1654,7 +1980,7 @@ def pair_story(request: HttpRequest, pair_id) -> HttpResponse:
     side = side_of(owner, pair)  # type: ignore[arg-type]
     ctx = {
         "pair": pair,
-        "events": story.events(rows, pair.joined_at, pair.plan.get("week"), opened),
+        "events": story.events(rows, pair.joined_at, pair.plan.get("week"), opened, pair.plan.get("tree")),
         "changes": story.changes(snaps[0].get("spheres", []), snaps[-1].get("spheres", [])) if len(snaps) > 1 else [],
         "scores": [r["score"] for r in rows],
         "recheck": bool(ready) and story.recheck_due(ready[-1].created_at, timezone.now()),
@@ -1689,7 +2015,19 @@ def unlink_partner(request: HttpRequest, pair_id) -> HttpResponse:
         if had_answers:
             pair.reports.all().delete()
             request_report(pair)
-    return redirect("history")
+    return redirect(_next_url(request) if request.POST.get("next") else "history")
+
+
+@require_POST
+def delete_pair(request: HttpRequest, pair_id) -> HttpResponse:
+    """«Удалить пару» in the profile: the creator removes the pair with its reports, answers, dates, wishes and notes.
+    Receipts stay (Purchase.pair is SET_NULL) and so do the people in «Сохранённые люди»; a partner leaves instead."""
+    owner = get_owner(request)
+    pair = Pair.objects.filter(id=pair_id, owner=owner).first() if owner else None
+    if not pair:
+        raise Http404
+    pair.delete()
+    return redirect(reverse("account") + "#pair")
 
 
 # ── accounts: sign in by an emailed code, no passwords (ADR-0010) ─────────
@@ -1703,6 +2041,7 @@ LOGIN_TITLE = {
     "profile": "Вы ещё не вошли",
     "join": "Последний шаг — вход",
     "gift": "Вам подарили полный разбор",
+    "plan": "Ведите план вдвоём",
 }
 LOGIN_WHY = {
     "save": "Разбор не потеряется, откроется с любого устройства, и партнёра можно будет позвать. Пароль не нужен — пришлём код на почту.",
@@ -1711,6 +2050,7 @@ LOGIN_WHY = {
     "join": "После входа вы сразу окажетесь в паре — так вы оба найдёте её с любого устройства. Пароль не нужен.",
     "pay": "Войдите по почте: туда придёт чек, а покупка откроется с любого устройства. Пароль не нужен.",
     "gift": "Войдите — и подарок откроет разбор вашей пары целиком, вам обоим. Пароль не нужен.",
+    "plan": "Войдите по почте — выберете привычки из своего разбора и будете отмечать их вместе с партнёром. Пароль не нужен.",
 }
 
 
@@ -2106,7 +2446,7 @@ def account(request: HttpRequest) -> HttpResponse:
         "devices": owner.devices.all() if owner and owner.is_account else [],
         "telegram_bot": settings.TELEGRAM_BOT_NAME,
         "telegram_linked": bool(owner and owner.telegram_chat_id),
-        "plus_until": plus_until(owner) if owner else None,
+        "plus_until": shared_plus_until(owner),
         "price_plus_year": settings.PRICE_PLUS_YEAR,
         "price_plus": settings.PRICE_PLUS,
         "privacy_email": settings.PRIVACY_EMAIL,
@@ -2125,7 +2465,10 @@ def account(request: HttpRequest) -> HttpResponse:
 def _cabinet_pair(request: HttpRequest, pair: Pair) -> dict:
     stored = latest_ready(pair)
     url = reverse("stored_report", args=[stored.id]) if stored else ""
+    owner = get_owner(request)
     return {
+        "id": pair.id,
+        "mine": bool(owner) and pair.owner_id == owner.id,  # type: ignore[union-attr]  # the creator may unlink or delete; a partner may leave
         "a": pair.a,
         "b": pair.b,
         "url": url,

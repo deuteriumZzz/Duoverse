@@ -345,7 +345,7 @@ def test_cabinet_avatar_invite_and_shared_tracker_with_marks_per_person():
     misha = Client()
     sign_in(misha, "misha@example.com")
     misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
-    title = anya.get(f"/r/{stored.id}/habits/").context["r"].habits[0].title
+    title = anya.get("/daily/").context["r"].habits[0].title  # habits are picked in «Сегодня»
     anya.post("/plan/pick/", {"rid": stored.id, "habit": [title]})
     mine = anya.post("/plan/done/", {"rid": stored.id, "habit": title}).json()["habits"][0]
     assert mine["today"] and not mine["partner"]
@@ -643,9 +643,11 @@ def test_a_couple_opens_on_together_with_their_path_and_todays_line():
     anya = Client()
     stored = make_pair(anya, email="anya@example.com")
     assert anya.get("/")["Location"] == "/pair/"  # signed in, «Главная» is the pair
-    assert anya.get("/pair/")["Location"].endswith("/invite/")  # before the partner joins, it is step one: the invite
+    home = anya.get("/pair/").content.decode()  # before the partner joins it is still home: the invite is step one on it
+    assert "шаг 1 из 3" in home and "/invite/" in home and "Думаю о тебе" not in home and 'id="tree"' in home
     tabs = anya.get("/daily/").content.decode().split('aria-label="Нижнее меню"')[1]
     assert "Вдвоём" not in tabs and tabs.index("Главная") < tabs.index("Сегодня") and 'href="/pair/"' in tabs  # Главная = the pair
+    assert f'href="/r/{stored.id}/"' in tabs  # «Отчёт» = their own report
     head = anya.get("/daily/").content.decode().split('aria-label="Основное меню"')[1].split("</nav>")[0]
     assert head.index("Главная") < head.index("Сегодня") and "Вдвоём" not in head  # the same on a computer
     assert "путь пары" not in anya.get("/?about").content.decode()  # the page about Duoverse is one link away
@@ -656,21 +658,190 @@ def test_a_couple_opens_on_together_with_their_path_and_todays_line():
     misha.post(f"/join/{code}/", {"action": "accept", "consent": "on"})
     page = anya.get("/pair/").content.decode()
     assert "шаг 2 из 3" in page and "Анкеты вдвоём" in page and "Пройти анкету" in page
-    assert "Вопрос дня ждёт вас" in page and "из 100 ·" in page  # today in one line; the score links to the report
+    assert "Вопрос дня ждёт вас" not in page and "из 100 ·" not in page  # one next step on the home; the score is in «Отчёт»
+    assert "Быстрый старт" not in page and "Быстрый старт" in Client().get("/").content.decode()  # no site footer inside the app
     misha.post("/daily/answer/", {"text": "Поездка в горы"})
-    assert "уже ответил(а) — ваш ход" in anya.get("/pair/").content.decode()
+    assert "уже ответил(а) — ответьте" in anya.get("/daily/").content.decode()
 
 
-def test_without_an_account_together_is_a_preview_and_today_says_it_is_a_sample():
+def test_a_guest_has_one_home_and_today_says_it_is_a_sample():
     visitor = Client()
-    page = visitor.get("/pair/").content.decode()
-    assert "Пространство вашей пары" in page and "Узнать совместимость" in page  # nothing yet: start with the check
+    assert visitor.get("/pair/")["Location"] == "/#pair"  # no pair yet: home tells what a couple gets
+    home = visitor.get("/").content.decode()
+    assert 'id="pair"' in home and "Ваше пространство" in home and "Разбор — это" in home  # not only a report
+    tabs = home.split('aria-label="Нижнее меню"')[1].split("</nav>")[0]
+    assert tabs.count("<li>") == 4 and "Вдвоём" not in tabs  # Главная, Сегодня, Отчёт, Профиль — the same four as a couple's
+    assert 'href="/report/"' in tabs  # no report of your own yet: «Отчёт» is the sample
+    today = visitor.get("/daily/").content.decode()
+    assert "Это пример из разбора" in today and "guest: true" in today  # «Сегодня» is to look at: habit taps ask to sign in
+    assert "Ведите план вдвоём" in visitor.get("/login/?sheet=1&why=plan").content.decode()
     visitor.post("/new/", {"mode": "quick", "a_name": "Аня", "a_date": "1996-03-14", "b_name": "Миша", "b_date": "1994-09-02"})
-    page = visitor.get("/pair/").content.decode()
-    assert "Войти и позвать партнёра" in page  # a report but no account: sign in, then invite
+    assert visitor.get("/pair/")["Location"].startswith("/login/")  # a report but no account: sign in, then invite
+    tabs = visitor.get("/daily/").content.decode().split('aria-label="Нижнее меню"')[1].split("</nav>")[0]
+    assert 'href="/r/' in tabs and 'href="/report/"' not in tabs  # «Отчёт» is now their own report, not the sample
+    assert "/story/" not in visitor.get("/history/").content.decode()  # the pair story needs an account
     assert "Это пример." in visitor.get("/daily/").content.decode()
 
 
 def test_an_english_browser_still_gets_one_language_russian():
     r = Client().get("/pricing/", HTTP_ACCEPT_LANGUAGE="en-US,en;q=0.9")
     assert r.headers["Content-Language"] == "ru"  # so dates and Django's own messages stay Russian too
+
+
+def test_the_profile_can_unlink_delete_or_leave_a_pair():
+    anya, misha, stored = _linked_pair()
+    pid = stored.pair_id
+    page, his = anya.get("/account/").content.decode(), misha.get("/account/").content.decode()
+    assert "Отвязать партнёра" in page and "Удалить пару" in page
+    assert "Выйти из пары" in his and "Удалить пару" not in his
+    assert misha.post(f"/p/{pid}/delete/").status_code == 404  # a partner leaves; only the creator deletes
+    assert misha.post(f"/p/{pid}/unlink/", {"next": "/account/#pair"})["Location"] == "/account/#pair"
+    assert Pair.objects.get(id=pid).partner_id is None
+    Purchase.objects.create(owner_id=stored.pair.owner_id, pair_id=pid, kind="deep", amount=490, status="succeeded")
+    assert anya.post(f"/p/{pid}/delete/")["Location"] == "/account/#pair"
+    assert not Pair.objects.filter(id=pid).exists() and Purchase.objects.filter(kind="deep", pair=None).exists()  # receipts stay
+
+
+def test_habits_are_picked_and_kept_in_today():
+    from apps.compatibility.services import report_of
+
+    anya, misha, stored = _linked_pair()
+    rid = stored.id
+    assert anya.get(f"/r/{rid}/habits/")["Location"] == "/daily/#habits"  # the old report tab opens the sheet in «Сегодня»
+    assert f"/r/{rid}/habits/" not in anya.get(f"/r/{rid}/").content.decode()  # the report explains, «Сегодня» is for doing
+    title = report_of(stored).habits[0].title
+    page = anya.get("/daily/").content.decode()
+    assert title in page and "В план" in page and "Привычки из вашего разбора" in page  # nothing picked yet: the choice is here
+    assert anya.post("/plan/pick/", {"rid": rid, "habit": [title]}).json()["picked"] == [title]
+    assert "Ваш план на неделю" in anya.get("/daily/").content.decode()
+
+
+def test_more_habits_to_pick_and_a_new_week_after_seven_days():
+    from datetime import timedelta
+
+    anya, misha, stored = _linked_pair()
+    rid, pid = stored.id, stored.pair_id
+    from apps.compatibility.services import report_of
+    from apps.web.views import _habit_pool, _habits_now
+
+    report, today = report_of(stored), timezone.localdate()
+    pool = _habit_pool(report)
+    assert len(pool) == 24 and len({h.title for h in pool}) == 24  # eight per weakest sphere, no repeats
+    now = anya.get("/daily/").context["habits_now"]
+    assert [h.title for h, _ in now] == [h.title for h in report.habits] and not any(new for _, new in now)  # week one: the report's six
+    later = _habits_now(report, today - timedelta(days=7), today, [])
+    assert len(later) == 6 and sum(new for _, new in later) == 2  # every Monday two new ones come in, marked «новая»
+    extra = pool[-1].title
+    assert anya.post("/plan/pick/", {"rid": rid, "habit": [extra]}).json()["picked"] == [extra]  # any of the pool counts
+    assert extra in [h.title for h, _ in anya.get("/daily/").context["habits_now"]]  # and a picked one stays on the list
+
+    anya.post("/week/start/", {"rid": rid})
+    pair = Pair.objects.get(id=pid)
+    first = [d["title"] for d in pair.plan["week"]["days"]]
+    pair.plan = {**pair.plan, "week": {**pair.plan["week"], "started": (timezone.localdate() - timedelta(days=8)).isoformat()}}
+    pair.save(update_fields=["plan"])
+    assert "Неделя позади" in anya.get("/daily/").content.decode()
+    anya.post("/week/start/", {"rid": rid})
+    week = Pair.objects.get(id=pid).plan["week"]
+    assert week["round"] == 1 and week["started"] == timezone.localdate().isoformat()
+    assert [d["title"] for d in week["days"]] != first  # new talks and exercises, not the same seven again
+
+
+def test_the_path_opens_step_by_step_and_follows_quiz_answers():
+    from datetime import timedelta
+
+    from apps.compatibility.models import QuizAnswer
+    from apps.web.views import _quiz_of_week
+
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    today = timezone.localdate()
+    quiz = _quiz_of_week(pair, today)
+    assert quiz["level"] == 1  # a new pair starts with a light quiz, not jealousy or intimacy
+    daily = anya.get("/daily/").content.decode()
+    assert "Скоро откроются" in daily and "Квиз недели · через" in daily  # not everything on day one
+    home = anya.get("/pair/").content.decode()
+    assert "этап пары · 1 из 3" in home and "Знакомство заново" in home
+
+    Pair.objects.filter(id=pair.id).update(created_at=timezone.now() - timedelta(days=12))  # two weeks in: talk and quiz open
+    for side, picks in (("a", [0, 0, 0, 0, 0, 0]), ("b", [1, 1, 0, 0, 0, 0])):
+        QuizAnswer.objects.create(pair=pair, side=side, quiz_key=quiz["key"], picks=picks)
+    daily = anya.get("/daily/").content.decode()
+    assert "Скоро откроются" not in daily and f"в квизе «{quiz['title']}» вы ответили по-разному в 2 из 6" in daily
+    QuizAnswer.objects.filter(pair=pair).update(created_at=timezone.now() - timedelta(days=8))  # done before this Monday
+    assert _quiz_of_week(pair, today)["key"] != quiz["key"]  # next week brings the next one
+
+
+def test_the_library_shows_what_is_open_and_the_path_what_is_ahead():
+    from apps.knowledge.infrastructure.repository import KnowledgeRepository
+    from apps.web.views import _quiz_of_week
+
+    assert Client().get("/library/")["Location"] == "/#pair"  # a guest: the landing says what a couple gets
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    page = anya.get("/library/").content.decode()
+    assert "квиз этой недели" in page and "На этапе «Глубже» — ещё 22 квиза" in page and "На этапе «Откровенно» — ещё 10 квизов" in page
+    assert "Открыты сейчас" in page and page.count('class="w-40 shrink-0 snap-start"') == 19  # the rest of the light ones, in a row
+    assert "Все темы" in page and "Быт и деньги" in page  # topics filter what is open and done, like couple apps do
+    week = _quiz_of_week(pair, timezone.localdate())
+    light = next(q for q in KnowledgeRepository().series("QUIZ:") if q.get("level") == 1 and q["key"] != week["key"])
+    deep = next(q for q in KnowledgeRepository().series("QUIZ:") if q.get("level") == 3)
+    assert light["title"] in anya.get(f"/daily/quiz/?q={light['key']}").content.decode()  # any open quiz, from the library
+    assert deep["title"] not in anya.get(f"/daily/quiz/?q={deep['key']}").content.decode()  # never one the path hasn't reached
+    home = anya.get("/pair/").content.decode()
+    assert "Что вас ждёт" in home and "Самые личные разговоры" in home and "вы здесь" in home  # the whole path, ahead of time
+
+
+def test_the_tree_keeps_changing_after_it_is_big_and_the_story_remembers():
+    from datetime import timedelta
+
+    from apps.compatibility.models import DailyAnswer
+
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    today = timezone.localdate()
+    days = [DailyAnswer(pair=pair, side=s, day=today - timedelta(days=n), question="q", text="ok") for n in range(1, 101) for s in "ab"]
+    DailyAnswer.objects.bulk_create(days)
+    home = anya.get("/pair/").content.decode()
+    assert "Большое дерево" in home and "до гнезда" in home  # past the biggest stage the bar goes on, to what comes next
+    assert 'data-time="' in home and 'class="lit"' in home and 'id="tree-night"' in home  # the sky follows the time of day
+    assert "этап пары · 3 из 3" in home and "Откровенно" in home  # the stage sits in the tree card, a ribbon and a heart on it
+    pair.refresh_from_db()
+    assert set(pair.plan["tree"]) == {"big", "fruit"} and pair.plan["tree"]["fruit"][0] == today.isoformat()
+    anya.get("/pair/")
+    assert Pair.objects.get(id=pair.id).plan["tree"] == pair.plan["tree"]  # noted once, the day it appeared
+    story = anya.get(f"/p/{pair.id}/story/").content.decode()
+    assert "Выросло большое дерево" in story and "на вашем дереве" in story
+
+
+def test_the_home_has_one_next_step_today_three_things_and_a_mood():
+    from datetime import timedelta
+
+    from django.urls import reverse
+
+    from apps.compatibility.models import DailyAnswer
+
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    today = timezone.localdate()
+    days = [DailyAnswer(pair=pair, side=s, day=today - timedelta(days=n), question="q", text="ok") for n in range(1, 4) for s in "ab"]
+    DailyAnswer.objects.bulk_create(days)
+    for person in (pair.a, pair.b):  # both questionnaires done: the couple's path is behind them
+        person.answers = person.answers or {"done": True}
+        person.save(update_fields=["answers"])
+    home = anya.get("/pair/").content.decode()
+    assert "Вопрос дня ждёт вас" in home and 'aria-label="Путь пары' not in home  # the path is done: today's question is next
+    assert "Думаю о тебе" in home and 'id="thanks"' in home and "погода пары" not in home  # the weather is in «Сегодня» now
+    daily = anya.get("/daily/").content.decode()
+    assert "три дела на сегодня" in daily and "Ещё на этой неделе" in daily and "Как вы сегодня?" in daily
+    assert "Политика данных" in anya.get(reverse("account")).content.decode()  # the footer's links live in «Профиль»
+
+    assert anya.post("/daily/mood/", {"mood": "rain"}).status_code == 400  # only the five
+    assert anya.post("/daily/mood/", {"mood": "tired"}).json() == {"mood": "tired"}
+    assert "Аня: устало" in misha.get("/pair/").content.decode() and "Аня: " in misha.get("/daily/").content.decode()
+    anya.post("/daily/mood/", {"mood": ""})  # taken back
+    assert "Аня: устало" not in misha.get("/pair/").content.decode()
+    yesterday = (today - timedelta(days=1)).isoformat()
+    Pair.objects.filter(id=pair.id).update(plan={**Pair.objects.get(id=pair.id).plan, "mood": {"a": [yesterday, "sad"]}})
+    assert "Аня: грустно" not in misha.get("/pair/").content.decode()  # yesterday's mood is gone by morning
+    assert Client().post("/daily/mood/", {"mood": "sun"}).status_code == 404
