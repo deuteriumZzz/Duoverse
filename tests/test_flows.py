@@ -185,7 +185,7 @@ def test_demo_razbor_shows_cross_layer_factors_and_depth(client):
 
 def test_report_nav_hides_layers_behind_one_tab_and_factors_link_into_them(client):
     overview = client.get("/report/").content.decode()
-    assert "Из чего сложилось" in overview and "Точность разбора" in overview and 'href="/report/astrology/"' in overview
+    assert "Из чего сложилось" in overview and "Точность разбора" in overview and 'href="/report/layers/"' in overview
     layers = client.get("/report/layers/").content.decode()
     assert all(f'href="/report/{t}/"' in layers for t in ("astrology", "psychology", "numbers", "tarot"))
     astro = client.get("/report/astrology/").content.decode()

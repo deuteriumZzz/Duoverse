@@ -97,7 +97,9 @@
     <label class="flex cursor-pointer items-center gap-2 text-sm font-bold text-ink-2"><input type="checkbox" class="size-4 accent-[var(--color-ink)]" x-model="minor">показать минорные</label>
   </div>
   {% aspect_matrix r.astrology as grid %}
-  <div class="card mt-5 overflow-x-auto p-3" data-reveal>
+  <details class="group mt-5">
+  <summary class="card flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-sm font-bold hover:border-ink [&::-webkit-details-marker]:hidden">Показать сетку<span class="text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span></summary>
+  <div class="card mt-2 overflow-x-auto p-3">
     <table class="mx-auto border-separate border-spacing-1 text-center">
       <thead><tr><th class="p-1 text-[0.65rem] text-ink-3"><span class="text-a-ink">{{ a.name|first }}</span> ↓ · <span class="text-b-ink">{{ b.name|first }}</span> →</th>
         {% for q in grid.cols %}<th class="p-1 text-base text-b-ink" title="{{ q.name }}">{{ q.glyph }}</th>{% endfor %}</tr></thead>
@@ -114,6 +116,7 @@
     </table>
   </div>
   <p class="mt-2 text-xs text-ink-3">Обводка — двойная связь (аспект в обе стороны). Зелёный — гармония, янтарь — напряжение.</p>
+  </details>
 </section>
 
 {# ─── every aspect with its reading ─── #}
@@ -182,7 +185,7 @@
     </div>
     {% endfor %}
   </div>
-  {% if r.astrology.composite_aspects %}<p class="mono mt-4 text-xs leading-relaxed text-ink-3">Аспекты композита: {{ r.astrology.composite_aspects|join:" · " }}</p>{% endif %}
+  {% if r.astrology.composite_aspects %}<details class="mt-4"><summary class="cursor-pointer text-sm font-bold text-ink-2 hover:text-ink">Аспекты композита · {{ r.astrology.composite_aspects|length }}</summary><p class="mono mt-2 text-xs leading-relaxed text-ink-3">{{ r.astrology.composite_aspects|join:" · " }}</p></details>{% endif %}
 </section>
 
 {# ─── balance ─── #}

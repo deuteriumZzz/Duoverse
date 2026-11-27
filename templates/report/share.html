@@ -42,7 +42,7 @@
         <input class="field mono text-sm" :value="'https://' + link" readonly aria-label="Ссылка">
         <button class="btn btn-primary shrink-0" @click="navigator.clipboard?.writeText('https://' + link).catch(() => {}); toast('Ссылка скопирована', 'copy')">{% icon 'copy' 'size-4' %}<span class="hidden sm:inline">Копировать</span></button>
       </div>
-      <p class="mono mt-2 text-xs text-ink-3">подписанная ссылка · живёт 30 дней · открывает только карточку, не разбор</p>
+      <p class="mono mt-2 text-xs text-ink-3">работает 30 дней и открывает только карточку</p>
       <div class="mt-4 grid grid-cols-2 gap-2">
         <button class="btn btn-ghost" @click="navigator.share ? navigator.share({ title: 'Наша пара — {{ r.pair_type.name }}', url: 'https://' + link }).catch(() => {}) : toast('Ссылка скопирована', 'copy')">{% icon 'share-2' 'size-4' %}Поделиться</button>
         <a class="btn btn-ghost" href="{{ rbase }}share/card.svg" download="duoverse-pair.svg" @click="toast('Карточка скачана', 'image-down')">{% icon 'image-down' 'size-4' %}Скачать</a>

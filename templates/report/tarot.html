@@ -51,32 +51,14 @@
   <p class="relative mt-3 text-center text-xs text-ink-3">Нажмите на открытую карту, чтобы прочитать её описание</p>
 </section>
 
-<section class="mt-5 grid gap-5 lg:grid-cols-[1.3fr_1fr]">
+<section class="mt-5">
   <article class="card p-6 sm:p-8" data-reveal>
     <h2 class="text-xl font-extrabold">Что говорит аркан-слой</h2>
     <p class="mt-3 leading-relaxed text-ink-2">{{ t.reading }}</p>
-    <div class="mt-6 grid gap-3 sm:grid-cols-3">
-      <div class="side-a t-bg rounded-2xl p-4"><p class="mono text-xs text-ink-3">{{ t.a.number|roman }} · {{ a.name }}</p><p class="mt-1 text-sm leading-relaxed">{{ t.a.portrait }}</p></div>
-      <div class="side-pair t-bg rounded-2xl p-4"><p class="mono text-xs text-ink-3">{{ t.pair.number|roman }} · пара</p><p class="mt-1 text-sm leading-relaxed">{{ t.pair.portrait }}</p></div>
-      <div class="side-b t-bg rounded-2xl p-4"><p class="mono text-xs text-ink-3">{{ t.b.number|roman }} · {{ b.name }}</p><p class="mt-1 text-sm leading-relaxed">{{ t.b.portrait }}</p></div>
-    </div>
     <div x-data="{ open: false }" class="mt-5">
       <button class="flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink" @click="open = !open" :aria-expanded="open"><span class="grid size-6 place-items-center rounded-full bg-sand">{% icon 'circle-question-mark' 'size-3.5' %}</span>Почему так: как считались арканы <span class="transition" :class="open && 'rotate-180'">{% icon 'chevron-down' 'size-4' %}</span></button>
       <ol x-show="open" x-collapse x-cloak class="mono mt-3 space-y-2 text-xs">{% for step in t.how %}<li class="rounded-xl bg-sand/70 px-3 py-2">{{ step }}</li>{% endfor %}</ol>
     </div>
-  </article>
-  <article class="card p-6 sm:p-8" data-reveal style="--i:1" x-data="{ done: [] }">
-    <h2 class="text-xl font-extrabold">Вопросы для разговора</h2>
-    <p class="mt-1 text-sm text-ink-3">Таро здесь — повод поговорить, а не предсказание.</p>
-    <ul class="mt-5 space-y-3">
-      {% for q in t.questions %}
-      <li><label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-line p-4 transition hover:border-ink-3" :class="done.includes({{ forloop.counter }}) && 'bg-synergy-soft border-synergy/40'">
-        <input type="checkbox" class="peer sr-only" @change="done.includes({{ forloop.counter }}) ? done = done.filter(x => x !== {{ forloop.counter }}) : (done.push({{ forloop.counter }}), toast('Отмечено как обсуждённое', 'check'))">
-        <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border-2 border-ink-3 transition peer-checked:border-synergy peer-checked:bg-synergy peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-b">{% icon 'check' 'size-3.5' %}</span>
-        <span class="text-sm font-semibold leading-relaxed">{{ q }}</span>
-      </label></li>
-      {% endfor %}
-    </ul>
   </article>
 </section>
 {% endif %}

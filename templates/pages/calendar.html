@@ -2,9 +2,8 @@
 {% block title %}Календарь пары — Duoverse{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-  <p class="eyebrow">для вас двоих</p>
-  <h1 class="mt-1 text-3xl font-extrabold" data-split>Календарь пары</h1>
-  <p class="mt-2 text-ink-2">Дни рождения, день знакомства и ваши даты — видите оба. Напомним за неделю и за день.</p>
+  <h1 class="text-3xl font-extrabold" data-split>Календарь пары</h1>
+  <p class="mt-2 text-ink-2">Дни рождения, день знакомства и ваши даты — видите оба.</p>
 
   {% if state == "nopair" %}
     <div class="card mt-8 p-6 text-center">
@@ -84,7 +83,7 @@
               <span class="mt-0.5 shrink-0">{% if e.kind == 'birthday' %}<svg class="scene size-5" viewBox="-17 -21 34 32" aria-hidden="true"><use href="#sc-cake"/></svg>{% elif e.kind == 'met' %}{% icon 'heart' 'size-4' %}{% elif e.kind == 'milestone' %}{% icon 'sparkles' 'size-4' %}{% elif e.kind == 'custom' %}{% icon 'star' 'size-4' %}{% else %}{% icon 'party-popper' 'size-4' %}{% endif %}</span>
               <span class="min-w-0 break-words">{{ e.title }}</span>
             </p>
-            <p class="mt-0.5 text-sm text-ink-2"><span class="{% if e.in <= 7 %}font-extrabold text-ink{% endif %}">{% if e.in == 0 %}сегодня{% elif e.in == 1 %}завтра{% else %}через {{ e.in }} дн.{% endif %}</span>{% if e.sub %} · {{ e.sub }}{% endif %}{% if e.note %} · {{ e.note }}{% endif %}</p>
+            <p class="mt-0.5 text-sm text-ink-2"><span class="{% if e.in <= 7 %}font-extrabold text-ink{% endif %}">{% if e.in == 0 %}сегодня{% elif e.in == 1 %}завтра{% else %}через {{ e.in }} {{ e.in|ru_plural:"день,дня,дней" }}{% endif %}</span>{% if e.sub %} · {{ e.sub }}{% endif %}{% if e.note %} · {{ e.note }}{% endif %}</p>
             {% if e.kind == 'birthday' and e.side != side %}<a href="{% url 'wish_map' %}#theirs" class="mt-1 inline-flex items-center gap-1 text-xs font-bold text-a-ink hover:underline">{% icon 'gift' 'size-3.5' %}Идеи подарков</a>{% endif %}
           </div>
           {% if e.id %}
@@ -100,16 +99,15 @@
 
     <form id="add" method="post" class="card mt-8 scroll-mt-24 space-y-3 p-6">{% csrf_token %}
       <h2 class="text-lg font-extrabold">Добавить дату</h2>
-      <p class="text-sm text-ink-2">Свадьба, первый поцелуй, переезд, поездка — то, что важно вам двоим. Прошедшие даты повторяются каждый год.</p>
       {% if error %}<p class="rounded-2xl bg-risk-soft p-3 text-sm text-risk-ink" role="alert">Проверьте название и дату: дата — не дальше чем через год.</p>{% endif %}
       <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
-        <input name="title" maxlength="60" required placeholder="Например, наша свадьба" class="field" aria-label="Название">
+        <input name="title" maxlength="60" required placeholder="Свадьба, первый поцелуй, переезд…" class="field" aria-label="Название">
         <div class="sm:w-48">{% include "components/date_field.html" with name="day" max=max_day start="today" label="Дата события" required=True %}</div>
       </div>
       <input name="note" maxlength="200" placeholder="Заметка для вас двоих — по желанию" class="field" aria-label="Заметка">
       <button class="btn btn-primary btn-sm">{% icon 'plus' 'size-4' %}Добавить</button>
     </form>
-    <p class="mt-4 text-xs text-ink-3">Даты и заметки хранятся зашифрованными. О дне рождения напоминаем только партнёру — чтобы сюрприз остался сюрпризом. 23 февраля и 8 марта показываем, но не напоминаем.</p>
+    <p class="mt-4 text-xs text-ink-3">Напоминаем за неделю и за день, о дне рождения — только партнёру, чтобы сюрприз остался сюрпризом. 23 февраля и 8 марта показываем, но не напоминаем. Прошедшие даты повторяются каждый год. Всё хранится зашифрованным.</p>
   {% endif %}
 </div>
 {% endblock %}

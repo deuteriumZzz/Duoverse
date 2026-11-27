@@ -8,12 +8,6 @@ hasn't reached yet (so nothing comes as a surprise). «Сегодня» gives on
   <a href="{% url 'pair_invite' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink-2 hover:text-ink">{% icon 'arrow-left' 'size-4' %}Главная</a>
   <p class="eyebrow mt-5">{{ me_name }} и {{ partner_name }}</p>
   <h1 class="mt-1 text-3xl font-extrabold">Библиотека</h1>
-  <p class="mt-1 text-ink-2">Всё, что у вас открыто, — проходите в своём темпе. Остальное откроется по пути.</p>
-  <a href="{% url 'pair_invite' %}#path" class="card mt-4 flex items-center gap-3 p-3 transition hover:-translate-y-0.5 hover:border-ink">
-    <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-lilac-soft font-display font-extrabold">{{ stage.n }}</span>
-    <span class="min-w-0 flex-1 text-sm"><b class="block">Этап «{{ stage.title }}»</b><span class="text-ink-3">{{ stage.text }}</span></span>
-    <span class="shrink-0 text-xs font-bold text-ink-3">весь путь {% icon 'chevron-right' 'size-4 inline' %}</span>
-  </a>
 
   <div class="mt-5 grid grid-cols-3 rounded-full border border-line bg-paper p-1 text-sm font-bold" role="tablist" aria-label="Разделы библиотеки">
     <button type="button" role="tab" class="rounded-full py-2 transition" :class="tab === 'quizzes' ? 'bg-ink text-milk' : 'text-ink-2 hover:bg-sand'" :aria-selected="tab === 'quizzes'" @click="go('quizzes')">Квизы</button>
@@ -46,7 +40,7 @@ hasn't reached yet (so nothing comes as a surprise). «Сегодня» gives on
       {% for q in open_quizzes %}
       <li class="w-40 shrink-0 snap-start" x-show="topic === 'all' || topic === '{{ q.topic }}'"><a href="{% url 'quiz_week' %}?q={{ q.key|urlencode }}" class="card flex h-full flex-col p-3.5 transition hover:-translate-y-0.5 hover:border-ink">
         <span class="grid size-9 place-items-center rounded-xl bg-lilac-soft">{% glyph 'gem' 'size-6' %}</span>
-        <b class="mt-2 text-sm leading-snug">{{ q.title }}</b>{% if q.sphere %}<span class="text-xs text-ink-3">про «{{ q.sphere }}»</span>{% endif %}
+        <b class="mt-2 text-sm leading-snug">{{ q.title }}</b>
         <span class="mt-auto pt-3 text-xs font-bold {% if q.mine %}text-ink-3{% else %}text-ink{% endif %}">{% if q.mine %}ждём {{ partner_name|acc }}{% else %}Пройти →{% endif %}</span>
       </a></li>
       {% endfor %}

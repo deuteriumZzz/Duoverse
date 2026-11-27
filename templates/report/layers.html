@@ -9,7 +9,6 @@
     {% for u in r.universes %}{% include "components/universe_card.html" with u=u i=forloop.counter href=universe_tab|get_item:u.key %}{% endfor %}
   </div>
 
-  <div class="mt-5">{% include "components/accuracy.html" %}</div>
 
   <div class="card mt-5 grid gap-4 p-5 sm:p-6 md:grid-cols-3" data-reveal>
     <div class="flex gap-3"><span class="text-pair">{% icon 'scale' %}</span><p class="text-sm leading-relaxed text-ink-2"><b class="text-ink">Как считается итог.</b> Астрология и психология — по 35 %, числа и таро — по 15 %. Если слоя нет, его вес делится между остальными.</p></div>

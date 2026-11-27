@@ -82,8 +82,8 @@ def answers_for(style: str) -> dict[str, int]:
 
 
 def demo_pair(scenario: str) -> tuple[PersonInput, PersonInput]:
-    anya = PersonInput("demo-anya", "Аня", date(1996, 3, 14), time(7, 40), "Санкт-Петербург", answers_for("anya"))
-    misha = PersonInput("demo-misha", "Миша", date(1994, 9, 2), time(23, 15), "Казань", answers_for("misha"))
+    anya = PersonInput("demo-anya", "Аня", date(1996, 3, 14), time(7, 40), "Санкт-Петербург", answers_for("anya"), gender="f")
+    misha = PersonInput("demo-misha", "Миша", date(1994, 9, 2), time(23, 15), "Казань", answers_for("misha"), gender="m")
     if scenario == "complex":
         return (
             PersonInput("demo-lena", "Лена", date(1993, 7, 21), time(14, 5), "Москва", answers_for("lena")),

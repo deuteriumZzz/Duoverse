@@ -33,7 +33,7 @@
 
 <section class="card p-6 sm:p-8" data-reveal>
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>{% include "components/layer_badge.html" with layer="scientific" %}<h2 class="mt-3 text-2xl font-extrabold">Большая пятёрка (Big Five)</h2></div>
+    <div><h2 class="text-2xl font-extrabold">Большая пятёрка (Big Five)</h2></div>
     <div class="flex gap-3 text-sm font-bold"><span class="side-a flex items-center gap-1.5"><i class="size-3 rounded-full t-fill"></i>{{ a.name }}</span><span class="side-b flex items-center gap-1.5"><i class="size-3 rounded-full t-fill"></i>{{ b.name }}</span></div>
   </div>
   <div class="mt-6 space-y-6">
@@ -64,8 +64,7 @@
 
 <section class="mt-5 grid gap-5 lg:grid-cols-[1fr_1fr]">
   <article class="card p-6 sm:p-8" data-reveal>
-    {% include "components/layer_badge.html" with layer="scientific" %}
-    <h2 class="mt-3 text-xl font-extrabold">Тип привязанности</h2>
+    <h2 class="text-xl font-extrabold">Тип привязанности</h2>
     <div class="mt-5 grid grid-cols-2 gap-3">
       <div class="side-a t-bg rounded-3xl p-4"><p class="text-xs font-bold text-ink-3">{{ a.name }}</p><p class="mt-1 font-display font-extrabold leading-tight">{{ p.attachment_a }}</p></div>
       <div class="side-b t-bg rounded-3xl p-4"><p class="text-xs font-bold text-ink-3">{{ b.name }}</p><p class="mt-1 font-display font-extrabold leading-tight">{{ p.attachment_b }}</p></div>
@@ -84,11 +83,11 @@
   </article>
   <article class="card p-6 sm:p-8" data-reveal style="--i:1">
     <div class="flex items-start justify-between gap-4">
-      <div>{% include "components/layer_badge.html" with layer="scientific" %}<h2 class="mt-3 text-xl font-extrabold">Четыре всадника Готтмана</h2><p class="mt-1 text-sm text-ink-3">Паттерны, которые чаще всего разрушают отношения</p></div>
+      <div><h2 class="text-xl font-extrabold">Четыре всадника Готтмана</h2><p class="mt-1 text-sm text-ink-3">Паттерны, которые чаще всего разрушают отношения</p></div>
       {% include "components/score_ring.html" with value=p.repair_index size=88 stroke=11 label="индекс" %}
     </div>
     <ul class="mt-5 grid grid-cols-2 gap-3">
-      {% for g in p.gottman %}
+      {% for g in p.gottman %}{% if g.level != 'low' %}
       <li class="rounded-3xl bg-sand/70 p-4 {% if g.level == 'high' %}tone-risk{% elif g.level == 'mid' %}tone-attention{% else %}tone-synergy{% endif %}">
         <div class="flex items-center justify-between"><p class="font-bold">{{ g.title }}</p>
           <span class="flex gap-1" aria-label="уровень {{ g.level|label }}">{% for lv in "lmh" %}<i class="size-2 rounded-full {% if lv == 'l' or lv == 'm' and g.level != 'low' or g.level == 'high' %}t-fill{% else %}bg-sand-2{% endif %}"></i>{% endfor %}</span></div>
@@ -96,18 +95,21 @@
         <p class="mt-2 text-xs leading-relaxed text-ink-2">{{ g.note }}</p>
         {% if g.antidote %}<p class="mt-2 rounded-2xl bg-paper/80 p-3 text-xs leading-relaxed text-ink-2"><b class="text-synergy-ink">Что помогает.</b> {{ g.antidote }}</p>{% endif %}
       </li>
-      {% endfor %}
+      {% endif %}{% endfor %}
     </ul>
+    {# the low ones all say the same thing — once, as a row (hidden when none are low) #}
+    <p class="mt-3 flex flex-wrap items-center gap-1.5 text-sm text-ink-2 [&:not(:has(.chip))]:hidden">Почти не встречаются:{% for g in p.gottman %}{% if g.level == 'low' %} <span class="chip tone-synergy t-bg t-ink">{{ g.title }}</span>{% endif %}{% endfor %} — хороший знак.</p>
     {% if p.repair_note %}<p class="mt-4 rounded-2xl bg-synergy-soft p-4 text-sm leading-relaxed text-ink-2"><b class="text-synergy-ink">Индекс восстановления {{ p.repair_index }}/100.</b> {{ p.repair_note }}</p>{% endif %}
   </article>
 </section>
 
 {% if p.findings %}
-<section class="mt-10" data-reveal>
-  {% include "components/layer_badge.html" with layer="scientific" %}
-  <h2 class="mt-3 text-2xl font-extrabold">Что помогает парам — по исследованиям</h2>
-  <p class="mt-1 max-w-2xl text-ink-2">Не про вас лично, а то, что десятилетия наблюдений за парами говорят каждой паре. Многое из этого уже есть в ваших привычках.</p>
-  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<details class="group mt-10" data-reveal>
+  <summary class="card flex cursor-pointer list-none items-center gap-3 p-4 pr-5 hover:border-ink [&::-webkit-details-marker]:hidden">
+    <span class="flex-1"><b class="block leading-tight">Что помогает парам — по исследованиям</b><span class="block text-xs text-ink-3">{{ p.findings|length }} выводов, общих для всех пар</span></span>
+    <span class="text-ink-3 transition group-open:rotate-180">{% icon 'chevron-down' 'size-4' %}</span>
+  </summary>
+  <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     {% for f in p.findings %}
     <article class="card flex flex-col p-5" data-reveal style="--i: {{ forloop.counter }}">
       <p class="font-display font-extrabold leading-tight">{{ f.title }}</p>
@@ -116,7 +118,7 @@
     </article>
     {% endfor %}
   </div>
-</section>
+</details>
 {% endif %}
 
 {% if p.mbti_a %}
@@ -127,7 +129,6 @@
 </section>
 {% endif %}
 
-<section class="mt-10 grid gap-4 md:grid-cols-2">{% for ins in p.insights %}{% include "components/insight.html" with ins=ins i=forloop.counter %}{% endfor %}</section>
 
 {% if p.bibliography %}
 <details id="sources" class="card mt-10 scroll-mt-24 p-6" data-reveal>

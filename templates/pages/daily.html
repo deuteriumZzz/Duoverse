@@ -15,7 +15,7 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
     {% if pair %}<span class="flex shrink-0 -space-x-3" aria-hidden="true">{% avatar me_av 40 %}{% if partner_av %}{% avatar partner_av 40 %}{% endif %}</span>{% endif %}
     <div class="min-w-0 flex-1"><p class="eyebrow">{% now "l, j E" %}</p><h1 class="text-2xl font-extrabold sm:text-3xl">Сегодня</h1></div>
     {% if strip %}
-    <span class="chip shrink-0 gap-1 bg-paper py-1.5 shadow-soft" title="Дней подряд вы оба ответили на вопрос дня. Один пропуск в неделю не обнуляет серию.">
+    <span class="chip shrink-0 gap-1 bg-paper py-1.5 shadow-soft" x-show="streak > 0" x-cloak title="Дней подряд вы оба ответили на вопрос дня. Один пропуск в неделю не обнуляет серию.">
       <span class="text-a">{% icon 'flame' 'size-4' %}</span><b class="font-display text-base">{{ streak }}</b><span class="sr-only"> {{ streak|ru_plural:"день,дня,дней" }} подряд вместе</span>
       {% if freeze %}<span class="text-b" title="Заморозка на этой неделе свободна">{% icon 'snowflake' 'size-4' %}</span>{% endif %}
     </span>
@@ -107,7 +107,6 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
       <div class="deck-label relative text-center">
         <div class="mx-auto h-10 w-14" aria-hidden="true">{% mark "h-full w-full" merge=True light=True %}</div>
         <p class="mt-4 font-display text-xl font-extrabold">Вытянуть вопрос дня</p>
-        <p class="mono mt-2 text-xs text-milk/60">один вопрос — на вас двоих</p>
       </div>
     </button>
     <div x-show="drawn" x-cloak x-ref="q" class="sticker relative overflow-hidden bg-b-soft p-6 sm:p-8"
@@ -461,7 +460,7 @@ weekly things, what opens soon, the pair's weather — is one fold. Details open
         <li class="card group relative overflow-hidden p-5 transition" :class="picked.includes('{{ h.title|escapejs }}') && 'ring-2 ring-ink'">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <div class="flex flex-wrap gap-1.5">{% if fresh %}<span class="chip border-2 border-ink bg-pair text-ink">{% icon 'sparkles' 'size-3.5' %}новая</span>{% endif %}<span class="chip bg-sand">{% icon 'repeat' 'size-3.5' %}{{ h.cadence }}</span><span class="chip bg-sand">{% icon 'timer' 'size-3.5' %}{{ h.duration }}</span></div>
+              <div class="flex flex-wrap gap-1.5">{% if fresh %}<span class="chip border-2 border-ink bg-pair text-ink">{% icon 'sparkles' 'size-3.5' %}новая</span>{% endif %}<span class="chip bg-sand">{% icon 'repeat' 'size-3.5' %}{{ h.cadence }}</span>{% if h.duration %}<span class="chip bg-sand">{% icon 'timer' 'size-3.5' %}{{ h.duration }}</span>{% endif %}</div>
               <h3 class="mt-4 text-lg font-extrabold">{{ h.title }}</h3>
             </div>
             <button class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border-2 border-ink bg-paper px-3.5 text-sm font-extrabold transition duration-300 ease-[var(--ease-spring)] hover:bg-sand active:scale-95"

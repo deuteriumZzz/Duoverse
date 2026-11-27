@@ -7,7 +7,7 @@ backend only has to produce the same shape for the UI to keep working.
 from datetime import date, time
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 Layer = Literal["symbolic", "scientific"]
 Tone = Literal["synergy", "neutral", "attention", "risk"]
@@ -266,9 +266,14 @@ class TarotSection(BaseModel):
 class Habit(BaseModel):
     title: str
     cadence: str
-    duration: str
+    duration: str  # "" when it takes no time to speak of — never shown as «· —»
     why: str
     evidence: Evidence
+
+    @field_validator("duration")
+    @classmethod
+    def _no_dash(cls, v: str) -> str:
+        return "" if v.strip() in {"—", "-"} else v
 
 
 class Daily(BaseModel):

@@ -73,7 +73,7 @@ and «Пара+» as the one dark card with the year and the month as two rows; 
     <form method="post" action="{% url 'checkout' 'gift' %}">{% csrf_token %}<button class="btn btn-primary w-full"{% if not me.account %} @click.prevent="$dispatch('login-open', { why: 'pay' })"{% endif %}>{% icon 'gift' 'size-4' %}Подарить · {{ price_deep }} ₽</button></form>
   </section>
 
-  <p class="mt-6 text-center text-xs text-ink-3">Оплачивая, вы принимаете <a href="{% url 'terms' %}" class="underline">Соглашение и публичную оферту</a>. «Пара+» не продлевается сама.</p>
+  <p class="mt-6 text-center text-xs text-ink-3">Оплачивая, вы принимаете <a href="{% url 'terms' %}" class="underline">Соглашение и публичную оферту</a>.</p>
 
   <div class="mx-auto mt-14 max-w-2xl">
     <h2 class="text-center font-display text-2xl font-extrabold">Частые вопросы</h2>

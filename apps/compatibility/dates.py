@@ -11,7 +11,12 @@ from apps.core.domain.names import acc, gen
 
 # (month, day, title, for whom): 23 февраля and 8 марта are for a person — when someone said they are «он» / «она»,
 # the other partner hears about it; with no gender given they are shown and never pushed. Any pair: two women both hear
-HOLIDAYS = ((2, 14, "День всех влюблённых", ""), (2, 23, "23 февраля", "m"), (3, 8, "8 марта", "f"), (12, 31, "Новый год", ""))
+HOLIDAYS = (
+    (2, 14, "День всех влюблённых", ""),
+    (2, 23, "День защитника Отечества", "m"),
+    (3, 8, "Международный женский день", "f"),
+    (12, 31, "Новый год", ""),
+)
 MILESTONES = (100, 200, 300, 500, 777, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 7000, 10000)
 REMIND = (7, 1)  # days before
 MAX_ENTRIES, TITLE_MAX, NOTE_MAX = 40, 60, 200

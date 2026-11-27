@@ -408,6 +408,8 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         who = {"a": a.name, "b": b.name}
         for pat, side in match_patterns(psa, psb):
             if seen := next((sc for sc in scenarios if sc.key == pat.key), None):
+                if not seen.both:  # told about one of you — say it fits the other too, so «у вас обоих» matches the text
+                    seen.text += f" У {gen(who[side])} — так же."
                 seen.both = True
                 continue
             xy = person_names("x", who[side]) | person_names("y", who["b" if side == "a" else "a"])
@@ -678,6 +680,8 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
             h for h in hits if key in h.spheres and h.effect < -2 and h.planet_a in interpret.PLANET and h.planet_b in interpret.PLANET
         ]
         evidence = sorted((f for f in factors if f.category == cat), key=lambda f: -abs(f.weight))[:3]
+        # one honest reading per sphere: its first sentence is the one-line summary, the rest opens with the sphere
+        first, _, rest = (d["strong"] if score >= 75 else d["weak"]).partition(". ")
         spheres.append(
             Sphere(
                 key=key,
@@ -685,8 +689,8 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
                 icon=d["icon"],
                 score=score,
                 tone=tone_of(score),
-                summary=kb.text(f"CAT:{d['cats'][0]}:{tone_of(score)}"),
-                story=[said(d["intro"]), d["strong"] if score >= 75 else d["weak"]],  # one honest reading per sphere
+                summary=first if first.endswith(".") else f"{first}.",
+                story=[said(d["intro"])] + ([rest] if rest else []),
                 evidence=[ev(f) for f in evidence],
                 actions=[d["do"]],
                 question=d["question"],

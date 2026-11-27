@@ -3,7 +3,7 @@
 {% block content %}
 <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6" x-data="{ items: {{ items|length }}, confirm: null }">
   <div class="flex flex-wrap items-end justify-between gap-4">
-    <div><h1 class="text-3xl font-extrabold">Мои разборы</h1>{% if me.account %}<p class="mt-1 text-ink-2">Ваши разборы и пары, к которым вы присоединились.</p>{% else %}<p class="mt-1 flex items-center gap-1.5 text-ink-2">{% icon 'smartphone' 'size-4' %}<span>Пока хранятся на этом устройстве — <a href="{% url 'login' %}?next={% url 'history' %}" class="font-bold underline underline-offset-4 hover:text-ink">войдите</a>, чтобы не потерять.</span></p>{% endif %}</div>
+    <div><h1 class="text-3xl font-extrabold">Мои разборы</h1>{% if not me.account %}<p class="mt-1 flex items-center gap-1.5 text-ink-2">{% icon 'smartphone' 'size-4' %}<span>Пока хранятся на этом устройстве — <a href="{% url 'login' %}?next={% url 'history' %}" class="font-bold underline underline-offset-4 hover:text-ink">войдите</a>, чтобы не потерять.</span></p>{% endif %}</div>
     <div class="flex gap-2"><a href="{% url 'profiles' %}" class="btn btn-ghost btn-sm">{% icon 'users' 'size-4' %}Сохранённые люди</a><a href="{% url 'account' %}" class="btn btn-ghost btn-sm">{% icon 'circle-user-round' 'size-4' %}Профиль</a></div>
   </div>
   <ul class="mt-8 space-y-3" x-show="items > 0">

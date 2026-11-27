@@ -177,6 +177,19 @@ def test_knowledge_texts_agree_with_each_partner():
     assert fill(text, a="Аня", b="Миша", a_g="", b_g="").startswith("Миша может чувствовать себя незамеченным(ой)")
 
 
+def test_texts_about_a_partner_of_known_gender_have_no_open_endings():
+    """«Аня нужен(на)», «у вас обоих» about one of you, a sphere line borrowed from another sphere — none of it in the demo
+    pair, whose genders are known."""
+    from apps.core.domain.names import FORM
+    from config.container import report_provider
+
+    r = report_provider().get_report("ideal")
+    texts = [o.text for o in r.astrology.overlays] + [s.summary for s in r.spheres] + [sc.text for sc in r.psychology.scenarios]
+    assert texts and [t for t in texts if FORM.search(t)] == []
+    assert len({s.summary for s in r.spheres}) == len(r.spheres)  # every sphere says its own thing
+    assert all(sc.text.endswith("— так же.") for sc in r.psychology.scenarios if sc.both)
+
+
 def test_the_first_stage_asks_light_questions_and_nothing_sensitive():
     from apps.compatibility.stages import SENSITIVE, STAGES
     from apps.web.views import question_of_day

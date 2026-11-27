@@ -3,7 +3,7 @@
 {% block content %}
 <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6" x-data="{ del: false, typed: '' }">
   <h1 class="text-3xl font-extrabold" data-split>Профиль</h1>
-  {% if me.account %}<p class="mt-2 text-ink-2">Вы, ваша пара, тариф и данные — всё здесь. Профиль открывается с любой страницы: аватарка в правом верхнем углу, а на телефоне — вкладка «Профиль» внизу.</p>
+  {% if me.account %}
 
   {# profile: a signed-in person; without a profile — the shared sign-in card, nothing to fill in yet #}
 
@@ -45,7 +45,7 @@
         {% include "components/pair_avatars.html" with a=p.a b=p.b av_a=p.av_a av_b=p.av_b invite=p.invite %}
         <div class="min-w-0 flex-1">
           <p class="font-bold">{{ p.a.name }} и {{ p.b.name }}</p>
-          <p class="text-xs {% if p.b_joined %}text-synergy-ink{% else %}text-ink-3{% endif %}">{% if p.b_joined %}{% if p.my_side == 'b' %}Вы присоединились к этой паре{% else %}{{ p.b.name }} в паре — план и вопрос дня общие{% endif %}{% else %}Ждём, когда {{ p.b.name }} присоединится{% endif %}</p>
+          <p class="text-xs {% if p.b_joined %}text-synergy-ink{% else %}text-ink-3{% endif %}">{% if p.b_joined %}{% if p.my_side == 'b' %}Вы присоединились к этой паре{% else %}{{ p.b.name }} в паре{% endif %}{% else %}Ждём, когда {{ p.b.name }} присоединится{% endif %}</p>
         </div>
         {% comment %}Managing the pair: a «⋯» menu like the profile menu up top, and every action confirmed in a sheet that says
         what will be removed and what stays — a creator unlinks the partner or deletes the pair, a partner leaves.{% endcomment %}

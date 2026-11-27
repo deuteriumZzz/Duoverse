@@ -9,12 +9,11 @@
     {% include "components/score_ring.html" with value=u.score size=84 stroke=11 %}
     <dl class="mono space-y-1 text-xs text-ink-3">
       {% if u.score is not None %}<div><dt class="inline">вес</dt> <dd class="inline font-semibold text-ink">{{ u.weight }}%</dd></div>
-      <div><dt class="inline">уверенность</dt> <dd class="inline font-semibold {% if u.confidence < 80 %}text-attention-ink{% else %}text-ink{% endif %}">{{ u.confidence }}%</dd></div>{% else %}<div>не учтено</div>{% endif %}
+      {% else %}<div>не учтено</div>{% endif %}
     </dl>
   </div>
   <p class="mt-4 flex-1 text-sm leading-snug text-ink-2">{{ u.verdict }}</p>
   {% if u.missing %}
     <a href="{% if u.key == 'psychology' %}{{ quiz_url|default:'/quiz/' }}{% else %}{{ upgrade_url|default:'/new/?mode=extended' }}{% endif %}" class="relative z-10 mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-attention-ink hover:underline">{% icon 'plus' 'size-4' %}{{ u.missing }}</a>
   {% endif %}
-  <div class="mt-4">{% include "components/layer_badge.html" with layer=u.layer %}</div>
 </article>

@@ -9,7 +9,7 @@
     {% if invite %}{% include "components/invite_sheet.html" %}{% endif %}
     <div class="min-w-0">
       <h1 class="text-xl font-extrabold sm:text-2xl">{{ a.name }} <span class="text-ink-3">и</span> {{ b.name }}</h1>
-      <p class="mono mt-0.5 text-xs text-ink-3">{{ a.sun_sign }} × {{ b.sun_sign }} · {{ r.created_at|date:"j E Y" }} · алгоритм {{ r.algorithm_version }}</p>
+      <p class="mono mt-0.5 text-xs text-ink-3">{{ a.sun_sign }} × {{ b.sun_sign }} · {{ r.created_at|date:"j E Y" }}</p>
     </div>
     <div class="no-print ml-auto flex flex-wrap gap-2">
       <a href="{{ rbase }}weights/" class="btn btn-ghost btn-sm">{% icon 'sliders-horizontal' 'size-4' %}<span class="hidden sm:inline">Веса</span></a>
@@ -20,8 +20,8 @@
 
   {# tabs #}
   <nav class="no-print sticky top-16 z-30 -mx-4 mt-6 bg-milk/85 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6" aria-label="Разделы отчёта">
-    {# phone: five equal cells inside one plate, no scrolling; md+: one row with full titles, plate hugs its content #}
-    <div class="draw-icons grid grid-cols-5 gap-1 rounded-[1.4rem] border border-line bg-paper p-1 shadow-soft md:inline-flex md:gap-1.5 md:rounded-full md:p-1.5">
+    {# phone: equal cells across the whole plate (Итог + the tabs + Карточка), no scrolling; md+: one row with full titles #}
+    <div class="draw-icons grid grid-cols-4 gap-1 rounded-[1.4rem] border border-line bg-paper p-1 shadow-soft md:inline-flex md:gap-1.5 md:rounded-full md:p-1.5">
       {% with tab_cls="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[1.1rem] px-1 py-1.5 text-[0.7rem] font-bold leading-tight transition md:flex-row md:gap-2 md:rounded-full md:px-4 md:py-2 md:text-sm" %}
       <a href="{{ rbase }}" class="{{ tab_cls }} {% if tab == 'overview' %}vt-tab bg-ink text-milk{% else %}text-ink-2 hover:bg-sand{% endif %}" {% if tab == 'overview' %}aria-current="page"{% endif %}>{% icon 'layout-grid' 'size-[1.15rem] md:size-4' %}<span>Итог</span></a>
       {% for key, t in tabs.items %}
@@ -48,6 +48,6 @@
 
   <div class="pt-4">{% block report %}{% endblock %}</div>
 
-  <p class="mt-16 flex items-start gap-2 border-t border-line pt-6 text-xs leading-relaxed text-ink-3">{% icon 'info' 'size-4 shrink-0' %}<span>Астрология, числа и таро — символический слой для размышления, не наука. Психология опирается на исследования. Отчёт не является медицинской или терапевтической услугой и не принимает решений за вас. <a href="{% url 'disclaimer' %}" class="whitespace-nowrap underline">О методе</a></span></p>
+  <p class="mt-16 flex items-start gap-2 border-t border-line pt-6 text-xs leading-relaxed text-ink-3">{% icon 'info' 'size-4 shrink-0' %}<span>Астрология, числа и таро — для размышления, не наука. Психология — по исследованиям. Не медицинская и не терапевтическая услуга. <a href="{% url 'disclaimer' %}" class="whitespace-nowrap underline">О методе</a></span></p>
 </div>
 {% endblock %}

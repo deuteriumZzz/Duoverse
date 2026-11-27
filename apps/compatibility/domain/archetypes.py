@@ -102,7 +102,7 @@ def pair_name(a: Role, b: Role) -> str:
 
 def pair_tagline(a: Role, b: Role, name_a: str, name_b: str) -> str:
     if a.key == b.key:
-        return f"{name_a} и {name_b} оба {a.verb.split(' и ')[0]} — вместе вдвое сильнее"
+        return f"{name_a} и {name_b}: каждый {a.verb.split(' и ')[0]} — вместе вдвое сильнее"  # «каждый» keeps the verb singular
     return f"{name_a} {a.verb}, {name_b} — {b.verb}"
 
 

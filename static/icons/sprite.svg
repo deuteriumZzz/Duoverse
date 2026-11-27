@@ -69,17 +69,6 @@
       <path d="M7 4h.01" />
       <path d="M12 4h.01" />
       <path d="M17 4h.01" />
-    </symbol><symbol id="calculator" viewBox="0 0 24 24">
-      <rect width="16" height="20" x="4" y="2" rx="2" />
-      <line x1="8" x2="16" y1="6" y2="6" />
-      <line x1="16" x2="16" y1="14" y2="18" />
-      <path d="M16 10h.01" />
-      <path d="M12 10h.01" />
-      <path d="M8 10h.01" />
-      <path d="M12 14h.01" />
-      <path d="M8 14h.01" />
-      <path d="M12 18h.01" />
-      <path d="M8 18h.01" />
     </symbol><symbol id="calendar-days" viewBox="0 0 24 24">
       <path d="M8 2v3" />
       <path d="M16 2v3" />
@@ -444,10 +433,6 @@
     </symbol><symbol id="search" viewBox="0 0 24 24">
       <path d="m21 21-4.34-4.34" />
       <circle cx="11" cy="11" r="8" />
-    </symbol><symbol id="search-check" viewBox="0 0 24 24">
-      <path d="m8 11 2 2 4-4" />
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
     </symbol><symbol id="send" viewBox="0 0 24 24">
       <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
       <path d="m21.854 2.147-10.94 10.939" />
