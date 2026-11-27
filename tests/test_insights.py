@@ -58,13 +58,14 @@ def test_valid_output_replaces_summary_and_sphere_story(report):
 def test_validator_rejects_invented_facts_then_retry_succeeds(report):
     django_cache.clear()
     bad = good_payload(report)
-    bad["summary"] = {"text": "Вам нельзя быть вместе: Хирон и 999 баллов.", "block_ids": ["made-up"]}
+    # Нептун: a planet the demo report never mentions (Хирон is computed since the JPL table, so it's a fact now)
+    bad["summary"] = {"text": "Вам нельзя быть вместе: Нептун и 999 баллов.", "block_ids": ["made-up"]}
     errors = validate(bad, facts_of(report))
     assert (
         any("block_ids" in e for e in errors)
         and any("999" in e for e in errors)
         and any("запрещ" in e for e in errors)
-        and any("Хирон" in e for e in errors)
+        and any("Нептун" in e for e in errors)
     )
     llm = FakeLLM([json.dumps(bad), json.dumps(good_payload(report))])
     out = Stitcher(llm, django_cache).stitch(report)

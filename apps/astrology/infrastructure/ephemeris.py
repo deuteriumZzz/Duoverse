@@ -1,9 +1,11 @@
 """Ephemeris adapter (ADR-0004): Skyfield (MIT) over NASA JPL DE421 (public domain) — no licence fees or source
-obligations. Planets, true lunar node, mean Lilith, Placidus houses; Chiron is not computed."""
+obligations. Planets, true lunar node, mean Lilith, Placidus houses; Chiron from a JPL Horizons table (1900–2053)."""
 
+import gzip
 import math
 from datetime import datetime, time
 from functools import lru_cache
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from apps.astrology.domain.chart import BirthData, Chart, Place
@@ -34,6 +36,30 @@ def _norm(x: float) -> float:
 def _arc(a: float, b: float) -> float:
     """Signed shortest difference b − a in degrees."""
     return (b - a + 180.0) % 360.0 - 180.0
+
+
+_CHIRON = Path(__file__).resolve().parent.parent / "data" / "chiron.txt.gz"
+
+
+@lru_cache(maxsize=1)
+def _chiron_table() -> tuple[float, list[float]]:
+    """2060 Chiron from JPL Horizons: geocentric apparent ecliptic longitude of date, one row a day from JD 2415020.5
+    (1900-01-01) — the same frame as the planets here. DE421 has no Chiron, so it's read from the table."""
+    with gzip.open(_CHIRON, "rt", encoding="utf-8") as f:
+        rows = [line.split() for line in f if line[:1].isdigit()]
+    return float(rows[0][0]), [float(r[1]) for r in rows]
+
+
+def chiron(jd_tt: float) -> float | None:
+    """Chiron's longitude, linear between the daily rows (it moves under 0.1° a day: the error is far below 0.01°);
+    None outside 1900–2053, and the chart then simply has no Chiron."""
+    start, lons = _chiron_table()
+    x = jd_tt - start
+    i = math.floor(x)
+    if i < 0 or i + 1 >= len(lons):
+        return None
+    a, b = lons[i], lons[i + 1]
+    return _norm(a + _arc(a, b) * (x - i))
 
 
 def mean_lilith(jd_tt: float) -> float:
@@ -114,6 +140,9 @@ class SkyfieldEphemeris:
         planets["Северный узел"], speeds["Северный узел"] = round(nodes[1], 3), round(_arc(nodes[0], nodes[2]) / (2 * _STEP), 4)
         lil = [mean_lilith(x) for x in (t.tt - _STEP, t.tt, t.tt + _STEP)]
         planets["Лилит"], speeds["Лилит"] = round(lil[1], 3), round(_arc(lil[0], lil[2]) / (2 * _STEP), 4)
+        ch = [chiron(x) for x in (t.tt - _STEP, t.tt, t.tt + _STEP)]
+        if None not in ch:
+            planets["Хирон"], speeds["Хирон"] = round(ch[1], 3), round(_arc(ch[0], ch[2]) / (2 * _STEP), 4)  # type: ignore[arg-type,operator]
         if not exact or birth.place is None:
             return Chart(planets, exact_time=False, speeds=speeds)
         _, d_eps = t._nutation_angles_radians

@@ -283,3 +283,13 @@ def test_skyfield_matches_swiss_ephemeris_reference():
 def test_polar_birth_falls_back_to_equal_quadrants():
     c = eph.chart(BirthData(date(1990, 6, 21), time(12, 0), Place("Норильск", 69.35, 88.2, "Asia/Krasnoyarsk")))
     assert c.houses and len(c.houses) == 12 and c.houses[0] == c.asc and c.houses[9] == c.mc
+
+
+def test_chiron_comes_from_the_jpl_table():
+    """DE421 has no Chiron: it's read from JPL Horizons (1900–2053). Spring 1996 it stood in Libra, moving backwards;
+    outside the table the chart simply has no Chiron."""
+    from apps.astrology.infrastructure.ephemeris import chiron
+
+    c = eph.chart(BirthData(date(1996, 3, 14), time(7, 40), geo.lookup("Санкт-Петербург")))
+    assert c.sign("Хирон") == "Весы" and c.speeds["Хирон"] < 0
+    assert chiron(2415000.0) is None and chiron(2473000.0) is None  # 1899, 2060
