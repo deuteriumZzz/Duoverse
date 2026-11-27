@@ -166,6 +166,31 @@ def test_plus_is_shared_in_badges_and_a_partners_payment_stacks_after_it():
     assert (month.valid_until - year.valid_until).days == 30  # Миша pays early: his month starts when Аня's year ends
 
 
+def test_after_unlinking_each_keeps_only_what_they_paid_for():
+    """One payment works for both only while linked. When the partner leaves, «Пара+» stays with whoever paid for it —
+    the creator loses the partner's, the partner takes theirs along — and a report paid for the pair stays with the pair."""
+    from apps.compatibility.access import has_plus
+    from apps.compatibility.models import Pair
+    from tests.test_accounts import _linked_pair
+
+    anya, misha, stored = _linked_pair()
+    pair = stored.pair
+    Purchase.objects.filter(kind="trial").update(valid_until=timezone.now())  # the joining week aside
+    assert not plus_for_pair(pair)
+    mark_paid(Purchase.objects.create(owner=pair.partner, kind="plus", amount=249))  # Миша pays the month
+    mark_paid(Purchase.objects.create(owner=pair.owner, pair=pair, kind="deep", amount=490))  # Аня opens the report
+    assert plus_for_pair(pair) and unlocked(pair)
+    assert "в полном разборе" not in misha.get(f"/r/{stored.id}/astrology/").content.decode()  # one purchase, both see it
+
+    misha_owner = pair.partner
+    assert misha.post(f"/p/{pair.id}/unlink/").status_code == 302  # Миша leaves
+    pair = Pair.objects.get(id=pair.id)
+    assert pair.partner is None and not plus_for_pair(pair)  # his month left with him
+    assert unlocked(pair)  # the report paid for the pair stays open for it
+    assert misha.get(f"/r/{stored.id}/").status_code == 404  # and Миша no longer sees the pair
+    assert has_plus(misha_owner)  # he keeps his own «Пара+» for his own pairs
+
+
 def test_every_plan_opens_what_it_promises_and_nothing_more():
     """The funnel in one table: the free week, free, the 490 ₽ report, a month and a year of «Пара+» — what each opens,
     read from the pages a person gets (the plans page promises exactly this)."""

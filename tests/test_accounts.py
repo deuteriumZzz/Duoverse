@@ -845,3 +845,55 @@ def test_the_home_has_one_next_step_today_three_things_and_a_mood():
     Pair.objects.filter(id=pair.id).update(plan={**Pair.objects.get(id=pair.id).plan, "mood": {"a": [yesterday, "sad"]}})
     assert "Аня: грустно" not in misha.get("/pair/").content.decode()  # yesterday's mood is gone by morning
     assert Client().post("/daily/mood/", {"mood": "sun"}).status_code == 404
+
+
+def test_a_pair_keeps_what_it_does_and_each_sees_the_other():
+    """One pass through a pair's life, checked against the database at each step: the gender the wizard and the profile
+    send is kept; the questionnaire's core is enough and «уточнение» adds to it, never replaces it; the tree counts what
+    the two did together — an answer only once both answered, a date once both marked it, a dream once it came true."""
+    import json
+
+    from apps.compatibility.infrastructure.demo import answers_for
+    from apps.compatibility.models import Person
+    from apps.psychology.domain.instruments import CORE_IDS
+
+    wizard = {"mode": "quick", "a_name": "Варя", "a_gender": "f", "a_date": "1996-03-14", "b_name": "Лёва", "b_gender": "m", "b_date": "1994-09-02"}
+    assert Client().post("/new/", wizard).status_code == 302
+    assert dict(Person.objects.filter(name__in=["Варя", "Лёва"]).values_list("name", "gender")) == {"Варя": "f", "Лёва": "m"}
+
+    anya, misha, stored = _linked_pair()
+    pair = Pair.objects.get(id=stored.pair_id)
+    misha.post(f"/profiles/{pair.b_id}/", {"name": "Миша", "gender": "m", "date": "1994-09-02"})
+    assert Person.objects.get(id=pair.b_id).gender == "m"  # the partner fixes their own card
+
+    full = answers_for("anya")
+    core = {k: v for k, v in full.items() if k in CORE_IDS}
+    extra = {k: v for k, v in full.items() if k not in CORE_IDS}
+    quiz = f"/quiz/{pair.a_id}/"
+    assert anya.post(quiz, {"answers": json.dumps(dict(list(core.items())[:10]))}).status_code == 422  # not the whole core
+    assert anya.post(quiz, {"answers": json.dumps({**core, "e1": 9})}).status_code == 422  # outside 1–5
+    assert anya.post(quiz, {"answers": json.dumps(core)}).status_code == 302
+    assert Person.objects.get(id=pair.a_id).answers.keys() == CORE_IDS
+    asked = anya.get(quiz + "?more=1").context["sections"]
+    assert {i["id"] for s in asked for i in s["items"]} == set(extra)  # «уточнить»: only the 38 not asked yet
+    anya.post(quiz, {"answers": json.dumps(extra)})
+    assert Person.objects.get(id=pair.a_id).answers == full  # added to, nothing lost
+
+    def home(c):
+        return c.get("/pair/").context
+
+    before = home(anya)
+    anya.post("/daily/answer/", {"text": "Вечер у реки"})
+    assert home(anya)["answers_together"] == before["answers_together"]  # one answer is not a leaf yet
+    misha.post("/daily/answer/", {"text": "Поездка в горы"})
+    assert home(anya)["answers_together"] == home(misha)["answers_together"] == before["answers_together"] + 1
+    anya.post("/idea/done/")
+    assert home(misha)["dates_together"] == before["dates_together"]
+    misha.post("/idea/done/")
+    assert home(anya)["dates_together"] == before["dates_together"] + 1
+    misha.post("/wishes/", {"kind": "dream", "title": "Поехать в Японию"})
+    dream = Pair.objects.get(id=pair.id).wishes[-1]["id"]
+    anya.post("/wishes/", {"action": "done", "id": dream})
+    assert home(misha)["dreams_done"] == before["dreams_done"] + 1
+    anya.post("/pair/thanks/", {"text": "за ужин у реки"})
+    assert "за ужин у реки" in misha.get("/pair/").content.decode()  # what one says, the other reads
