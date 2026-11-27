@@ -7,10 +7,11 @@
   <div class="flex items-center gap-3">
     <a href="{% if joining %}{% url 'landing' %}{% else %}{% url 'history' %}{% endif %}" class="btn btn-ghost btn-icon btn-sm" aria-label="Закрыть">{% icon 'x' 'size-4' %}</a>
     <div class="flex-1">
-      <div class="flex justify-between text-xs font-bold text-ink-3"><span x-text="section.title"></span><span class="mono" x-text="done + ' / ' + total"></span></div>
+      {# time left, not «0 / 76»: a number of questions scares more than a few minutes #}
+      <div class="flex justify-between text-xs font-bold text-ink-3"><span x-text="section.title"></span><span class="mono" x-text="left ? '≈ ' + Math.max(1, Math.round(left * 6 / 60)) + ' мин' : 'готово'"></span></div>
       <div class="bar mt-1.5 tone-synergy"><i class="t-fill" :style="'scale:' + (done / total) + ' 1; transition: scale .6s var(--ease-out)'"></i></div>
     </div>
-    <button class="btn btn-soft btn-sm" @click="toast('Прогресс сохранён на этом устройстве', 'bookmark'); setTimeout(() => location.href = '{% url 'report' %}', 900)">{% icon 'bookmark' 'size-4' %}<span class="hidden sm:inline">Продолжить позже</span></button>
+    <button class="btn btn-soft btn-sm" @click="save(); toast('Ответы сохранены на этом устройстве — продолжите с того же вопроса', 'bookmark'); setTimeout(() => location.href = '{% if person %}{% url 'history' %}{% else %}{% url 'report' %}{% endif %}', 1200)">{% icon 'bookmark' 'size-4' %}<span class="hidden sm:inline">Продолжить позже</span></button>
   </div>
 
   {# section intro chips #}
@@ -69,39 +70,78 @@
       <div class="mt-8 flex flex-wrap justify-center gap-3">
         <button class="btn btn-primary" @click="submit()">{% icon 'sparkles' 'size-4' %}{% if joining %}Отправить ответы{% else %}Сохранить и пересчитать{% endif %}</button>
       </div>
+      {# the optional 38, offered once the core is done — more precise, never in the way #}
+      <template x-if="extra.length && !extended">
+        <div class="card mx-auto mt-6 max-w-sm p-4 text-left">
+          <p class="font-bold">Хотите точнее?</p>
+          <p class="mt-1 text-sm text-ink-2">Ещё <span x-text="extraCount"></span> вопросов, ≈ <span x-text="Math.round(extraCount * 6 / 60)"></span> мин — характер и привязанность считаются точнее. Можно и потом, из «Точности разбора».</p>
+          <button class="btn btn-soft btn-sm mt-3" @click="extend()">{% icon 'sparkles' 'size-4' %}Уточнить сейчас</button>
+        </div>
+      </template>
     </div>
   </template>
 </div>
 
 {{ sections|json_script:"quiz-sections" }}
+{{ extra|json_script:"quiz-extra" }}
 <form id="quiz-submit" method="post" action="{{ submit_url }}" class="hidden">{% csrf_token %}<input type="hidden" name="answers"></form>
 <script>
   function quiz() {
-    const sections = JSON.parse(document.getElementById("quiz-sections").textContent).map((s) => ({ ...s, type: "likert" }));
+    const likert = (id) => JSON.parse(document.getElementById(id).textContent).map((s) => ({ ...s, type: "likert" }));
+    const sections = likert("quiz-sections"), extra = likert("quiz-extra");
     const SCALE = {{ likert }};
+    // progress lives on this device until it's sent: leave on question 20 and come back to question 20
+    const KEY = "quiz:" + location.pathname + "{% if more %}:more{% endif %}";
     return {
-      sections, si: 0, qi: 0, answers: {}, finished: false, scale: SCALE, hov: null,
+      sections, extra, extended: false, si: 0, qi: 0, answers: {}, finished: false, scale: SCALE, hov: null,
+      init() {
+        try {
+          const s = JSON.parse(localStorage.getItem(KEY) || "null");
+          if (!s) return;
+          this.answers = s.answers || {};
+          if (s.extended) this.extend(false);
+          this.si = Math.min(s.si || 0, this.sections.length - 1);
+          this.qi = Math.min(s.qi || 0, this.section.items.length - 1);
+          this.finished = !!s.finished;
+        } catch (e) {}
+      },
+      save() {
+        try { localStorage.setItem(KEY, JSON.stringify({ answers: this.answers, si: this.si, qi: this.qi, extended: this.extended, finished: this.finished })) } catch (e) {}
+      },
       get section() { return this.sections[this.si]; },
       get question() { return this.section.items[this.qi]; },
       get total() { return this.sections.reduce((n, s) => n + s.items.length, 0); },
       get done() { return Object.keys(this.answers).length; },
+      get left() { return Math.max(0, this.total - this.done); },
+      get extraCount() { return this.extra.reduce((n, s) => n + s.items.length, 0); },
       answer() { return this.answers[this.question.id]; },
       level() { return this.hov ?? this.answer() ?? 3; },  // what the scene shows: hovered, chosen, or the middle
       // linger a moment so the answer is seen to change the scene
-      pick(v) { this.answers[this.question.id] = v; setTimeout(() => this.next(), 650); },
+      pick(v) { this.answers[this.question.id] = v; this.save(); setTimeout(() => this.next(), 650); },
       next() {
         this.hov = null;
-        if (this.qi < this.section.items.length - 1) return this.qi++;
-        if (this.si < this.sections.length - 1) { this.si++; this.qi = 0; return; }
-        this.finished = true;
+        if (this.qi < this.section.items.length - 1) this.qi++;
+        else if (this.si < this.sections.length - 1) { this.si++; this.qi = 0; }
+        else this.finished = true;
+        this.save();
       },
       back() {
         this.hov = null;
-        if (this.qi > 0) return this.qi--;
-        if (this.si > 0) { this.si--; this.qi = this.section.items.length - 1; }
+        if (this.qi > 0) this.qi--;
+        else if (this.si > 0) { this.si--; this.qi = this.section.items.length - 1; }
+        this.save();
+      },
+      // the optional «уточнение» joins the same run: its sections follow, and one send carries everything
+      extend(go = true) {
+        if (this.extended || !this.extra.length) return;
+        this.extended = true;
+        const at = this.sections.length;
+        this.sections.push(...this.extra);
+        if (go) { this.si = at; this.qi = 0; this.finished = false; this.save(); }
       },
       submit() {
         const form = document.getElementById("quiz-submit");
+        try { localStorage.removeItem(KEY) } catch (e) {}
         if (!form.getAttribute("action")) return (location.href = "{% url 'generating' %}");
         form.answers.value = JSON.stringify(this.answers);
         form.submit();

@@ -67,6 +67,7 @@ from apps.core.domain.scoring import Factor, ScoreResult, clamp
 from apps.knowledge.catalog import FINDINGS
 from apps.numerology.domain import numerology as num
 from apps.psychology.domain import scoring as psy
+from apps.psychology.domain.instruments import ITEMS
 from apps.psychology.domain.patterns import match as match_patterns
 from apps.psychology.sources import cite
 from apps.tarot.domain import tarot
@@ -772,7 +773,13 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
         habits=habits,
         daily=daily,
         spheres=spheres,
-        depth={"dates": True, "time_place_a": exact[a.name], "time_place_b": exact[b.name], "psych": bool(psych)},
+        depth={
+            "dates": True,
+            "time_place_a": exact[a.name],
+            "time_place_b": exact[b.name],
+            "psych": bool(psych),
+            "psych_full": bool(psych) and all(set(ITEMS) <= set(p.answers or {}) for p in (a, b)),  # «уточнение» from both
+        },
     )
     report = deps.stitcher.stitch(report) if deps.stitcher else report
     return report.model_copy(update={"kb_keys": sorted(set(kb.used))})

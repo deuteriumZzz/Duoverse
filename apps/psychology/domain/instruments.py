@@ -17,6 +17,7 @@ class Item:
     scale: str
     reverse: bool = False
     scene: str = ""  # the questionnaire picture to show (quiz_scenes.html), when it borrows a sibling item's one
+    core: bool = True  # the 38 everyone answers; the other 38 «уточнить» are optional and only sharpen the same scales
 
 
 @dataclass(frozen=True)
@@ -55,36 +56,36 @@ BIG_FIVE = Section(
         Item("n4", "Мне редко бывает грустно.", "N", True),
         Item("o4", "У меня не очень богатое воображение.", "O", True),
         # the other thirty markers of IPIP-50, in the same E-A-C-N-O round; each borrows the scene of its nearest sibling
-        Item("e5", "Мне легко и спокойно среди людей.", "E", scene="e3"),
-        Item("a5", "Меня мало заботит, что чувствуют другие.", "A", True, scene="a2"),
-        Item("c5", "Я ко всему готовлюсь заранее.", "C", scene="c1"),
-        Item("n5", "Я легко поддаюсь стрессу.", "N", scene="n3"),
-        Item("o5", "У меня богатый словарный запас.", "O", scene="o3"),
-        Item("e6", "Обычно я первым(ой) начинаю разговор.", "E", scene="e1"),
-        Item("a6", "Мне интересны люди.", "A", scene="a4"),
-        Item("c6", "Я оставляю свои вещи где попало.", "C", True, scene="c2"),
-        Item("n6", "Я часто о чём-то тревожусь.", "N", scene="n3"),
-        Item("o6", "У меня бывают отличные идеи.", "O", scene="o1"),
-        Item("e7", "Мне обычно особо нечего сказать.", "E", True, scene="e2"),
-        Item("a7", "Бывает, я задеваю людей обидными словами.", "A", True, scene="a2"),
-        Item("c7", "Я обращаю внимание на детали.", "C", scene="c3"),
-        Item("n7", "Меня легко выбить из колеи.", "N", scene="n3"),
-        Item("o7", "Я быстро схватываю новое.", "O", scene="o3"),
-        Item("e8", "Не люблю привлекать к себе внимание.", "E", True, scene="e4"),
-        Item("a8", "У меня мягкое сердце.", "A", scene="a1"),
-        Item("c8", "Я увиливаю от своих обязанностей.", "C", True, scene="c1"),
-        Item("n8", "Моё настроение то и дело меняется.", "N", scene="n1"),
-        Item("o8", "Я употребляю сложные слова.", "O", scene="o3"),
-        Item("e9", "Я не против быть в центре внимания.", "E", scene="e1"),
-        Item("a9", "Я нахожу время для других.", "A", scene="a3"),
-        Item("c9", "Я живу по расписанию.", "C", scene="c3"),
-        Item("n9", "Меня легко вывести из себя.", "N", scene="n1"),
-        Item("o9", "Я люблю поразмышлять о разном.", "O", scene="o2"),
-        Item("e10", "С незнакомыми людьми я обычно молчу.", "E", True, scene="e2"),
-        Item("a10", "Рядом со мной людям легко.", "A", scene="a1"),
-        Item("c10", "В работе я требую от себя точности.", "C", scene="c3"),
-        Item("n10", "Мне часто бывает грустно.", "N", scene="n4"),
-        Item("o10", "У меня полно идей.", "O", scene="o1"),
+        Item("e5", "Мне легко и спокойно среди людей.", "E", core=False, scene="e3"),
+        Item("a5", "Меня мало заботит, что чувствуют другие.", "A", True, core=False, scene="a2"),
+        Item("c5", "Я ко всему готовлюсь заранее.", "C", core=False, scene="c1"),
+        Item("n5", "Я легко поддаюсь стрессу.", "N", core=False, scene="n3"),
+        Item("o5", "У меня богатый словарный запас.", "O", core=False, scene="o3"),
+        Item("e6", "Обычно я первым(ой) начинаю разговор.", "E", core=False, scene="e1"),
+        Item("a6", "Мне интересны люди.", "A", core=False, scene="a4"),
+        Item("c6", "Я оставляю свои вещи где попало.", "C", True, core=False, scene="c2"),
+        Item("n6", "Я часто о чём-то тревожусь.", "N", core=False, scene="n3"),
+        Item("o6", "У меня бывают отличные идеи.", "O", core=False, scene="o1"),
+        Item("e7", "Мне обычно особо нечего сказать.", "E", True, core=False, scene="e2"),
+        Item("a7", "Бывает, я задеваю людей обидными словами.", "A", True, core=False, scene="a2"),
+        Item("c7", "Я обращаю внимание на детали.", "C", core=False, scene="c3"),
+        Item("n7", "Меня легко выбить из колеи.", "N", core=False, scene="n3"),
+        Item("o7", "Я быстро схватываю новое.", "O", core=False, scene="o3"),
+        Item("e8", "Не люблю привлекать к себе внимание.", "E", True, core=False, scene="e4"),
+        Item("a8", "У меня мягкое сердце.", "A", core=False, scene="a1"),
+        Item("c8", "Я увиливаю от своих обязанностей.", "C", True, core=False, scene="c1"),
+        Item("n8", "Моё настроение то и дело меняется.", "N", core=False, scene="n1"),
+        Item("o8", "Я употребляю сложные слова.", "O", core=False, scene="o3"),
+        Item("e9", "Я не против быть в центре внимания.", "E", core=False, scene="e1"),
+        Item("a9", "Я нахожу время для других.", "A", core=False, scene="a3"),
+        Item("c9", "Я живу по расписанию.", "C", core=False, scene="c3"),
+        Item("n9", "Меня легко вывести из себя.", "N", core=False, scene="n1"),
+        Item("o9", "Я люблю поразмышлять о разном.", "O", core=False, scene="o2"),
+        Item("e10", "С незнакомыми людьми я обычно молчу.", "E", True, core=False, scene="e2"),
+        Item("a10", "Рядом со мной людям легко.", "A", core=False, scene="a1"),
+        Item("c10", "В работе я требую от себя точности.", "C", core=False, scene="c3"),
+        Item("n10", "Мне часто бывает грустно.", "N", core=False, scene="n4"),
+        Item("o10", "У меня полно идей.", "O", core=False, scene="o1"),
     ),
 )
 
@@ -102,14 +103,14 @@ ATTACHMENT = Section(
         Item("avo3", "Я предпочитаю справляться с трудностями сам(а).", "avo"),
         Item("avo4", "Мне легко просить партнёра о поддержке.", "avo", True),
         # four more each way, keyed both ways like the first eight, so a habit of agreeing doesn't tilt the result
-        Item("anx5", "Я боюсь, что партнёр может разлюбить меня.", "anx", scene="anx1"),
-        Item("avo5", "Мне неуютно, когда партнёр слишком во мне нуждается.", "avo", scene="avo1"),
-        Item("anx6", "Если партнёр отдаляется, я думаю, что сделал(а) что-то не так.", "anx", scene="anx2"),
-        Item("avo6", "Даже в близких отношениях мне важно сохранять дистанцию.", "avo", scene="avo1"),
-        Item("anx7", "Я уверен(а), что нужен(на) партнёру по-настоящему.", "anx", True, scene="anx4"),
-        Item("avo7", "Мне приятно делиться с партнёром самым личным.", "avo", True, scene="avo4"),
-        Item("anx8", "Мне трудно успокоиться, пока мы не помиримся после ссоры.", "anx", scene="anx3"),
-        Item("avo8", "Мне спокойнее, когда я ни от кого не завишу.", "avo", scene="avo3"),
+        Item("anx5", "Я боюсь, что партнёр может разлюбить меня.", "anx", core=False, scene="anx1"),
+        Item("avo5", "Мне неуютно, когда партнёр слишком во мне нуждается.", "avo", core=False, scene="avo1"),
+        Item("anx6", "Если партнёр отдаляется, я думаю, что сделал(а) что-то не так.", "anx", core=False, scene="anx2"),
+        Item("avo6", "Даже в близких отношениях мне важно сохранять дистанцию.", "avo", core=False, scene="avo1"),
+        Item("anx7", "Я уверен(а), что нужен(на) партнёру по-настоящему.", "anx", True, core=False, scene="anx4"),
+        Item("avo7", "Мне приятно делиться с партнёром самым личным.", "avo", True, core=False, scene="avo4"),
+        Item("anx8", "Мне трудно успокоиться, пока мы не помиримся после ссоры.", "anx", core=False, scene="anx3"),
+        Item("avo8", "Мне спокойнее, когда я ни от кого не завишу.", "avo", core=False, scene="avo3"),
     ),
 )
 
@@ -133,3 +134,4 @@ CONFLICT = Section(
 
 SECTIONS = (BIG_FIVE, ATTACHMENT, CONFLICT)
 ITEMS = {i.id: i for s in SECTIONS for i in s.items}
+CORE_IDS = frozenset(i for i, item in ITEMS.items() if item.core)  # what a questionnaire must have to count

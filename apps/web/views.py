@@ -71,7 +71,7 @@ from apps.compatibility.streak import pair_streak
 from apps.core.domain.names import acc as gen_acc
 from apps.core.domain.names import gen
 from apps.psychology.domain import scoring as psy
-from apps.psychology.domain.instruments import ITEMS, LIKERT, SECTIONS
+from apps.psychology.domain.instruments import CORE_IDS, ITEMS, LIKERT, SECTIONS
 from apps.web.avatars import AVATARS
 from config.container import report_provider
 
@@ -361,6 +361,12 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
             ),
             (d.get("time_place_b", False), f"Время и место · {b.name}", "наложения домов, композит", links["upgrade_url"]),
             (d.get("psych", False), "Анкеты обоих", "научный слой: привязанность, конфликт, тени", links["quiz_url"]),
+            # the optional 38: shown once the core is in, so the step is always something one can do
+            *(
+                [(d.get("psych_full", False), "Уточнить психологию", "ещё 38 вопросов — характер и привязанность точнее",
+                  links["quiz_url"] + "?more=1")]
+                if d.get("psych") else []
+            ),
         ]
     }
     charts = {
@@ -1616,12 +1622,21 @@ def public_share(request: HttpRequest, token: str) -> HttpResponse:
 
 
 # ── questionnaires ────────────────────────────────────────────────────────
-def _quiz_ctx(gender: str = "") -> dict:
-    """Questionnaire sections; «Я … сам(а)» in the form of the person answering when we know it."""
+def _quiz_ctx(gender: str = "", more: bool = False) -> dict:
+    """Questionnaire sections; «Я … сам(а)» in the form of the person answering when we know it. The 38 core items come
+    first and are enough; the other 38 («уточнение») are offered after them, or alone with `more` (answers already in)."""
     from apps.core.domain.names import agree
 
-    items = lambda s: [{"id": i.id, "text": agree(i.text, gender), "scene": i.scene or i.id} for i in s.items]  # noqa: E731
-    return {"sections": [{"title": s.title, "hint": s.hint, "items": items(s)} for s in SECTIONS], "likert": LIKERT}
+    def part(core: bool) -> list[dict]:
+        out = []
+        for s in SECTIONS:
+            items = [{"id": i.id, "text": agree(i.text, gender), "scene": i.scene or i.id} for i in s.items if i.core == core]
+            if items:
+                out.append({"title": s.title if core else f"{s.title} · уточнение", "hint": s.hint, "items": items})
+        return out
+
+    core, extra = part(True), part(False)
+    return {"sections": extra if more else core, "extra": [] if more else extra, "more": more, "likert": LIKERT}
 
 
 def quiz(request: HttpRequest) -> HttpResponse:
@@ -1629,13 +1644,18 @@ def quiz(request: HttpRequest) -> HttpResponse:
 
 
 def _save_answers(request: HttpRequest, person: Person) -> dict[str, int] | None:
+    """Add what was answered to what the person answered before — the core 38 must be there, the «уточнение» 38 may
+    come later, or not at all (a scale is the mean of its items answered)."""
     try:
         raw = json.loads(request.POST.get("answers", "{}"))
-        answers = {k: int(v) for k, v in raw.items() if k in ITEMS}
-        psy.profile(answers)  # validates scale and completeness
-    except (ValueError, TypeError, json.JSONDecodeError, psy.IncompleteAnswers):
-        return None
-    if len(answers) != len(ITEMS):
+        new = {k: int(v) for k, v in raw.items() if k in ITEMS}
+        if any(not 1 <= v <= LIKERT for v in new.values()):
+            return None
+        answers = {**(person.answers or {}), **new}
+        if not answers.keys() >= CORE_IDS:
+            return None
+        psy.profile(answers)  # validates every scale
+    except (ValueError, TypeError, AttributeError, json.JSONDecodeError, psy.IncompleteAnswers):
         return None
     person.answers, person.answered_at = answers, timezone.now()
     person.save(update_fields=["answers", "answered_at"])
@@ -1654,7 +1674,8 @@ def person_quiz(request: HttpRequest, pid) -> HttpResponse:
         if pair.mode == "deep" and person == pair.a and not pair.b.answers:
             return redirect(reverse("invite_new", args=[pair.id]))
         return redirect(reverse("generating") + f"?r={request_report(pair).id}")
-    return render(request, "pages/quiz.html", {**_quiz_ctx(person.gender), "person": person, "submit_url": request.path})
+    more = request.GET.get("more") == "1" and (person.answers or {}).keys() >= CORE_IDS  # «уточнить»: only the 38 not asked
+    return render(request, "pages/quiz.html", {**_quiz_ctx(person.gender, more), "person": person, "submit_url": request.path})
 
 
 # ── pair mode: the partner joins from their own account (ADR-0010) ────────
@@ -1900,7 +1921,7 @@ def join(request: HttpRequest, code: str) -> HttpResponse:
             if _save_answers(request, pair.b) is None:
                 return HttpResponse("answers incomplete", status=422)
             return redirect(reverse("generating") + f"?r={request_report(pair).id}")
-        return render(request, "pages/quiz.html", {**_quiz_ctx(), "person": pair.b, "submit_url": request.path, "joining": True})
+        return render(request, "pages/quiz.html", {**_quiz_ctx(pair.b.gender), "person": pair.b, "submit_url": request.path, "joining": True})
     stored = latest_ready(pair)
     return redirect(reverse("stored_report", args=[stored.id]) if stored else reverse("generating") + f"?r={request_report(pair).id}")
 
