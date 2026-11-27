@@ -4,13 +4,14 @@
     <span class="grid size-12 place-items-center rounded-2xl t-fill font-display text-lg font-extrabold text-white" x-text="(form.{{ who }}.name || '{% if who == 'a' %}Я{% else %}?{% endif %}').slice(0, 1).toUpperCase()"></span>
     <div><p class="eyebrow">{% if who == 'a' %}Партнёр 1 · вы{% else %}Партнёр 2{% endif %}</p><p class="font-display text-xl font-extrabold" x-text="form.{{ who }}.name || '{% if who == 'a' %}Расскажите о себе{% else %}Теперь о партнёре{% endif %}'"></p></div>
   </div>
-  <label class="block"><span class="label">Имя</span>
-    <input class="field" name="{{ who }}_name" x-model="form.{{ who }}.name" @input="if (!form.{{ who }}.gSet) form.{{ who }}.gender = guess($event.target.value)" placeholder="{% if who == 'a' %}Аня{% else %}Миша{% endif %}" autocomplete="{% if who == 'a' %}given-name{% else %}off{% endif %}"></label>
-  <fieldset><legend class="label">Пол <span class="font-normal text-ink-3">— по желанию</span></legend>
-    <div class="flex flex-wrap gap-2">
-      {% for v, l in GENDERS %}<label class="cursor-pointer rounded-full border border-line px-3.5 py-1.5 text-sm font-bold transition has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-milk"><input type="radio" name="{{ who }}_gender" value="{{ v }}" class="sr-only" x-model="form.{{ who }}.gender" @change="form.{{ who }}.gSet = true" {% if not v %}checked{% endif %}>{{ l }}</label>{% endfor %}
+  {# the name, with the sign of the gender inside the field (gender_pick.html): typing «Аня» shows ♀ until it's changed by hand #}
+  <div><label class="label" for="{{ who }}_name">Имя</label>
+    <div class="relative">
+      <input class="field pr-12" id="{{ who }}_name" name="{{ who }}_name" x-model="form.{{ who }}.name" @input="if (!form.{{ who }}.gSet) form.{{ who }}.gender = guess($event.target.value)" placeholder="{% if who == 'a' %}Аня{% else %}Миша{% endif %}" autocomplete="{% if who == 'a' %}given-name{% else %}off{% endif %}">
+      {% if who == 'a' %}{% include "components/gender_pick.html" with name="a_gender" who="a" model="form.a.gender" set="form.a.gSet = true" value="" %}
+      {% else %}{% include "components/gender_pick.html" with name="b_gender" who="b" model="form.b.gender" set="form.b.gSet = true" value="" %}{% endif %}
     </div>
-  </fieldset>
+  </div>
   <div><label class="label" for="{{ who }}_date">Дата рождения <span class="text-risk">*</span></label>
     {% if who == 'a' %}{% include "components/date_field.html" with name="a_date" id="a_date" model="form.a.date" invalid="touched && !validDate(form.a.date)" %}
     {% else %}{% include "components/date_field.html" with name="b_date" id="b_date" model="form.b.date" invalid="touched && !validDate(form.b.date)" %}{% endif %}

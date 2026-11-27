@@ -59,7 +59,6 @@ def prototype(request):
         return [(name, ic, label, nav in groups[name], href) for name, ic, label, href in items]
 
     return {
-        "GENDERS": (("f", "Она"), ("m", "Он"), ("", "Не указывать")),
         # «Пара+» the way people compare it: the year as a price per month, and how much it saves against paying monthly
         "plus_from": round(settings.PRICE_PLUS_YEAR / 12),
         "price_plus_year": settings.PRICE_PLUS_YEAR,

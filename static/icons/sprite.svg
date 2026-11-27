@@ -340,6 +340,10 @@
       <path d="m2 2 20 20" />
       <path d="M8.475 2.818A8 8 0 0 1 20 10c0 1.183-.31 2.377-.81 3.533" />
       <path d="M9.13 9.13a3 3 0 0 0 3.74 3.74" />
+    </symbol><symbol id="mars" viewBox="0 0 24 24">
+      <path d="M16 3h5v5" />
+      <path d="m21 3-6.75 6.75" />
+      <circle cx="10" cy="14" r="6" />
     </symbol><symbol id="message-circle" viewBox="0 0 24 24">
       <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
     </symbol><symbol id="message-circle-heart" viewBox="0 0 24 24">
@@ -558,6 +562,16 @@
       <path d="M16 3.128a4 4 0 0 1 0 7.744" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
       <circle cx="9" cy="7" r="4" />
+    </symbol><symbol id="venus" viewBox="0 0 24 24">
+      <path d="M12 15v7" />
+      <path d="M9 19h6" />
+      <circle cx="12" cy="9" r="6" />
+    </symbol><symbol id="venus-and-mars" viewBox="0 0 24 24">
+      <path d="M10 20h4" />
+      <path d="M12 16v6" />
+      <path d="M17 2h4v4" />
+      <path d="m21 2-5.46 5.46" />
+      <circle cx="12" cy="11" r="5" />
     </symbol><symbol id="wifi-off" viewBox="0 0 24 24">
       <path d="M12 20h.01" />
       <path d="M8.5 16.429a5 5 0 0 1 7 0" />

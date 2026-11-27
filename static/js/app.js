@@ -255,7 +255,7 @@
         else { this.y = 1995; this.view = "years"; this.focused = ""; }  // birth dates are decades back: start with years
       }
       this.open = true;
-      this.$nextTick(() => placePop(this.$el, this.$refs.pop, focusGrid));
+      this.$nextTick(() => placePop(this.$root, this.$refs.pop, focusGrid));  // $root, not $el: opened from the icon, $el is the icon
     },
     close(refocus = false) { this.open = false; if (refocus) this.$refs.text.focus(); },
     get days() {
@@ -338,7 +338,7 @@
       if (this.$refs.text.disabled) return;
       if (!this.open) { this.h = this.value ? this.value.slice(0, 2) : null; this.view = "hours"; }
       this.open = true;
-      this.$nextTick(() => placePop(this.$el, this.$refs.pop, focusGrid));
+      this.$nextTick(() => placePop(this.$root, this.$refs.pop, focusGrid));  // $root, not $el: opened from the icon, $el is the icon
     },
     close(refocus = false) { this.open = false; if (refocus) this.$refs.text.focus(); },
     setView(v) {

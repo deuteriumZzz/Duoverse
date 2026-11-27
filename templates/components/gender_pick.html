@@ -1,0 +1,20 @@
+{% comment %}One sign inside the name field, at its right edge: the gender read from the name (♀ / ♂, ⚥ when the name can be
+either). A tap goes ♀ → ♂ → not said → ♀; the tooltip says so. No block, no label of its own. The parent wraps the name input
+in a `relative` box and pads its right side (pr-12). One hidden field carries the choice ("" / f / m).
+name: the field name · who: a|b, the side colour · value: the gender saved now · model / set: Alpine state of a form that keeps
+it (the wizard: form.a.gender), set runs when the person picks by hand. Without a model the sign keeps its own state.
+The icons are written out so build_icons keeps «venus», «mars» and «venus-and-mars» in the sprite.{% endcomment %}
+{% with m=model|default:"g" on=who|default:"a" %}
+<span class="absolute inset-y-0 right-1.5 flex items-center"{% if not model %} x-data="{ g: '{{ value|default:'' }}' }"{% endif %}>
+  <input type="hidden" name="{{ name }}" value="{{ value|default:'' }}" :value="{{ m }}">
+  <button type="button" class="g-pick grid size-9 place-items-center rounded-full transition"
+          :class="{{ m }} ? 'is-on text-ink {% if on == 'b' %}bg-b-soft{% else %}bg-a-soft{% endif %}' : 'text-ink-3 hover:bg-sand hover:text-ink'"
+          :title="{{ m }} === 'f' ? 'Она — нажмите, чтобы поменять' : {{ m }} === 'm' ? 'Он — нажмите, чтобы поменять' : 'Пол не указан — нажмите, чтобы выбрать'"
+          :aria-label="{{ m }} === 'f' ? 'Пол: она. Поменять' : {{ m }} === 'm' ? 'Пол: он. Поменять' : 'Пол не указан. Выбрать'"
+          @click="{{ m }} = {{ m }} === 'f' ? 'm' : {{ m }} === 'm' ? '' : 'f'{% if set %}; {{ set }}{% endif %}">
+    <span x-show="{{ m }} === 'f'" x-cloak>{% icon 'venus' 'size-[1.15rem]' %}</span>
+    <span x-show="{{ m }} === 'm'" x-cloak>{% icon 'mars' 'size-[1.15rem]' %}</span>
+    <span x-show="!{{ m }}" x-cloak>{% icon 'venus-and-mars' 'size-[1.15rem]' %}</span>
+  </button>
+</span>
+{% endwith %}
