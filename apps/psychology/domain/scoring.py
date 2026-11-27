@@ -1,6 +1,6 @@
 """Scoring for the scientific layer: person profiles and pair score. Every coefficient is listed in docs/methodology/psychology.md."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from statistics import mean
 
 from apps.core.domain.scoring import Factor, ScoreResult, clamp
@@ -28,10 +28,12 @@ class PsychProfile:
     avoidance: float
     horsemen: dict[str, str]  # low | mid | high
     repair: int  # 0–100
+    horsemen_mean: dict[str, float] = field(default_factory=dict)  # 1–5, what the score reads (the levels are for words)
 
     @property
     def attachment(self) -> str:
-        anx, avo = self.anxiety >= 3, self.avoidance >= 3
+        # anxious / avoidant only above the middle of the scale: «3 — иногда» is the middle, not a lean
+        anx, avo = self.anxiety > 3, self.avoidance > 3
         if anx and avo:
             return "Тревожно-избегающий"
         if anx:
@@ -73,6 +75,7 @@ def profile(answers: dict[str, int]) -> PsychProfile:
         avoidance=round(_scale(answers, "avo"), 2),
         horsemen={h: _level(_scale(answers, h)) for h in HORSEMEN},
         repair=_pct(_scale(answers, "repair")),
+        horsemen_mean={h: round(_scale(answers, h), 2) for h in HORSEMEN},
     )
 
 
@@ -89,15 +92,15 @@ def score(a: PsychProfile, b: PsychProfile) -> ScoreResult:
         main = max(cat_deltas, key=lambda c: abs(cat_deltas[c])) if cat_deltas else None
         f.append(Factor(source, detail, round(delta / 15, 2), "scientific", main))
 
+    # Attachment moves the score by how far the two of you are from the middle of the scales: both low on anxiety and
+    # avoidance (+2) gives what «надёжная база» used to, both high (−2) what the worst pairing did, the middle nothing —
+    # so answering «иногда» throughout no longer reads as a problem. The pursue–withdraw pairing keeps its own weight.
     styles = {a.attachment.split(",")[0], b.attachment.split(",")[0]}
-    if a.secure and b.secure:
-        add(12, {"emotions": 14, "conflict": 8}, "Привязанность", f"{a.attachment.lower()} · {b.attachment.lower()} — надёжная база")
-    elif styles == {"Тревожный", "Избегающий"}:
-        add(-15, {"emotions": -16, "conflict": -12}, "Привязанность", "тревожный · избегающий — риск цикла «догоняю — убегаю»")
-    elif a.secure or b.secure:
-        add(4, {"emotions": 5}, "Привязанность", f"{a.attachment.lower()} · {b.attachment.lower()} — надёжный партнёр стабилизирует")
-    else:
-        add(-6, {"emotions": -8, "conflict": -5}, "Привязанность", "оба стиля небезопасные — важно проговаривать потребности")
+    sec = sum(3 - x for p in (a, b) for x in (p.anxiety, p.avoidance)) / 4  # −2 … +2
+    why = "надёжная база" if a.secure and b.secure else "надёжный партнёр стабилизирует" if a.secure or b.secure else "важно проговаривать потребности"
+    add(sec * 6, {"emotions": sec * 7, "conflict": sec * 4}, "Привязанность", f"{a.attachment.lower()} · {b.attachment.lower()} — {why}")
+    if styles == {"Тревожный", "Избегающий"}:
+        add(-6, {"emotions": -8, "conflict": -6}, "Привязанность", "тревожный · избегающий — риск цикла «догоняю — убегаю»")
 
     n = (a.ocean["N"] + b.ocean["N"]) / 2
     add(
@@ -131,9 +134,9 @@ def score(a: PsychProfile, b: PsychProfile) -> ScoreResult:
     cats["passion"] += (o - 50) * 0.2
 
     for h, title in HORSEMEN.items():
-        levels = (a.horsemen[h], b.horsemen[h])
         weight = 2 if h == "contempt" else 1  # contempt is the strongest predictor in Gottman's work
-        penalty = sum({"low": 0, "mid": 2, "high": 6}[lv] for lv in levels) * weight
+        # only what lies above the middle costs: «иногда» (3) nothing, 4.5 what «высокий» used to (6), 5 a bit more (8)
+        penalty = round(sum(max(0.0, p.horsemen_mean.get(h, 3.0) - 3) * 4 for p in (a, b)) * weight, 2)
         if penalty:
             add(
                 -penalty,

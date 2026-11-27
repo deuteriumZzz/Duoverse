@@ -73,3 +73,18 @@ def test_first_names_decline_and_unknown_shapes_stay():
     assert [gen(n) for n in ("Аня", "Миша", "Ольга", "Иван", "Андрей", "Мария")] == ["Ани", "Миши", "Ольги", "Ивана", "Андрея", "Марии"]
     assert [dat(n) for n in ("Аня", "Миша", "Иван", "Мария")] == ["Ане", "Мише", "Ивану", "Марии"]
     assert gen("Alex") == "Alex" and gen("Анри") == "Анри"
+
+
+def test_answering_sometimes_throughout_moves_nothing():
+    """«3 — иногда» is the middle of every scale: a pair answering it throughout gets the baseline in every category, not a
+    «тревожно-избегающий» label and a conflict score 30 points down (which made conflicts everyone's weak sphere).
+    Leaning one way moves the score that way."""
+    from apps.psychology.domain import scoring as psy
+    from apps.psychology.domain.instruments import ITEMS
+
+    neutral = psy.profile(dict.fromkeys(ITEMS, 3))
+    r = psy.score(neutral, neutral)
+    assert r.score == 70 and set(r.categories.values()) == {65}
+    assert not neutral.attachment.startswith(("Тревожн", "Избегающ"))
+    contempt = psy.profile({k: (5 if ITEMS[k].scale == "contempt" and not ITEMS[k].reverse else 1 if ITEMS[k].scale == "contempt" else 3) for k in ITEMS})
+    assert psy.score(contempt, neutral).categories["conflict"] < 65  # contempt above the middle costs
