@@ -115,7 +115,7 @@ WIZARD_MODES = [
         ["полная синастрия", "дома и Асцендент", "числа и таро"],
         "orbit",
     ),
-    ("deep", "Глубокий", "≈ 10 минут", "Всё выше + короткие анкеты", ["научный слой", "как вы ссоритесь", "план привычек"], "brain"),
+    ("deep", "Глубокий", "≈ 15 минут", "Всё выше + короткие анкеты", ["научный слой", "как вы ссоритесь", "план привычек"], "brain"),
 ]
 WIZARD_QUIZZES = [
     ("Большая пятёрка", "10 утверждений о характере", "user-round"),
@@ -1620,7 +1620,7 @@ def _quiz_ctx(gender: str = "") -> dict:
     """Questionnaire sections; «Я … сам(а)» in the form of the person answering when we know it."""
     from apps.core.domain.names import agree
 
-    items = lambda s: [{"id": i.id, "text": agree(i.text, gender)} for i in s.items]  # noqa: E731
+    items = lambda s: [{"id": i.id, "text": agree(i.text, gender), "scene": i.scene or i.id} for i in s.items]  # noqa: E731
     return {"sections": [{"title": s.title, "hint": s.hint, "items": items(s)} for s in SECTIONS], "likert": LIKERT}
 
 
