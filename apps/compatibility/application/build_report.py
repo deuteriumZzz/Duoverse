@@ -848,7 +848,7 @@ def build_report(report_id: str, a: PersonInput, b: PersonInput, deps: Deps) -> 
 
 def _fresh(factors: list[SphereFactor], told: set[str], limit: int = 3) -> list[SphereFactor]:
     """Up to `limit` points not told yet in this report (by link and by wording), and mark them as told."""
-    out = []
+    out: list[SphereFactor] = []
     for f in factors:
         if len(out) == limit or f.ref in told or f.text in told:
             continue

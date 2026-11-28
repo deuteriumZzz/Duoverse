@@ -83,6 +83,7 @@ def leave(wishes: list[dict], side: str) -> list[dict]:
 if __name__ == "__main__":
     book = clean({"kind": "thing", "title": " Книга   про Японию ", "link": "https://example.com/book"}, "a")
     trip = clean({"kind": "dream", "title": "Поехать в Японию"}, "b")
+    assert book is not None and trip is not None
     assert book["title"] == "Книга про Японию" and clean({"title": "x", "link": "javascript:alert(1)"}, "a") is None
     assert clean({"kind": "car", "title": "x"}, "a") is None and clean({"title": "   "}, "a") is None
     w = apply(apply([], "a", "add", "", book), "b", "add", "", trip)

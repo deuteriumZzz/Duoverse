@@ -9,6 +9,7 @@ frosty, and past «Большое дерево» new things appear on it: fruit,
 import hashlib
 import math
 from datetime import date
+from typing import Any
 
 STAGES = ("Семечко", "Росток", "Саженец", "Молодое дерево", "Большое дерево")
 # the kind of tree comes from the pair's dynamic (domain/archetypes.py) — compatibility shapes how it looks, never how
@@ -97,7 +98,8 @@ def _garland(stage: int) -> dict:
             rows.append(((cx - w, y - tilt * 0.06 * r), (cx + w, y + tilt * 0.06 * r), 0.28 * r))
     else:
         rows.append(((128.0, 212.0), (192.0, 212.0), 16.0))
-    wires, bulbs = [], []
+    wires: list[str] = []
+    bulbs: list[tuple[int, int, str, int]] = []
     for a, b, sag in rows:
         mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
         d = f"M{a[0]:.1f} {a[1]:.1f}"
@@ -139,7 +141,7 @@ def grow(answers: int, dates: int, dreams: int, watered_today: bool, months: int
     prev = max(at for at in steps if at <= p)
     species, crown, blossom, leaf = SPECIES.get(kind, SPECIES["complement"])
     fruit, fruit_fill = FRUIT[species]
-    tree = {"stage": stage, "name": STAGES[stage], "points": p, "head": head, "next_at": nxt, "watered": watered_today}
+    tree: dict[str, Any] = {"stage": stage, "name": STAGES[stage], "points": p, "head": head, "next_at": nxt, "watered": watered_today}
     tree |= {"species": species, "crown_fill": AUTUMN[species] if season == "autumn" else crown, "blossom_fill": blossom,
              "leaf_fill": leaf, "fruit_fill": fruit_fill, "season": season, "season_name": SEASON_NAMES[season]}  # fmt: skip
     tree |= {"crown": [], "leaves": [], "blossoms": [], "lanterns": [], "petals": [], "snow": []}

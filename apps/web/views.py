@@ -5,6 +5,7 @@ import json
 import secrets
 import uuid
 from datetime import date, datetime, time, timedelta
+from typing import Any
 
 from django.conf import settings
 from django.core.cache import cache
@@ -337,7 +338,7 @@ def _render_report(request: HttpRequest, report: Report, template: str, rbase: s
         ]
     pt = report.pair_type
     roles = {"role_a": ROLES[pt.role_a], "role_b": ROLES[pt.role_b], "dynamic": DYNAMICS[pt.dynamic], "elements": ELEMENTS, "modes": MODES}
-    links = {
+    links: dict[str, Any] = {
         "chapters": REPORT_CHAPTERS,
         "rbase": rbase,
         "quiz_url": reverse("quiz"),
@@ -884,7 +885,7 @@ def _date_idea(pair: Pair, report: Report) -> dict:
 
     def open_to_new(person: Person) -> bool:
         try:
-            return bool(person.answers) and psy.profile(person.answers).ocean["O"] >= date_ideas.OPEN
+            return bool(person.answers and psy.profile(person.answers).ocean["O"] >= date_ideas.OPEN)
         except psy.IncompleteAnswers:
             return False
 
@@ -938,7 +939,7 @@ def library(request: HttpRequest) -> HttpResponse:
             "key": q["key"], "title": q["title"], "sphere": titles.get(q.get("sphere", ""), ""), "open": level <= stage.n,
             "topic": TOPIC_OF.get(q.get("sphere", ""), ""), "icon": q.get("icon", "sparkles"),
             "tint": TOPIC_TINT.get(TOPIC_OF.get(q.get("sphere", ""), ""), "bg-lilac-soft"),
-            "opens_at": pair_stages.STAGES[level - 1].title, "done": done, "mine": side in by, "this_week": bool(week) and week["key"] == q["key"],
+            "opens_at": pair_stages.STAGES[level - 1].title, "done": done, "mine": side in by, "this_week": week is not None and week["key"] == q["key"],
             "match": round(100 * sum(x == y for x, y in zip(by["a"], by["b"], strict=False)) / len(q["items"])) if done else None,
         })  # fmt: skip
     ideas = [{**i, "theme_title": date_ideas.THEMES[t]} for t in ("talk", "play", "romance") for i in date_ideas.IDEAS[t]]
@@ -946,8 +947,8 @@ def library(request: HttpRequest) -> HttpResponse:
     diary = []
     if plus:
         by_day: dict[date, dict] = {}
-        for a in DailyAnswer.objects.filter(pair=pair, day__lt=today).order_by("-day")[:120]:
-            by_day.setdefault(a.day, {})[a.side] = a
+        for ans in DailyAnswer.objects.filter(pair=pair, day__lt=today).order_by("-day")[:120]:
+            by_day.setdefault(ans.day, {})[ans.side] = ans
         other = "b" if side == "a" else "a"
         diary = [
             {"day": d, "question": v[side].question, "mine": v[side].text, "theirs": v[other].text}
@@ -1039,7 +1040,7 @@ def wish_map(request: HttpRequest) -> HttpResponse:
                     pair.wishes = pair_wishes.apply(pair.wishes, side, action, request.POST.get("id", ""), new)
                     pair.save(update_fields=["wishes"])
             wid = request.POST.get("id", "")
-            now = next((w for w in pair.wishes if w["id"] == wid), {})
+            now: dict = next((w for w in pair.wishes if w["id"] == wid), {})
             if action == "reserve" and now.get("taken") == side:  # the box ties itself on the way back
                 return redirect(reverse("wish_map") + f"?tied={wid}#theirs")
             if action == "done" and now.get("done"):  # the star lights up in the constellation
@@ -1139,7 +1140,7 @@ def daily_mood(request: HttpRequest) -> HttpResponse:
 def _focus(ctx: dict) -> tuple[str, bool]:
     """The one weekly thing «Сегодня» puts second, after the question: the first open one you haven't done yet — the
     week's step, the quiz, the date, the talk — or, when all are done, the first open one, ticked. (key, done)"""
-    opened = ctx.get("opened")
+    opened = ctx.get("opened") or ()
     options = [
         ("week", not opened or "week" in opened, bool(ctx.get("step") and ctx["step"].get("mine"))),
         ("quiz", bool(ctx.get("answers")) and bool(opened) and "quiz" in opened, bool(ctx.get("quiz_mine"))),

@@ -5,6 +5,7 @@ A pair's own dates live encrypted on Pair.dates: [{"id", "kind": "met" | "custom
 """
 
 import secrets
+from collections.abc import Sequence
 from datetime import date, timedelta
 
 from apps.core.domain.names import acc, gen
@@ -52,8 +53,8 @@ def met_day(entries: list[dict]) -> date | None:
     return next((date.fromisoformat(e["day"]) for e in entries if e.get("kind") == "met"), None)
 
 
-def upcoming(today: date, people: list[tuple[str, str, str]], entries: list[dict], horizon: int = 365) -> list[dict]:
-    """people: [(side, name, birth ISO)] → the pair's dates within `horizon` days, soonest first:
+def upcoming(today: date, people: Sequence[tuple[str, ...]], entries: list[dict], horizon: int = 365) -> list[dict]:
+    """people: [(side, name, birth ISO, gender)] → the pair's dates within `horizon` days, soonest first:
     {"day", "in", "kind", "title", "sub", "note", "side", "name", "id", "quiet"}."""
     out: list[dict] = []
 
@@ -78,8 +79,8 @@ def upcoming(today: date, people: list[tuple[str, str, str]], entries: list[dict
         d = date.fromisoformat(e["day"])
         nxt = d if d >= today else yearly(d, today)  # a date ahead happens once; a past one comes back every year
         add(nxt, "custom", e["title"], sub=years(nxt.year - d.year) if nxt.year > d.year else "", note=e.get("note", ""), id=e["id"])
-    for m, d, title, whom in HOLIDAYS:
-        day = yearly(date(today.year, m, d), today)
+    for month, mday, title, whom in HOLIDAYS:
+        day = yearly(date(today.year, month, mday), today)
         for_them = [(side, name) for side, name, _, *g in people if whom and g and g[0] == whom]
         if not whom or not for_them:
             add(day, "holiday", title, quiet=bool(whom))
@@ -184,18 +185,20 @@ if __name__ == "__main__":
     assert reminder_text(by["День рождения Ани"]).startswith("Через неделю день рождения у Ани — 30 лет")
     assert reminder_text(by["День рождения Ани"], (4, 3)).endswith("В карте желаний 4 идеи, одну вы уже забронировали.")
     assert reminder_text(by["День рождения Ани"], (5, 5)).endswith("В карте желаний 5 идей.")
-    assert not any(e["title"] == "8 марта" for e in due(upcoming(date(2027, 3, 1), [], [])))  # no gender given: never pushed
+    march8 = "Международный женский день"
+    assert not any(e["title"] == march8 for e in due(upcoming(date(2027, 3, 1), [], [])))  # no gender given: never pushed
     pair = [("a", "Аня", "1996-12-02", "f"), ("b", "Миша", "1994-03-14", "m")]
-    womens = [e for e in due(upcoming(date(2027, 3, 1), pair, [])) if e["title"] == "8 марта"]
-    assert len(womens) == 1 and recipients(womens[0]) == {"b"} and reminder_text(womens[0]) == "Через неделю 8 марта — порадуйте Аню."
+    womens = [e for e in due(upcoming(date(2027, 3, 1), pair, [])) if e["title"] == march8]
+    assert len(womens) == 1 and recipients(womens[0]) == {"b"} and reminder_text(womens[0]) == f"Через неделю {march8} — порадуйте Аню."
     girls = [("a", "Аня", "1996-12-02", "f"), ("b", "Оля", "1995-01-01", "f")]
-    two = [e for e in upcoming(date(2027, 3, 1), girls, []) if e["title"] == "8 марта"]
+    two = [e for e in upcoming(date(2027, 3, 1), girls, []) if e["title"] == march8]
     assert {e["name"] for e in two} == {"Аня", "Оля"} and {s for e in two for s in recipients(e)} == {"a", "b"}  # any pair
     r = road(993)
     assert r["next"] == 1000 and r["left"] == 7 and r["flags"][-1]["x"] == 290
     assert [f["n"] for f in r["flags"]] == [200, 300, 500, 777, 1000]
     assert road(20)["flags"] == [{"x": 290, "n": 100, "done": False}] and road(20)["today_x"] == 90 and road(20000)["next"] is None
     assert clean({"kind": "met", "day": "2030-01-01"}, today, "a") is None  # you can't have met in the future
-    assert clean({"title": "  Первый   поцелуй ", "day": "2024-06-12"}, today, "b")["title"] == "Первый поцелуй"
+    kiss = clean({"title": "  Первый   поцелуй ", "day": "2024-06-12"}, today, "b")
+    assert kiss is not None and kiss["title"] == "Первый поцелуй"
     assert clean({"title": "x", "day": "12.06.2024"}, today, "a") is None and clean({"title": "", "day": "2024-06-12"}, today, "a") is None
     print("ok")
